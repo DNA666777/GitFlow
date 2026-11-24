@@ -141,6 +141,37 @@ public class ConfigAndModelTests
         FlowMessages.Describe(FlowResult.Ok()).ShouldBeEmpty();
     }
 
+    [Theory]
+    [InlineData(@"src\Program.cs", true)]
+    [InlineData(@"README.md", true)]
+    [InlineData(@".git\HEAD", true)]
+    [InlineData(@".git\MERGE_HEAD", true)]
+    [InlineData(@".git\packed-refs", true)]
+    [InlineData(@".git\refs\heads\feature\x", true)]
+    [InlineData(@".git\refs\heads\feature\x.lock", false)]
+    [InlineData(@".git\index", false)]
+    [InlineData(@".git\index.lock", false)]
+    [InlineData(@".git\logs\HEAD", false)]
+    [InlineData(@".git\objects\ab\cdef", false)]
+    [InlineData(@"src\App\bin\Debug\App.dll", false)]
+    [InlineData(@"src\App\obj\project.assets.json", false)]
+    [InlineData(@".vs\GitFlow\v18\.suo", false)]
+    public void Repository_change_filter(string relativePath, bool relevant)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "repo");
+
+        Git.RepositoryChangeFilter.IsRelevant(root, Path.Combine(root, relativePath)).ShouldBe(relevant);
+    }
+
+    [Fact]
+    public void Repository_change_filter_ignores_paths_outside_the_repository()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "repo");
+
+        Git.RepositoryChangeFilter.IsRelevant(root, Path.Combine(Path.GetTempPath(), "other", "a.cs")).ShouldBeFalse();
+        Git.RepositoryChangeFilter.IsRelevant(root, root).ShouldBeFalse();
+    }
+
     [Fact]
     public void GitResult_command_line_quotes_arguments()
     {

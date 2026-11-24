@@ -27,6 +27,22 @@ public sealed class FlowService
     public static string GetDefaultTagMessage(BranchType type, string version) =>
         type == BranchType.Hotfix ? $"Hotfix {version}" : $"Release {version}";
 
+    /// <summary>Root of the git work tree containing <paramref name="path"/> (file or folder), or null.</summary>
+    public async Task<string?> FindRepositoryRootAsync(string path, CancellationToken ct = default)
+    {
+        var directory = Directory.Exists(path) ? path : Path.GetDirectoryName(path);
+        if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
+        {
+            return null;
+        }
+
+        return await new GitClient(_runner, directory).GetTopLevelAsync(ct).ConfigureAwait(false);
+    }
+
+    /// <summary>Branches a Finish of <paramref name="branch"/> merges into, in order (for confirmation screens).</summary>
+    public Task<IReadOnlyList<string>> GetMergeTargetsAsync(string repositoryPath, GitFlowConfig config, FlowBranch branch, CancellationToken ct = default) =>
+        GetMergeTargetsAsync(new GitClient(_runner, repositoryPath), config, branch, ct);
+
     /// <summary>State of the repository, or null when the folder is not a git work tree.</summary>
     public async Task<RepoState?> GetStateAsync(string repositoryPath, CancellationToken ct = default)
     {
@@ -40,6 +56,30 @@ public sealed class FlowService
         var current = await git.GetCurrentBranchAsync(ct).ConfigureAwait(false);
         var flowBranches = config is null ? [] : await GetFlowBranchesAsync(git, config, ct).ConfigureAwait(false);
         var mergeHead = await git.GetMergeHeadAsync(ct).ConfigureAwait(false);
+
+        var merged = new List<string>();
+        if (config is not null)
+        {
+            foreach (var branch in flowBranches)
+            {
+                var targets = await GetMergeTargetsAsync(git, config, branch, ct).ConfigureAwait(false);
+                var mergedEverywhere = true;
+                foreach (var target in targets)
+                {
+                    if (!await git.LocalBranchExistsAsync(target, ct).ConfigureAwait(false)
+                        || !await git.IsAncestorAsync("refs/heads/" + branch.FullName, "refs/heads/" + target, ct).ConfigureAwait(false))
+                    {
+                        mergedEverywhere = false;
+                        break;
+                    }
+                }
+
+                if (mergedEverywhere)
+                {
+                    merged.Add(branch.FullName);
+                }
+            }
+        }
 
         int? ahead = null, behind = null;
         if (current is not null)
@@ -65,6 +105,7 @@ public sealed class FlowService
             Ahead = ahead,
             Behind = behind,
             FlowBranches = flowBranches,
+            MergedFlowBranches = merged,
         };
     }
 
@@ -147,6 +188,31 @@ public sealed class FlowService
         }
 
         return (type == BranchType.Hotfix ? latest.NextPatch() : latest.NextMinor()).ToString();
+    }
+
+    /// <summary>
+    /// Number of commits of develop that are not on master yet, merge commits excluded
+    /// (the merge of the previous release back into develop does not count).
+    /// 0 means a new release would be identical to the last one. Null when not initialised or a branch is missing.
+    /// </summary>
+    public async Task<int?> CountUnreleasedCommitsAsync(string repositoryPath, CancellationToken ct = default)
+    {
+        var config = await ConfigStore.ReadAsync(repositoryPath, ConfigScope.Local, ct).ConfigureAwait(false);
+        var git = new GitClient(_runner, repositoryPath);
+        if (config is null
+            || !await git.LocalBranchExistsAsync(config.MasterBranch, ct).ConfigureAwait(false)
+            || !await git.LocalBranchExistsAsync(config.DevelopBranch, ct).ConfigureAwait(false))
+        {
+            return null;
+        }
+
+        var result = await git.RunCheckedAsync(
+            ct,
+            "rev-list",
+            "--count",
+            "--no-merges",
+            $"refs/heads/{config.MasterBranch}..refs/heads/{config.DevelopBranch}").ConfigureAwait(false);
+        return int.Parse(result.StandardOutput.Trim(), System.Globalization.CultureInfo.InvariantCulture);
     }
 
     public Task<FlowResult> StartAsync(string repositoryPath, BranchType type, string name, StartOptions? options = null, CancellationToken ct = default) => GuardAsync(async () =>

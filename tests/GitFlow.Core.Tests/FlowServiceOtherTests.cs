@@ -145,6 +145,25 @@ public class FlowServiceOtherTests
     }
 
     [Fact]
+    public async Task CountUnreleasedCommits_counts_non_merge_commits_of_develop_not_in_master()
+    {
+        var git = FakeGitRunner.Initialized();
+        git.On("rev-list --count --no-merges refs/heads/master..refs/heads/develop", stdout: "3\n");
+
+        (await new FlowService(git).CountUnreleasedCommitsAsync(Repo)).ShouldBe(3);
+        git.MutatingCalls.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task CountUnreleasedCommits_is_null_when_not_initialized()
+    {
+        var git = FakeGitRunner.Initialized();
+        git.Config.Clear();
+
+        (await new FlowService(git).CountUnreleasedCommitsAsync(Repo)).ShouldBeNull();
+    }
+
+    [Fact]
     public async Task GetState_describes_repository()
     {
         var git = FakeGitRunner.Initialized(withRemote: true)
@@ -161,6 +180,19 @@ public class FlowServiceOtherTests
         state.CurrentFlowBranch.ShouldBe(new FlowBranch(BranchType.Release, "1.0.0", "release/1.0.0"));
         state.ShowReleaseReminder.ShouldBeTrue();
         state.FlowBranches.Select(b => b.FullName).ShouldBe(["feature/a", "feature/b", "release/1.0.0", "hotfix/0.9.1"]);
+    }
+
+    [Fact]
+    public async Task GetState_reports_branches_merged_into_all_targets()
+    {
+        var git = FakeGitRunner.Initialized()
+            .AddBranch("feature/done").Merged("feature/done", "develop")
+            .AddBranch("feature/wip")
+            .AddBranch("hotfix/1.0.1").Merged("hotfix/1.0.1", "master"); // not yet in develop
+
+        var state = await new FlowService(git).GetStateAsync(Repo);
+
+        state!.MergedFlowBranches.ShouldBe(["feature/done"]);
     }
 
     [Fact]

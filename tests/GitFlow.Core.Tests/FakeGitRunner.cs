@@ -28,7 +28,7 @@ internal sealed class FakeGitRunner : IGitRunner
 
     public Dictionary<string, string> Config { get; } = new(StringComparer.Ordinal);
 
-    public static readonly string[] MutatingCommands = ["switch", "merge", "tag", "branch", "commit", "push", "fetch", "config"];
+    public static readonly string[] MutatingCommands = ["switch", "merge", "tag", "branch", "commit", "push", "fetch", "config", "add"];
 
     /// <summary>Calls that change something (reads such as "tag --list" or "config --get-regexp" excluded).</summary>
     public IReadOnlyList<string> MutatingCalls => Calls

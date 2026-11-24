@@ -32,6 +32,10 @@ public enum FlowError
     NoRemote,
     MergeConflict,
     GitCommandFailed,
+    NothingToCommit,
+    EmptyCommitMessage,
+    CommitOnMasterRefused,
+    DetachedHead,
 }
 
 /// <summary>Non blocking problem after an otherwise successful operation (key "Warning_{name}").</summary>

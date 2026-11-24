@@ -35,6 +35,12 @@ public sealed record RepoState
 
     public IReadOnlyList<FlowBranch> FlowBranches { get; init; } = [];
 
+    /// <summary>
+    /// Full names of the work branches already merged into all their Finish targets
+    /// (e.g. merge concluded by hand): a Finish will only tag/delete them.
+    /// </summary>
+    public IReadOnlyCollection<string> MergedFlowBranches { get; init; } = [];
+
     /// <summary>On a release branch: show the reminder "fixes, docs and release tasks only".</summary>
     public bool ShowReleaseReminder => CurrentFlowBranch?.Type == BranchType.Release;
 }

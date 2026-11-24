@@ -161,6 +161,29 @@ public class FlowIntegrationTests
     }
 
     [Fact]
+    public async Task Unreleased_commits_detect_an_empty_release()
+    {
+        await using var repo = await CreateInitializedAsync();
+        (await repo.Flow.CountUnreleasedCommitsAsync(repo.WorkDir)).ShouldBe(0, "fresh develop = master");
+
+        await repo.Flow.StartAsync(repo.WorkDir, BranchType.Feature, "a");
+        await repo.CommitFileAsync("a.txt", "a\n", "A1");
+        await repo.CommitFileAsync("a.txt", "a2\n", "A2");
+        await repo.Flow.FinishAsync(repo.WorkDir);
+        (await repo.Flow.CountUnreleasedCommitsAsync(repo.WorkDir)).ShouldBe(2, "feature commits, not the merge commit");
+
+        await repo.Flow.StartAsync(repo.WorkDir, BranchType.Release, "1.0.0");
+        await repo.CommitFileAsync("version.txt", "1.0.0\n", "Bump");
+        await repo.Flow.FinishAsync(repo.WorkDir);
+        (await repo.Flow.CountUnreleasedCommitsAsync(repo.WorkDir)).ShouldBe(0, "only the release merge into develop remains");
+
+        // Empty feature: nothing new either.
+        await repo.Flow.StartAsync(repo.WorkDir, BranchType.Feature, "empty");
+        await repo.Flow.FinishAsync(repo.WorkDir);
+        (await repo.Flow.CountUnreleasedCommitsAsync(repo.WorkDir)).ShouldBe(0);
+    }
+
+    [Fact]
     public async Task Release_with_existing_tag_is_refused()
     {
         await using var repo = await CreateInitializedAsync();
@@ -339,6 +362,32 @@ public class FlowIntegrationTests
     }
 
     [Fact]
+    public async Task Merge_concluded_by_hand_is_detected_and_finish_completes_it()
+    {
+        // Same scenario as the manual test: conflict, the IDE commits the merge itself.
+        await using var repo = await CreateInitializedAsync();
+        await repo.Flow.StartAsync(repo.WorkDir, BranchType.Hotfix, "0.0.1");
+        await repo.CommitFileAsync("README.md", "hotfix\n", "Hotfix edit");
+        await repo.GitAsync("switch", "develop");
+        await repo.CommitFileAsync("README.md", "develop\n", "Develop edit");
+
+        (await repo.Flow.FinishAsync(repo.WorkDir, new FinishOptions { BranchName = "hotfix/0.0.1" })).Status.ShouldBe(FlowStatus.Conflict);
+        await repo.WriteFileAsync("README.md", "resolved\n");
+        await repo.GitAsync("add", "README.md");
+        await repo.GitAsync("commit", "--no-edit");
+
+        var state = await repo.Flow.GetStateAsync(repo.WorkDir);
+        state!.IsMergeInProgress.ShouldBeFalse();
+        state.MergedFlowBranches.ShouldBe(["hotfix/0.0.1"]);
+
+        var finish = await repo.Flow.FinishAsync(repo.WorkDir, new FinishOptions { BranchName = "hotfix/0.0.1" });
+
+        finish.IsSuccess.ShouldBeTrue();
+        (await repo.LocalBranchesAsync()).ShouldBe(["develop", "master"], ignoreOrder: true);
+        (await repo.GitAsync("tag", "--list")).ShouldBe("0.0.1");
+    }
+
+    [Fact]
     public async Task Conflict_can_be_aborted_by_the_user()
     {
         await using var repo = await CreateInitializedAsync();
@@ -447,6 +496,122 @@ public class FlowIntegrationTests
 
         finish.TagName.ShouldBe("v1.0.0");
         (await repo.Flow.SuggestVersionAsync(repo.WorkDir, BranchType.Hotfix)).ShouldBe("1.0.1");
+    }
+
+    // ---------- Commit ----------
+
+    [Fact]
+    public async Task Commit_all_changes_with_generated_message()
+    {
+        await using var repo = await CreateInitializedAsync();
+        await repo.Flow.StartAsync(repo.WorkDir, BranchType.Feature, "ABC-12-login");
+        await repo.WriteFileAsync("README.md", "changed\nline 2\n");
+        Directory.CreateDirectory(Path.Combine(repo.WorkDir, "src"));
+        await repo.WriteFileAsync(Path.Combine("src", "Login é.cs"), "class Login {}\n");
+        var commits = new CommitService(repo.Runner);
+
+        var preview = await commits.GetPreviewAsync(repo.WorkDir);
+
+        preview!.Mode.ShouldBe(CommitMode.AllChanges);
+        preview.CanCommit.ShouldBeTrue();
+        preview.SuggestedMessage.ShouldBe(string.Join(Environment.NewLine,
+            "Met à jour 2 fichiers",
+            "",
+            "Ajoutés (1) :",
+            "- src/Login é.cs",
+            "Modifiés (1) :",
+            "- README.md (+2 -1)",
+            "",
+            "Réf. : ABC-12"));
+
+        var result = await commits.CommitAsync(repo.WorkDir, preview.SuggestedMessage);
+
+        result.IsSuccess.ShouldBeTrue();
+        (await repo.GitAsync("status", "--porcelain")).ShouldBeEmpty();
+        (await repo.GitAsync("log", "-1", "--format=%B")).ShouldBe(preview.SuggestedMessage.Replace(Environment.NewLine, "\n"));
+        (await repo.GitAsync("log", "-1", "--format=%s")).ShouldBe("Met à jour 2 fichiers");
+        (await repo.CurrentBranchAsync()).ShouldBe("feature/ABC-12-login");
+    }
+
+    [Fact]
+    public async Task Commit_respects_staging_and_keeps_hash_lines()
+    {
+        await using var repo = await CreateInitializedAsync();
+        await repo.Flow.StartAsync(repo.WorkDir, BranchType.Feature, "x");
+        await repo.WriteFileAsync("a.txt", "a\n");
+        await repo.WriteFileAsync("b.txt", "b\n");
+        await repo.GitAsync("add", "a.txt");
+        var commits = new CommitService(repo.Runner);
+
+        var preview = await commits.GetPreviewAsync(repo.WorkDir);
+        preview!.Mode.ShouldBe(CommitMode.StagedOnly);
+        preview.Changes.Select(c => c.Path).ShouldBe(["a.txt"]);
+
+        (await commits.CommitAsync(repo.WorkDir, "Ajoute a\n\n#42 lié")).IsSuccess.ShouldBeTrue();
+
+        (await repo.GitAsync("log", "-1", "--format=%B")).ShouldBe("Ajoute a\n\n#42 lié");
+        (await repo.GitAsync("show", "--name-only", "--format=", "HEAD")).ShouldBe("a.txt");
+        (await repo.GitAsync("status", "--porcelain")).ShouldBe("?? b.txt", "unstaged file left untouched");
+    }
+
+    [Fact]
+    public async Task Commit_on_master_is_refused_and_changes_are_kept()
+    {
+        await using var repo = await CreateInitializedAsync();
+        await repo.GitAsync("switch", "master");
+        await repo.WriteFileAsync("README.md", "on master\n");
+
+        var result = await new CommitService(repo.Runner).CommitAsync(repo.WorkDir, "msg");
+
+        result.Error.ShouldBe(FlowError.CommitOnMasterRefused);
+        (await repo.GitAsync("status", "--porcelain")).ShouldBe("M README.md");
+        (await repo.GitAsync("rev-list", "--count", "master")).ShouldBe("1");
+    }
+
+    [Fact]
+    public async Task Commit_during_finish_conflict_is_refused()
+    {
+        await using var repo = await CreateInitializedAsync();
+        await repo.Flow.StartAsync(repo.WorkDir, BranchType.Feature, "x");
+        await repo.CommitFileAsync("README.md", "a\n", "A");
+        await repo.GitAsync("switch", "develop");
+        await repo.CommitFileAsync("README.md", "b\n", "B");
+        (await repo.Flow.FinishAsync(repo.WorkDir, new FinishOptions { BranchName = "feature/x" })).Status.ShouldBe(FlowStatus.Conflict);
+        await repo.WriteFileAsync("README.md", "resolved\n");
+        await repo.GitAsync("add", "README.md");
+
+        var result = await new CommitService(repo.Runner).CommitAsync(repo.WorkDir, "msg");
+
+        result.Error.ShouldBe(FlowError.MergeInProgress);
+        (await repo.TryGitAsync("rev-parse", "--verify", "--quiet", "MERGE_HEAD")).Success.ShouldBeTrue("the Finish can still be resumed");
+    }
+
+    // ---------- Repository discovery ----------
+
+    [Fact]
+    public async Task Repository_root_is_found_from_a_file_or_subfolder()
+    {
+        await using var repo = await CreateInitializedAsync();
+        var sub = Directory.CreateDirectory(Path.Combine(repo.WorkDir, "src", "app")).FullName;
+        var file = Path.Combine(sub, "App.sln");
+        await File.WriteAllTextAsync(file, "");
+
+        (await repo.Flow.FindRepositoryRootAsync(file)).ShouldBe(Path.GetFullPath(repo.WorkDir));
+        (await repo.Flow.FindRepositoryRootAsync(sub)).ShouldBe(Path.GetFullPath(repo.WorkDir));
+        (await repo.Flow.FindRepositoryRootAsync(Path.Combine(repo.Root, "missing", "x.sln"))).ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Merge_targets_are_exposed_for_confirmation()
+    {
+        await using var repo = await CreateInitializedAsync();
+        await repo.Flow.StartAsync(repo.WorkDir, BranchType.Release, "1.0.0");
+        var config = GitFlowConfig.Default;
+
+        (await repo.Flow.GetMergeTargetsAsync(repo.WorkDir, config, new FlowBranch(BranchType.Hotfix, "0.9.1", "hotfix/0.9.1")))
+            .ShouldBe(["master", "release/1.0.0"]);
+        (await repo.Flow.GetMergeTargetsAsync(repo.WorkDir, config, new FlowBranch(BranchType.Feature, "x", "feature/x")))
+            .ShouldBe(["develop"]);
     }
 
     // ---------- Logging ----------

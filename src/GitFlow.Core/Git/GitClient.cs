@@ -30,6 +30,14 @@ public sealed class GitClient(IGitRunner runner, string repositoryPath)
         return result.Success && result.StandardOutput.Trim() == "true";
     }
 
+    /// <summary>Root folder of the work tree containing <see cref="RepositoryPath"/>, or null outside a repository.</summary>
+    public async Task<string?> GetTopLevelAsync(CancellationToken ct)
+    {
+        var result = await RunAsync(ct, "rev-parse", "--show-toplevel").ConfigureAwait(false);
+        var path = result.StandardOutput.Trim();
+        return result.Success && path.Length > 0 ? Path.GetFullPath(path) : null;
+    }
+
     public async Task<bool> HasCommitsAsync(CancellationToken ct) =>
         await ResolveCommitAsync("HEAD", ct).ConfigureAwait(false) is not null;
 
@@ -103,6 +111,101 @@ public sealed class GitClient(IGitRunner runner, string repositoryPath)
     {
         var result = await RunCheckedAsync(ct, "status", "--porcelain=v1", "--untracked-files=no").ConfigureAwait(false);
         return result.StandardOutput.Trim().Length > 0;
+    }
+
+    /// <summary>All changes of the work tree (untracked files included, ignored files excluded).</summary>
+    public async Task<IReadOnlyList<Model.FileChange>> GetChangesAsync(CancellationToken ct)
+    {
+        var result = await RunCheckedAsync(ct, "status", "--porcelain=v1", "-z", "--untracked-files=all").ConfigureAwait(false);
+        return ParseStatus(result.StandardOutput);
+    }
+
+    /// <summary>Line statistics per path: of the index against HEAD (<paramref name="staged"/>) or of the work tree against HEAD.</summary>
+    public async Task<IReadOnlyDictionary<string, Model.FileStat>> GetDiffStatsAsync(bool staged, CancellationToken ct)
+    {
+        if (!await HasCommitsAsync(ct).ConfigureAwait(false))
+        {
+            return new Dictionary<string, Model.FileStat>();
+        }
+
+        var result = staged
+            ? await RunCheckedAsync(ct, "diff", "--cached", "--numstat", "-z", "-M", "HEAD").ConfigureAwait(false)
+            : await RunCheckedAsync(ct, "diff", "--numstat", "-z", "-M", "HEAD").ConfigureAwait(false);
+        return ParseNumstat(result.StandardOutput);
+    }
+
+    /// <summary>Parses <c>git status --porcelain=v1 -z</c>.</summary>
+    internal static IReadOnlyList<Model.FileChange> ParseStatus(string output)
+    {
+        var changes = new List<Model.FileChange>();
+        var entries = output.Split('\0');
+        for (var i = 0; i < entries.Length; i++)
+        {
+            var entry = entries[i];
+            if (entry.Length < 4)
+            {
+                continue;
+            }
+
+            char x = entry[0], y = entry[1];
+            var path = entry[3..];
+            string? oldPath = null;
+            if (x is 'R' or 'C' || y is 'R' or 'C')
+            {
+                // Rename/copy: the next entry is the original path.
+                oldPath = i + 1 < entries.Length ? entries[++i] : null;
+            }
+
+            var kind = (x, y) switch
+            {
+                ('?', '?') => Model.ChangeKind.Added,
+                ('U', _) or (_, 'U') or ('A', 'A') or ('D', 'D') => Model.ChangeKind.Conflicted,
+                ('R', _) or (_, 'R') => Model.ChangeKind.Renamed,
+                ('A', _) or ('C', _) or (_, 'A') => Model.ChangeKind.Added,
+                ('D', _) or (_, 'D') => Model.ChangeKind.Deleted,
+                _ => Model.ChangeKind.Modified,
+            };
+            if (x == 'C')
+            {
+                oldPath = null; // a copy is a new file
+            }
+
+            var staged = x is not ' ' and not '?';
+            var unstaged = y is not ' ';
+            changes.Add(new Model.FileChange(kind, path, oldPath, staged, unstaged));
+        }
+
+        return changes;
+    }
+
+    /// <summary>Parses <c>git diff --numstat -z</c> (renames: "a\td\t\0old\0new\0").</summary>
+    internal static IReadOnlyDictionary<string, Model.FileStat> ParseNumstat(string output)
+    {
+        var stats = new Dictionary<string, Model.FileStat>(StringComparer.Ordinal);
+        var entries = output.Split('\0');
+        for (var i = 0; i < entries.Length; i++)
+        {
+            var parts = entries[i].Split('\t');
+            if (parts.Length < 3)
+            {
+                continue;
+            }
+
+            var stat = new Model.FileStat(ParseCount(parts[0]), ParseCount(parts[1]));
+            var path = parts[2];
+            if (path.Length == 0 && i + 2 < entries.Length)
+            {
+                i += 2; // rename: old path, then new path
+                path = entries[i];
+            }
+
+            stats[path] = stat;
+        }
+
+        return stats;
+
+        static int? ParseCount(string text) =>
+            int.TryParse(text, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var n) ? n : null;
     }
 
     public async Task<IReadOnlyList<string>> GetConflictedFilesAsync(CancellationToken ct)
