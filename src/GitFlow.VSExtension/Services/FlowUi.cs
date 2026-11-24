@@ -296,10 +296,14 @@ internal sealed class FlowUi(VisualStudioExtensibility extensibility, GitFlowSes
         return result;
     }, ct);
 
-    /// <summary>PR mode: once every PR is merged, updates the local targets and deletes the local branch.</summary>
+    /// <summary>
+    /// PR mode: once every PR is merged, updates the local targets and deletes the local branch
+    /// (with <c>fetch --prune</c> when the option is enabled in the settings).
+    /// </summary>
     public Task<FlowResult?> CompletePullRequestsAsync(string repository, string branchName, CancellationToken ct) => ExclusiveAsync(async () =>
     {
-        var result = await RunAsync(Strings.Format(Strings.ProgressComplete, branchName), c => session.PullRequests.CompleteAsync(repository, branchName, c), ct);
+        var prune = (await session.Settings.ReadFinishDefaultsAsync(repository, ConfigScope.Local, ct)).PruneOnComplete;
+        var result = await RunAsync(Strings.Format(Strings.ProgressComplete, branchName), c => session.PullRequests.CompleteAsync(repository, branchName, prune, c), ct);
         await ShowResultAsync(result, Strings.Format(Strings.CompleteDone, branchName), showSuccess: true, ct);
         return result;
     }, ct);

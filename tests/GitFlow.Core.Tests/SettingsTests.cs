@@ -58,6 +58,7 @@ public class SettingsTests
             "config --local gitflowvs.finish.push true",
             "config --local gitflowvs.finish.deleteremote false",
             "config --local gitflowvs.finish.mode local",
+            "config --local gitflowvs.pr.prune false",
         ]);
     }
 
@@ -71,7 +72,17 @@ public class SettingsTests
 
         result.IsSuccess.ShouldBeTrue();
         git.MutatingCalls.ShouldAllBe(c => c.StartsWith("config --global ", StringComparison.Ordinal));
-        git.MutatingCalls.Count.ShouldBe(9);
+        git.MutatingCalls.Count.ShouldBe(10);
+    }
+
+    [Fact]
+    public async Task Prune_on_complete_is_optional_and_off_by_default()
+    {
+        var off = WithVsKeys(FakeGitRunner.Initialized());
+        var on = WithVsKeys(FakeGitRunner.Initialized(), global: "gitflowvs.pr.prune\ntrue\0");
+
+        (await new GitFlowSettingsService(off).ReadFinishDefaultsAsync(Repo, ConfigScope.Local)).PruneOnComplete.ShouldBeFalse();
+        (await new GitFlowSettingsService(on).ReadFinishDefaultsAsync(Repo, ConfigScope.Local)).PruneOnComplete.ShouldBeTrue("global value applies to this repo");
     }
 
     [Fact]
