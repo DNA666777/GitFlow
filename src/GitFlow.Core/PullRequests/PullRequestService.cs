@@ -252,6 +252,7 @@ public sealed class PullRequestService
 
             await git.RunCheckedAsync(ct, "fetch", Remote).ConfigureAwait(false);
             var targets = prs.Select(p => p.Target).Distinct().ToArray();
+            var switchedForSync = false;
             foreach (var target in targets)
             {
                 var remoteRef = $"refs/remotes/{Remote}/{target}";
@@ -271,11 +272,15 @@ public sealed class PullRequestService
                 {
                     await git.RunCheckedAsync(ct, "switch", target).ConfigureAwait(false);
                     await git.RunCheckedAsync(ct, "merge", "--ff-only", remoteRef).ConfigureAwait(false);
+                    switchedForSync = true;
                 }
             }
 
+            // End on the last target (develop, or the release in progress), like the local Finish,
+            // when we were on the closed branch or moved around to update the targets.
             var finalBranch = targets.LastOrDefault() ?? config.DevelopBranch;
-            if (await git.GetCurrentBranchAsync(ct).ConfigureAwait(false) == branchName)
+            var current = await git.GetCurrentBranchAsync(ct).ConfigureAwait(false);
+            if (current != finalBranch && (current == branchName || switchedForSync))
             {
                 await git.RunCheckedAsync(ct, "switch", finalBranch).ConfigureAwait(false);
             }
