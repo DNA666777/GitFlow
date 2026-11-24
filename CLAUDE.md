@@ -116,7 +116,7 @@ Le Finish local de la phase 1 sert à valider la logique et aux repos non proté
 
 **Conception dès la phase 1** : le Finish doit passer par une abstraction `IFinishStrategy` (`LocalMergeStrategy` en phase 1,
 `PullRequestStrategy` en phase 2) pour que la phase 2 se branche sans réécrire `FlowService`.
-Plateforme Git derrière une interface `IPullRequestProvider` (plateforme cible : **à préciser**, voir fin de section).
+Plateforme Git derrière une interface `IPullRequestProvider` (plateformes cibles : **GitHub et Azure DevOps**, voir fin de section).
 
 Flow en mode PR :
 | Type    | Au Finish                                                        | Après merge de la PR vers master |
@@ -142,8 +142,14 @@ Flow en mode PR :
   si le repo contient un template PR de la plateforme, l'utiliser comme base.
 - Tests unitaires obligatoires sur la génération du message (cas : aucun commit, commits multiples, tickets, caractères spéciaux).
 
-Plateforme cible : **à préciser par l'utilisateur** (GitHub, Azure DevOps, GitLab, Bitbucket…). Avant de commencer la phase 2, demander laquelle
-et comment s'authentifier (CLI officielle déjà connectée sur le poste de préférence — `gh`, `az repos`, `glab` — plutôt que stocker un token dans l'extension).
+**Plateformes cibles (décision du 2026-11-24) : GitHub et Azure DevOps (Azure Repos)** — deux implémentations de `IPullRequestProvider`.
+- Détection d'après l'URL du remote `origin` : `github.com` → GitHub ; `dev.azure.com/{org}/{projet}/_git/{repo}` ou `{org}.visualstudio.com/…` → Azure DevOps.
+  Remote non reconnu → mode PR indisponible, le Finish local reste utilisable.
+- API REST de chaque plateforme (GitHub REST API ; Azure DevOps `…/_apis/git/repositories/{repo}/pullrequests`).
+- **Authentification : via le Git Credential Manager** (`git credential fill` / `git credential approve|reject`, appelés par `IGitRunner`),
+  c.-à-d. les identifiants que git utilise déjà pour push/fetch. **Pas de `gh` ni d'`az`**, aucun token stocké par l'extension
+  (l'extension reste dépendante de Git for Windows seulement). Ne jamais écrire un token dans l'Output Pane ni dans les logs.
+- Côté Azure DevOps, les « branch policies » jouent le rôle des branches protégées.
 
 ### Règles de sécurité (non négociables)
 1. **Refuser** Start/Finish si l'arbre de travail est sale (fichiers modifiés non commités) — proposer à l'utilisateur de commiter ou stasher, ne jamais stasher automatiquement en silence.
