@@ -1,0 +1,103 @@
+<DataTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:styles="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0">
+    <DataTemplate.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static styles:VsBrushes.WindowTextKey}}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="Header" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static styles:VsBrushes.WindowTextKey}}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,12,0,6" />
+        </Style>
+        <Style x:Key="Hint" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static styles:VsBrushes.GrayTextKey}}" />
+            <Setter Property="FontStyle" Value="Italic" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style x:Key="Field" TargetType="TextBox" BasedOn="{StaticResource {x:Static styles:VsResourceKeys.TextBoxStyleKey}}">
+            <Setter Property="Margin" Value="0,2" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+    </DataTemplate.Resources>
+
+    <StackPanel Margin="12" Width="460">
+
+        <!-- Scope -->
+        <StackPanel Visibility="{Binding ShowScope, Converter={StaticResource BoolToVisibility}}">
+            <TextBlock Text="{Binding Labels.Scope}" Style="{StaticResource Header}" Margin="0,0,0,6" />
+            <StackPanel Orientation="Horizontal">
+                <RadioButton GroupName="Scope" Content="{Binding Labels.ScopeLocal}" IsChecked="{Binding IsLocalScope}" Margin="0,0,16,0"
+                             Foreground="{DynamicResource {x:Static styles:VsBrushes.WindowTextKey}}" />
+                <RadioButton GroupName="Scope" Content="{Binding Labels.ScopeGlobal}" IsChecked="{Binding IsGlobalScope}"
+                             Foreground="{DynamicResource {x:Static styles:VsBrushes.WindowTextKey}}" />
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Permanent branches -->
+        <TextBlock Text="{Binding Labels.Branches}" Style="{StaticResource Header}" />
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="170" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" Text="{Binding Labels.Master}" />
+            <ComboBox Grid.Row="0" Grid.Column="1" IsEditable="True" ItemsSource="{Binding Branches}" Margin="0,2"
+                      Text="{Binding MasterBranch, UpdateSourceTrigger=PropertyChanged}"
+                      Style="{StaticResource {x:Static styles:VsResourceKeys.ComboBoxStyleKey}}" />
+            <TextBlock Grid.Row="1" Text="{Binding Labels.Develop}" />
+            <ComboBox Grid.Row="1" Grid.Column="1" IsEditable="True" ItemsSource="{Binding Branches}" Margin="0,2"
+                      Text="{Binding DevelopBranch, UpdateSourceTrigger=PropertyChanged}"
+                      Style="{StaticResource {x:Static styles:VsResourceKeys.ComboBoxStyleKey}}" />
+        </Grid>
+
+        <!-- Prefixes -->
+        <TextBlock Text="{Binding Labels.Prefixes}" Style="{StaticResource Header}" />
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="170" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" Text="{Binding Labels.Feature}" />
+            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding FeaturePrefix, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Field}" />
+            <TextBlock Grid.Row="1" Text="{Binding Labels.Release}" />
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding ReleasePrefix, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Field}" />
+            <TextBlock Grid.Row="2" Text="{Binding Labels.Hotfix}" />
+            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding HotfixPrefix, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Field}" />
+            <TextBlock Grid.Row="3" Text="{Binding Labels.TagPrefix}" />
+            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding VersionTagPrefix, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Field}" />
+            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Labels.TagPrefixHint}" Style="{StaticResource Hint}" />
+        </Grid>
+        <TextBlock Text="{Binding Labels.RenameNote}" Style="{StaticResource Hint}" Margin="0,6,0,0" />
+
+        <!-- Finish defaults -->
+        <TextBlock Text="{Binding Labels.FinishDefaults}" Style="{StaticResource Header}" />
+        <CheckBox Content="{Binding Labels.Push}" IsChecked="{Binding PushAfterFinish}" Margin="0,0,0,6"
+                  Style="{StaticResource {x:Static styles:VsResourceKeys.CheckBoxStyleKey}}" />
+        <CheckBox Content="{Binding Labels.DeleteRemote}" IsChecked="{Binding DeleteRemoteBranch}"
+                  Style="{StaticResource {x:Static styles:VsResourceKeys.CheckBoxStyleKey}}" />
+
+        <!-- Live validation -->
+        <Border Visibility="{Binding HasValidationErrors, Converter={StaticResource BoolToVisibility}}"
+                BorderThickness="1" Padding="6" Margin="0,12,0,0"
+                BorderBrush="{DynamicResource {x:Static styles:VsBrushes.ActiveBorderKey}}">
+            <TextBlock Text="{Binding ValidationText}" TextWrapping="Wrap" />
+        </Border>
+
+        <Button Content="{Binding Labels.Reset}" Command="{Binding ResetCommand}" HorizontalAlignment="Left" Margin="0,12,0,0" Padding="8,2"
+                Style="{StaticResource {x:Static styles:VsResourceKeys.ButtonStyleKey}}" />
+    </StackPanel>
+</DataTemplate>

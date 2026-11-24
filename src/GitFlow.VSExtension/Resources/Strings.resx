@@ -13,7 +13,6 @@
 Le détail est dans la fenêtre Sortie « GitFlow ».</value></data>
   <data name="WarningsHeader" xml:space="preserve"><value>Attention :</value></data>
   <data name="ConflictedFiles" xml:space="preserve"><value>Fichiers en conflit :</value></data>
-  <data name="NoTagPrefix" xml:space="preserve"><value>(aucun)</value></data>
 
   <data name="ProgressInit" xml:space="preserve"><value>GitFlow : initialisation</value></data>
   <data name="ProgressStart" xml:space="preserve"><value>GitFlow : création de {0}</value></data>
@@ -21,14 +20,6 @@ Le détail est dans la fenêtre Sortie « GitFlow ».</value></data>
   <data name="ProgressPublish" xml:space="preserve"><value>GitFlow : publication de {0}</value></data>
 
   <data name="InitAlreadyInitialized" xml:space="preserve"><value>GitFlow est déjà initialisé dans ce dépôt (production : {0}, développement : {1}).</value></data>
-  <data name="InitConfirm" xml:space="preserve"><value>Initialiser GitFlow dans ce dépôt ?
-
-Branche de production : {0}
-Branche de développement : {1}
-Préfixes : {2}  {3}  {4}
-Préfixe de tag : {5}
-
-La branche {1} sera créée depuis {0} si elle n'existe pas.</value></data>
   <data name="InitSuccess" xml:space="preserve"><value>GitFlow est initialisé. Branche de développement : {0}.</value></data>
 
   <data name="StartAskFeature" xml:space="preserve"><value>Nom de la feature (branche {0}&lt;nom&gt;, créée depuis {1}) :</value></data>
@@ -112,6 +103,26 @@ Si les conflits sont résolus et les fichiers ajoutés (git add), le finish va r
   <data name="ChangeDeleted" xml:space="preserve"><value>Supprimé</value></data>
   <data name="ChangeRenamed" xml:space="preserve"><value>Renommé</value></data>
   <data name="ChangeConflicted" xml:space="preserve"><value>En conflit</value></data>
+  <!-- Settings screen -->
+  <data name="ButtonSettings" xml:space="preserve"><value>Paramètres</value></data>
+  <data name="SettingsDialogTitle" xml:space="preserve"><value>Paramètres GitFlow</value></data>
+  <data name="InitDialogTitle" xml:space="preserve"><value>Initialiser GitFlow</value></data>
+  <data name="ProgressSettings" xml:space="preserve"><value>GitFlow : enregistrement des paramètres</value></data>
+  <data name="SettingsScope" xml:space="preserve"><value>Portée</value></data>
+  <data name="SettingsScopeLocal" xml:space="preserve"><value>Ce dépôt</value></data>
+  <data name="SettingsScopeGlobal" xml:space="preserve"><value>Tous mes dépôts (valeurs par défaut des nouveaux dépôts)</value></data>
+  <data name="SettingsBranches" xml:space="preserve"><value>Branches permanentes</value></data>
+  <data name="SettingsMaster" xml:space="preserve"><value>Production</value></data>
+  <data name="SettingsDevelop" xml:space="preserve"><value>Développement</value></data>
+  <data name="SettingsPrefixes" xml:space="preserve"><value>Préfixes</value></data>
+  <data name="SettingsTagPrefix" xml:space="preserve"><value>Préfixe de tag</value></data>
+  <data name="SettingsTagPrefixHint" xml:space="preserve"><value>Vide par défaut (tags 1.4.0), ou « v » (tags v1.4.0).</value></data>
+  <data name="SettingsRenameNote" xml:space="preserve"><value>Changer un préfixe ne renomme pas les branches existantes.</value></data>
+  <data name="SettingsFinishDefaults" xml:space="preserve"><value>Options par défaut du Finish</value></data>
+  <data name="SettingsReset" xml:space="preserve"><value>Réinitialiser aux valeurs par défaut</value></data>
+  <data name="SettingsConfirmWarnings" xml:space="preserve"><value>Enregistrer quand même ?</value></data>
+  <data name="SettingsSavedLocal" xml:space="preserve"><value>Paramètres GitFlow enregistrés pour ce dépôt.</value></data>
+  <data name="SettingsSavedGlobal" xml:space="preserve"><value>Paramètres GitFlow enregistrés pour tous vos dépôts. Ils servent de valeurs par défaut à l'initialisation des nouveaux dépôts.</value></data>
   <data name="StatusWorking" xml:space="preserve"><value>Opération en cours…</value></data>
   <data name="StatusSucceeded" xml:space="preserve"><value>Terminé.</value></data>
   <data name="StatusSucceededWithWarnings" xml:space="preserve"><value>Terminé, avec des avertissements.</value></data>

@@ -498,6 +498,60 @@ public class FlowIntegrationTests
         (await repo.Flow.SuggestVersionAsync(repo.WorkDir, BranchType.Hotfix)).ShouldBe("1.0.1");
     }
 
+    // ---------- Settings ----------
+
+    [Fact]
+    public async Task Settings_saved_locally_drive_the_flow()
+    {
+        await using var repo = await CreateInitializedAsync();
+        var settings = new GitFlowSettingsService(repo.Runner);
+        await repo.Flow.StartAsync(repo.WorkDir, BranchType.Feature, "old");
+        await repo.GitAsync("switch", "develop");
+
+        var proposed = new GitFlowSettings(GitFlowConfig.Default with { FeaturePrefix = "feat/", VersionTagPrefix = "v" }, new FinishDefaults(true, true));
+        var warnings = await settings.GetWarningsAsync(repo.WorkDir, GitFlowConfig.Default, proposed.Naming);
+        warnings.ShouldHaveSingleItem().Items.ShouldBe(["feature/old"]);
+
+        (await settings.SaveAsync(repo.WorkDir, proposed, ConfigScope.Local)).IsSuccess.ShouldBeTrue();
+
+        (await settings.LoadAsync(repo.WorkDir, ConfigScope.Local)).ShouldBe(proposed);
+        (await repo.Flow.StartAsync(repo.WorkDir, BranchType.Feature, "new")).BranchName.ShouldBe("feat/new");
+        (await repo.LocalBranchesAsync()).ShouldContain("feature/old", "renaming a prefix never renames branches");
+        var state = await repo.Flow.GetStateAsync(repo.WorkDir);
+        state!.FlowBranches.Select(b => b.FullName).ShouldBe(["feat/new"]);
+    }
+
+    [Fact]
+    public async Task Global_settings_are_the_defaults_of_new_repositories()
+    {
+        await using var repo = await TestRepository.CreateAsync();
+        var settings = new GitFlowSettingsService(repo.Runner);
+        var mine = new GitFlowSettings(new GitFlowConfig("master", "dev", "feat/", "rel/", "fix/", "v"), new FinishDefaults(true, false));
+
+        (await settings.SaveAsync(repo.WorkDir, mine, ConfigScope.Global)).IsSuccess.ShouldBeTrue();
+
+        (await repo.Flow.ConfigStore.ReadAsync(repo.WorkDir, ConfigScope.Local)).ShouldBeNull("the repository itself is untouched");
+        (await settings.LoadAsync(repo.WorkDir, ConfigScope.Local)).ShouldBe(mine);
+        (await settings.LoadAsync(repo.WorkDir, ConfigScope.Global)).ShouldBe(mine);
+        (await repo.Flow.InitAsync(repo.WorkDir, mine.Naming)).IsSuccess.ShouldBeTrue();
+        (await repo.LocalBranchesAsync()).ShouldContain("dev");
+    }
+
+    [Fact]
+    public async Task Settings_validation_uses_git_rules_and_writes_nothing()
+    {
+        await using var repo = await CreateInitializedAsync();
+        var settings = new GitFlowSettingsService(repo.Runner);
+
+        var result = await settings.SaveAsync(
+            repo.WorkDir,
+            new GitFlowSettings(GitFlowConfig.Default with { HotfixPrefix = "hot fix/" }, FinishDefaults.None),
+            ConfigScope.Local);
+
+        result.Error.ShouldBe(FlowError.InvalidConfig);
+        (await repo.Flow.ConfigStore.ReadAsync(repo.WorkDir, ConfigScope.Local)).ShouldBe(GitFlowConfig.Default);
+    }
+
     // ---------- Commit ----------
 
     [Fact]

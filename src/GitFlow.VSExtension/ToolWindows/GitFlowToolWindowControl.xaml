@@ -53,9 +53,12 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" Text="{Binding RepositoryName}" FontWeight="Bold" FontSize="14" TextTrimming="CharacterEllipsis" />
-                <Button Grid.Column="1" Content="{Binding Labels.Refresh}" Command="{Binding RefreshCommand}" Style="{StaticResource FlowButton}" />
+                <Button Grid.Column="1" Content="{Binding Labels.Settings}" Command="{Binding SettingsCommand}" Style="{StaticResource FlowButton}"
+                        Visibility="{Binding HasRepository, Converter={StaticResource BoolToVisibility}}" />
+                <Button Grid.Column="2" Content="{Binding Labels.Refresh}" Command="{Binding RefreshCommand}" Style="{StaticResource FlowButton}" />
             </Grid>
 
             <!-- No repository -->

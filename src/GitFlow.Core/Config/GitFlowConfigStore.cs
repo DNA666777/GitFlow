@@ -108,7 +108,7 @@ public sealed class GitFlowConfigStore(IGitRunner runner)
         return values;
     }
 
-    private static GitFlowConfig Merge(GitFlowConfig baseConfig, IReadOnlyDictionary<string, string> raw)
+    internal static GitFlowConfig Merge(GitFlowConfig baseConfig, IReadOnlyDictionary<string, string> raw)
     {
         string Get(string key, string fallback) => raw.TryGetValue(key, out var value) ? value : fallback;
 

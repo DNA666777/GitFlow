@@ -19,6 +19,10 @@ internal sealed class FlowUi(VisualStudioExtensibility extensibility, GitFlowSes
 {
     private FlowService Flow => session.Flow;
 
+    /// <summary>
+    /// Init opens the settings screen pre-filled (existing git-flow keys, else the user's global defaults,
+    /// else the built-in defaults), then creates develop if needed and writes the configuration.
+    /// </summary>
     public Task<FlowResult?> InitAsync(string repository, CancellationToken ct) => ExclusiveAsync(async () =>
     {
         var state = await Flow.GetStateAsync(repository, ct);
@@ -28,25 +32,76 @@ internal sealed class FlowUi(VisualStudioExtensibility extensibility, GitFlowSes
             return null;
         }
 
-        // Pre-filled values: existing git-flow keys, else global defaults, else built-in defaults.
-        var config = await Flow.ConfigStore.GetInitDefaultsAsync(repository, ct);
-        var confirm = Strings.Format(
-            Strings.InitConfirm,
-            config.MasterBranch,
-            config.DevelopBranch,
-            config.FeaturePrefix,
-            config.ReleasePrefix,
-            config.HotfixPrefix,
-            config.VersionTagPrefix.Length == 0 ? Strings.NoTagPrefix : config.VersionTagPrefix);
-        if (!await ConfirmAsync(confirm, ct))
-        {
-            return null;
-        }
-
-        var result = await RunAsync(Strings.ProgressInit, c => Flow.InitAsync(repository, config, c), ct);
-        await ShowResultAsync(result, Strings.Format(Strings.InitSuccess, config.DevelopBranch), showSuccess: true, ct);
-        return result;
+        return await EditSettingsAsync(repository, initMode: true, ct);
     }, ct);
+
+    /// <summary>"Paramètres GitFlow". On a repository that is not initialised yet, this is the Init screen.</summary>
+    public Task<FlowResult?> SettingsAsync(string repository, CancellationToken ct) => ExclusiveAsync(async () =>
+    {
+        var initialized = await Flow.ConfigStore.ReadAsync(repository, ConfigScope.Local, ct) is not null;
+        return await EditSettingsAsync(repository, initMode: !initialized, ct);
+    }, ct);
+
+    private async Task<FlowResult?> EditSettingsAsync(string repository, bool initMode, CancellationToken ct)
+    {
+        var settingsService = session.Settings;
+        var current = await settingsService.LoadAsync(repository, ConfigScope.Local, ct);
+        var dialog = new SettingsDialogViewModel(
+            current,
+            await settingsService.GetLocalBranchesAsync(repository, ct),
+            initMode,
+            scope => settingsService.LoadAsync(repository, scope, CancellationToken.None));
+        var title = initMode ? Strings.InitDialogTitle : Strings.SettingsDialogTitle;
+
+        // The dialog closes on OK: when something is wrong, explain and show it again with the same values.
+        while (true)
+        {
+            using (var control = new SettingsDialogControl(dialog))
+            {
+                if (await extensibility.Shell().ShowDialogAsync(control, title, DialogOption.OKCancel, ct) != DialogResult.OK)
+                {
+                    return null;
+                }
+            }
+
+            var settings = dialog.ToSettings();
+            FlowResult result;
+            if (initMode)
+            {
+                result = await RunAsync(Strings.ProgressInit, c => Flow.InitAsync(repository, settings.Naming, c), ct);
+                if (result.IsSuccess)
+                {
+                    await settingsService.WriteFinishDefaultsAsync(repository, settings.Finish, ConfigScope.Local, ct);
+                    await InfoAsync(Strings.Format(Strings.InitSuccess, settings.Naming.DevelopBranch), ct);
+                    return result;
+                }
+            }
+            else
+            {
+                if (dialog.Scope == ConfigScope.Local)
+                {
+                    var warnings = await settingsService.GetWarningsAsync(repository, current.Naming, settings.Naming, ct);
+                    if (warnings.Count > 0)
+                    {
+                        var text = string.Join(Environment.NewLine + Environment.NewLine, warnings.Select(FlowMessages.Describe));
+                        if (!await ConfirmAsync(text + Environment.NewLine + Environment.NewLine + Strings.SettingsConfirmWarnings, ct))
+                        {
+                            continue;
+                        }
+                    }
+                }
+
+                result = await RunAsync(Strings.ProgressSettings, c => settingsService.SaveAsync(repository, settings, dialog.Scope, c), ct);
+                if (result.IsSuccess)
+                {
+                    await InfoAsync(dialog.Scope == ConfigScope.Global ? Strings.SettingsSavedGlobal : Strings.SettingsSavedLocal, ct);
+                    return result;
+                }
+            }
+
+            await ShowResultAsync(result, string.Empty, showSuccess: false, ct);
+        }
+    }
 
     /// <summary>Start a branch. When <paramref name="name"/> is null the user is asked (version pre-filled).</summary>
     public Task<FlowResult?> StartAsync(string repository, BranchType type, string? name, bool showSuccess, CancellationToken ct) => ExclusiveAsync(async () =>
@@ -137,12 +192,17 @@ internal sealed class FlowUi(VisualStudioExtensibility extensibility, GitFlowSes
             summary += Environment.NewLine + Environment.NewLine + Strings.FinishAlreadyMerged;
         }
 
+        var defaults = await session.Settings.ReadFinishDefaultsAsync(repository, ConfigScope.Local, ct);
         var dialog = new FinishDialogViewModel(
             summary,
             showTagMessage: branch.Type != BranchType.Feature && !resume && !alreadyMerged,
             tagLabel: Strings.Format(Strings.FinishAskTagMessage, config.GetTagName(branch.Name)),
             tagMessage: FlowService.GetDefaultTagMessage(branch.Type, branch.Name),
-            hasRemote: state.HasRemote);
+            hasRemote: state.HasRemote)
+        {
+            PushAfterFinish = state.HasRemote && defaults.PushAfterFinish,
+            DeleteRemoteBranch = state.HasRemote && defaults.DeleteRemoteBranch,
+        };
 
         using (var control = new FinishDialogControl(dialog))
         {
