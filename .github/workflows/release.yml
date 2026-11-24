@@ -114,14 +114,17 @@ jobs:
           VS_MARKETPLACE_PAT: ${{ secrets.VS_MARKETPLACE_PAT }}
           FILE: ${{ steps.package.outputs.file }}
         run: |
-          # VsixPublisher.exe : celui du VS installé sur la machine, sinon le paquet NuGet Microsoft.VSSDK.BuildTools.
-          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-          $publisher = & $vswhere -latest -products * -find "VSSDK\VisualStudioIntegration\Tools\Bin\VsixPublisher.exe" | Select-Object -First 1
+          # VsixPublisher.exe du paquet NuGet Microsoft.VSSDK.BuildTools (autonome, avec ses dépendances).
+          # Celui livré dans Visual Studio 2026 échoue hors de VS (VsixPub0031 : Microsoft.Identity.Client en mauvaise version) :
+          # il ne sert qu'en dernier recours.
+          nuget install Microsoft.VSSDK.BuildTools -OutputDirectory "$env:RUNNER_TEMP\vssdk" -ExcludeVersion -NonInteractive | Out-Null
+          $publisher = Get-ChildItem "$env:RUNNER_TEMP\vssdk" -Recurse -Filter VsixPublisher.exe | Select-Object -First 1 -ExpandProperty FullName
           if (-not $publisher) {
-            nuget install Microsoft.VSSDK.BuildTools -OutputDirectory "$env:RUNNER_TEMP\vssdk" -ExcludeVersion -NonInteractive | Out-Null
-            $publisher = Get-ChildItem "$env:RUNNER_TEMP\vssdk" -Recurse -Filter VsixPublisher.exe | Select-Object -First 1 -ExpandProperty FullName
+            $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+            $publisher = & $vswhere -latest -products * -find "VSSDK\VisualStudioIntegration\Tools\Bin\VsixPublisher.exe" | Select-Object -First 1
           }
           if (-not $publisher) { throw "VsixPublisher.exe introuvable" }
+          & $publisher 2>&1 | Select-Object -First 1   # version de l'outil, pour le diagnostic
           Write-Host "VsixPublisher : $publisher"
           & $publisher publish -payload $env:FILE -publishManifest marketplace/publishManifest.json -personalAccessToken $env:VS_MARKETPLACE_PAT -ignoreWarnings "VSIXValidatorWarning01,VSIXValidatorWarning02"
           if ($LASTEXITCODE -ne 0) { throw "Échec de la publication sur le Visual Studio Marketplace" }
