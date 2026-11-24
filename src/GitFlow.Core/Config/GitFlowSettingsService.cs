@@ -51,7 +51,8 @@ public sealed class GitFlowSettingsService(IGitRunner runner)
 
         return new FinishDefaults(
             ParseBool(values, GitFlowVsConfigKeys.FinishPush),
-            ParseBool(values, GitFlowVsConfigKeys.FinishDeleteRemote));
+            ParseBool(values, GitFlowVsConfigKeys.FinishDeleteRemote),
+            values.TryGetValue(GitFlowVsConfigKeys.FinishMode, out var mode) && mode.Trim().Equals("pullrequest", StringComparison.OrdinalIgnoreCase));
     }
 
     public async Task WriteFinishDefaultsAsync(string repositoryPath, FinishDefaults defaults, ConfigScope scope, CancellationToken ct = default)
@@ -60,6 +61,7 @@ public sealed class GitFlowSettingsService(IGitRunner runner)
         var flag = scope == ConfigScope.Global ? "--global" : "--local";
         await git.RunCheckedAsync(ct, "config", flag, GitFlowVsConfigKeys.FinishPush, defaults.PushAfterFinish ? "true" : "false").ConfigureAwait(false);
         await git.RunCheckedAsync(ct, "config", flag, GitFlowVsConfigKeys.FinishDeleteRemote, defaults.DeleteRemoteBranch ? "true" : "false").ConfigureAwait(false);
+        await git.RunCheckedAsync(ct, "config", flag, GitFlowVsConfigKeys.FinishMode, defaults.UsePullRequest ? "pullrequest" : "local").ConfigureAwait(false);
     }
 
     /// <summary>

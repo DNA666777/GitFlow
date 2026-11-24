@@ -83,9 +83,16 @@ internal sealed class FakeGitRunner : IGitRunner
         return fake;
     }
 
-    public Task<GitResult> RunAsync(string workingDirectory, IReadOnlyList<string> arguments, CancellationToken cancellationToken)
+    /// <summary>Standard input sent with each call (null when none).</summary>
+    public List<string?> Inputs { get; } = [];
+
+    public Task<GitResult> RunAsync(string workingDirectory, IReadOnlyList<string> arguments, CancellationToken cancellationToken) =>
+        RunAsync(workingDirectory, arguments, null, cancellationToken);
+
+    public Task<GitResult> RunAsync(string workingDirectory, IReadOnlyList<string> arguments, string? standardInput, CancellationToken cancellationToken)
     {
         Calls.Add(arguments.ToArray());
+        Inputs.Add(standardInput);
         for (var i = _rules.Count - 1; i >= 0; i--)
         {
             if (_rules[i].Match(arguments))

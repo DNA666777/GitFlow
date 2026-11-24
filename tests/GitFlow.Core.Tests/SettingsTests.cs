@@ -57,6 +57,7 @@ public class SettingsTests
             "config --local gitflow.prefix.versiontag v",
             "config --local gitflowvs.finish.push true",
             "config --local gitflowvs.finish.deleteremote false",
+            "config --local gitflowvs.finish.mode local",
         ]);
     }
 
@@ -70,7 +71,17 @@ public class SettingsTests
 
         result.IsSuccess.ShouldBeTrue();
         git.MutatingCalls.ShouldAllBe(c => c.StartsWith("config --global ", StringComparison.Ordinal));
-        git.MutatingCalls.Count.ShouldBe(8);
+        git.MutatingCalls.Count.ShouldBe(9);
+    }
+
+    [Fact]
+    public async Task Pull_request_mode_is_optional_and_off_by_default()
+    {
+        var off = WithVsKeys(FakeGitRunner.Initialized());
+        var on = WithVsKeys(FakeGitRunner.Initialized(), local: "gitflowvs.finish.mode\npullrequest\0");
+
+        (await new GitFlowSettingsService(off).ReadFinishDefaultsAsync(Repo, ConfigScope.Local)).UsePullRequest.ShouldBeFalse();
+        (await new GitFlowSettingsService(on).ReadFinishDefaultsAsync(Repo, ConfigScope.Local)).UsePullRequest.ShouldBeTrue();
     }
 
     [Fact]

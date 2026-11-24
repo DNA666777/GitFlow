@@ -36,6 +36,12 @@ public enum FlowError
     EmptyCommitMessage,
     CommitOnMasterRefused,
     DetachedHead,
+    PullRequestNotSupported,
+    NoCredentials,
+    PullRequestApiFailed,
+    PullRequestNotMerged,
+    MergeCommitNotFound,
+    BranchNotMergedOnRemote,
 }
 
 /// <summary>Non blocking problem after an otherwise successful operation (key "Warning_{name}").</summary>
@@ -74,6 +80,9 @@ public sealed record FlowResult
     public IReadOnlyList<ConfigValidationError> ConfigErrors { get; init; } = [];
 
     public IReadOnlyList<FlowWarning> Warnings { get; init; } = [];
+
+    /// <summary>Pull requests created or reused (Pull Request mode).</summary>
+    public IReadOnlyList<PullRequests.PullRequestInfo> PullRequests { get; init; } = [];
 
     public bool IsSuccess => Status == FlowStatus.Success;
 
