@@ -233,6 +233,16 @@ dotnet test tests/GitFlow.Core.IntegrationTests
 # Logs de l'extension (exceptions) : %TEMP%\servicehub\logs\*GitFlow.VSExtension*.log
 ```
 
+SDK .NET figé par `global.json` (10.0.x, `rollForward: latestFeature`) ; les projets ciblent toujours net8.0.
+
+**Publication (GitHub Actions)** :
+- `.github/workflows/ci.yml` : build Release + tests sur push `develop`/`master` et sur chaque PR.
+- `.github/workflows/release.yml` : sur un tag de version (`1.2.3` ou `v1.2.3`), build Release avec `-p:Version=<tag>`
+  (la `<Version>` du csproj ne sert qu'aux installations locales), tests, vérification de la version du .vsix,
+  puis GitHub Release avec `GitFlow.VSExtension-<version>.vsix`. Relance manuelle possible (*Run workflow* + tag).
+- Un workflow ne se déclenche que sur les commits qui le contiennent : il n'agit qu'à partir de la première release
+  qui inclut `.github/workflows/`.
+- Prochaine étape prévue (non faite) : préparation du paquet (publisher, `Preview=false`, icône, licence) puis Marketplace.
 Note : `dotnet sln add` du SDK 11 échoue sur cette solution (« Solution folder 'src' already contains… ») —
 ajouter les projets en éditant `GitFlowVS.sln` à la main.
 
