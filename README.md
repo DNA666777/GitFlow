@@ -2,7 +2,11 @@
 
 Extension Visual Studio pour appliquer le **Gitflow standard** sans quitter l'IDE. Elle démarre et termine les branches `feature/`, `release/` et `hotfix/` en un ou deux clics, en respectant strictement le [Gitflow Workflow d'Atlassian](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
 
-> 📖 **Tutoriel complet** : [Accueil](docs/README.md) · [Guide](docs/guide.md) · [Mode Pull Request](docs/pull-requests.md) · [Référence et dépannage](docs/reference.md)
+> 🌐 **Site du tutoriel** : https://dna666777.github.io/GitFlow/
+>
+> 📖 **Tutoriel en Markdown** : [Accueil](docs/README.md) · [Guide](docs/guide.md) · [Mode Pull Request](docs/pull-requests.md) · [Référence et dépannage](docs/reference.md)
+>
+> ⬇️ **Télécharger l'extension** : [dernière release](https://github.com/DNA666777/GitFlow/releases/latest) (fichier `.vsix`)
 
 ## Fonctionnalités
 
@@ -120,6 +124,8 @@ La publication est automatique (GitHub Actions) et suit le flow :
 
 Pour (re)publier un tag existant : onglet *Actions* > *Release* > *Run workflow*, puis indiquer le tag.
 
+**Visual Studio Marketplace** : si le secret `VS_MARKETPLACE_PAT` est configuré dans le dépôt, la release est aussi publiée sur le Marketplace (fiche décrite par [`marketplace/publishManifest.json`](marketplace/publishManifest.json) et [`marketplace/overview.md`](marketplace/overview.md)). Sans ce secret, l'étape est simplement sautée.
+
 Le workflow [`ci.yml`](.github/workflows/ci.yml) compile et teste chaque push sur `develop` ou `master` et chaque pull request. Le `.vsix` de chaque build reste disponible 7 jours en artefact.
 
 ## Licence
@@ -131,4 +137,5 @@ Le workflow [`ci.yml`](.github/workflows/ci.yml) compile et teste chaque push su
 Le tutoriel est dans [`docs/`](docs/README.md), en deux formats au contenu identique :
 
 - **Markdown**, lisible directement sur GitHub : [accueil](docs/README.md), [guide](docs/guide.md), [mode Pull Request](docs/pull-requests.md), [référence](docs/reference.md).
-- **Petit site web statique**, sans build ni dépendance : ouvrez `docs/index.html` dans un navigateur, ou publiez-le avec GitHub Pages (*Settings > Pages > Deploy from a branch*, dossier `/docs`).
+- **Petit site web statique**, sans build ni dépendance, publié sur **https://dna666777.github.io/GitFlow/** par GitHub Pages
+  (branche `master`, dossier `/docs` : le site est mis à jour à chaque release). En local, ouvrez `docs/index.html` dans un navigateur.
