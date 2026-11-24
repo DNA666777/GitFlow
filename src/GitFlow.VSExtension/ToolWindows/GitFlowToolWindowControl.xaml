@@ -1,0 +1,191 @@
+<DataTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:styles="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0">
+    <DataTemplate.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static styles:VsBrushes.ToolWindowTextKey}}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="SectionHeader" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static styles:VsBrushes.ToolWindowTextKey}}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,12,0,4" />
+        </Style>
+        <Style x:Key="Muted" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static styles:VsBrushes.GrayTextKey}}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="FlowButton" TargetType="Button" BasedOn="{StaticResource {x:Static styles:VsResourceKeys.ButtonStyleKey}}">
+            <Setter Property="Padding" Value="8,2" />
+            <Setter Property="Margin" Value="4,0,0,0" />
+            <Setter Property="MinWidth" Value="0" />
+        </Style>
+
+        <!-- Implicit TextBlock styles do not cross template boundaries: colours are set explicitly in item templates. -->
+        <DataTemplate x:Key="BranchTemplate">
+            <Grid Margin="0,3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Name}" ToolTip="{Binding FullName}" TextTrimming="CharacterEllipsis"
+                               Foreground="{DynamicResource {x:Static styles:VsBrushes.ToolWindowTextKey}}" />
+                    <TextBlock Text="{Binding Badge}" FontStyle="Italic" FontSize="11" TextTrimming="CharacterEllipsis"
+                               Foreground="{DynamicResource {x:Static styles:VsBrushes.GrayTextKey}}" />
+                </StackPanel>
+                <Button Grid.Column="1" Content="{Binding PublishLabel}" Command="{Binding PublishCommand}"
+                        Style="{StaticResource FlowButton}" VerticalAlignment="Center" />
+                <Button Grid.Column="2" Content="{Binding FinishLabel}" Command="{Binding FinishCommand}"
+                        Style="{StaticResource FlowButton}" VerticalAlignment="Center" />
+            </Grid>
+        </DataTemplate>
+    </DataTemplate.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                  Background="{DynamicResource {x:Static styles:VsBrushes.ToolWindowBackgroundKey}}">
+        <StackPanel Margin="10" IsEnabled="{Binding IsIdle}">
+
+            <!-- Header: repository + refresh -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{Binding RepositoryName}" FontWeight="Bold" FontSize="14" TextTrimming="CharacterEllipsis" />
+                <Button Grid.Column="1" Content="{Binding Labels.Refresh}" Command="{Binding RefreshCommand}" Style="{StaticResource FlowButton}" />
+            </Grid>
+
+            <!-- No repository -->
+            <TextBlock Text="{Binding Labels.NoRepository}" TextWrapping="Wrap" Margin="0,8,0,0"
+                       Visibility="{Binding ShowNoRepository, Converter={StaticResource BoolToVisibility}}" />
+
+            <!-- Not initialised -->
+            <StackPanel Visibility="{Binding ShowInitPanel, Converter={StaticResource BoolToVisibility}}" Margin="0,8,0,0">
+                <TextBlock Text="{Binding Labels.NotInitialized}" TextWrapping="Wrap" Margin="0,0,0,8" />
+                <Button Content="{Binding Labels.Init}" Command="{Binding InitCommand}" HorizontalAlignment="Left"
+                        Style="{StaticResource FlowButton}" Margin="0" />
+            </StackPanel>
+
+            <!-- Initialised -->
+            <StackPanel Visibility="{Binding ShowFlowPanel, Converter={StaticResource BoolToVisibility}}">
+
+                <Grid Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Labels.Branch}" Style="{StaticResource Muted}" Margin="0,0,12,2" />
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CurrentBranch}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding Labels.Type}" Style="{StaticResource Muted}" Margin="0,0,12,2" />
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CurrentBranchType}" />
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding Labels.State}" Style="{StaticResource Muted}" Margin="0,0,12,2" />
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding WorkingTreeState}" />
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="{Binding Labels.Sync}" Style="{StaticResource Muted}" Margin="0,0,12,2" />
+                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SyncState}" />
+                </Grid>
+
+                <!-- Release reminder (a reminder, not a block) -->
+                <Border Visibility="{Binding ShowReleaseReminder, Converter={StaticResource BoolToVisibility}}"
+                        BorderThickness="1" Padding="6" Margin="0,10,0,0"
+                        BorderBrush="{DynamicResource {x:Static styles:VsBrushes.ActiveBorderKey}}">
+                    <TextBlock Text="{Binding Labels.ReleaseReminder}" TextWrapping="Wrap" />
+                </Border>
+
+                <!-- Finish stopped on a conflict -->
+                <Border Visibility="{Binding HasPendingFinish, Converter={StaticResource BoolToVisibility}}"
+                        BorderThickness="1" Padding="6" Margin="0,10,0,0"
+                        BorderBrush="{DynamicResource {x:Static styles:VsBrushes.ActiveBorderKey}}">
+                    <StackPanel>
+                        <TextBlock Text="{Binding PendingFinishText}" TextWrapping="Wrap" Margin="0,0,0,6" />
+                        <Button Content="{Binding Labels.Resume}" Command="{Binding ResumeFinishCommand}" HorizontalAlignment="Left"
+                                Style="{StaticResource FlowButton}" Margin="0" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Commit -->
+                <TextBlock Text="{Binding Labels.CommitSection}" Style="{StaticResource SectionHeader}" />
+                <StackPanel>
+                    <TextBlock Text="{Binding ChangesHeader}" Style="{StaticResource Muted}" />
+                    <TextBlock Text="{Binding Labels.NoChanges}" Style="{StaticResource Muted}" FontStyle="Italic" Margin="0,2,0,4"
+                               Visibility="{Binding HasNoChanges, Converter={StaticResource BoolToVisibility}}" />
+                    <ScrollViewer MaxHeight="140" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,2,0,4"
+                                  Visibility="{Binding HasChanges, Converter={StaticResource BoolToVisibility}}">
+                        <ItemsControl ItemsSource="{Binding Changes}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ToolTip="{Binding KindLabel}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="18" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Status}" FontFamily="Consolas" FontWeight="Bold"
+                                                   Foreground="{DynamicResource {x:Static styles:VsBrushes.ToolWindowTextKey}}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Path}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Path}"
+                                                   Foreground="{DynamicResource {x:Static styles:VsBrushes.ToolWindowTextKey}}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                    <TextBlock Text="{Binding CommitModeText}" Style="{StaticResource Muted}" FontStyle="Italic" TextWrapping="Wrap" Margin="0,0,0,4"
+                               Visibility="{Binding HasChanges, Converter={StaticResource BoolToVisibility}}" />
+                    <TextBox Text="{Binding CommitMessage, UpdateSourceTrigger=PropertyChanged}"
+                             AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90" MaxHeight="220"
+                             VerticalScrollBarVisibility="Auto" FontFamily="Consolas"
+                             Style="{StaticResource {x:Static styles:VsResourceKeys.TextBoxStyleKey}}" />
+                    <Border Visibility="{Binding IsCommitBlocked, Converter={StaticResource BoolToVisibility}}"
+                            BorderThickness="1" Padding="6" Margin="0,6,0,0"
+                            BorderBrush="{DynamicResource {x:Static styles:VsBrushes.ActiveBorderKey}}">
+                        <TextBlock Text="{Binding CommitBlockedText}" TextWrapping="Wrap" />
+                    </Border>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,6,0,0">
+                        <Button Content="{Binding Labels.Regenerate}" Command="{Binding RegenerateMessageCommand}" Style="{StaticResource FlowButton}" />
+                        <Button Content="{Binding Labels.Commit}" Command="{Binding CommitCommand}" IsEnabled="{Binding CanCommit}" Style="{StaticResource FlowButton}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Start -->
+                <TextBlock Text="{Binding Labels.StartSection}" Style="{StaticResource SectionHeader}" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ComboBox Grid.Column="0" ItemsSource="{Binding StartTypes}" SelectedIndex="{Binding SelectedStartTypeIndex}" MinWidth="80"
+                              Style="{StaticResource {x:Static styles:VsResourceKeys.ComboBoxStyleKey}}" />
+                    <TextBlock Grid.Column="1" Text="{Binding StartPrefix}" Style="{StaticResource Muted}" Margin="8,0,2,0" />
+                    <TextBox Grid.Column="2" Text="{Binding NewBranchName, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center"
+                             Style="{StaticResource {x:Static styles:VsResourceKeys.TextBoxStyleKey}}" />
+                    <Button Grid.Column="3" Content="{Binding Labels.Start}" Command="{Binding StartCommand}" IsDefault="True"
+                            Style="{StaticResource FlowButton}" />
+                </Grid>
+
+                <!-- Branches in progress -->
+                <TextBlock Text="{Binding Labels.BranchesSection}" Style="{StaticResource SectionHeader}" />
+                <TextBlock Text="{Binding Labels.NoBranches}" Style="{StaticResource Muted}"
+                           Visibility="{Binding HasNoBranches, Converter={StaticResource BoolToVisibility}}" />
+
+                <TextBlock Text="{Binding Labels.Features}" Style="{StaticResource Muted}" Margin="0,4,0,0" />
+                <ItemsControl ItemsSource="{Binding Features}" ItemTemplate="{StaticResource BranchTemplate}" Margin="8,0,0,0" />
+                <TextBlock Text="{Binding Labels.Releases}" Style="{StaticResource Muted}" Margin="0,4,0,0" />
+                <ItemsControl ItemsSource="{Binding Releases}" ItemTemplate="{StaticResource BranchTemplate}" Margin="8,0,0,0" />
+                <TextBlock Text="{Binding Labels.Hotfixes}" Style="{StaticResource Muted}" Margin="0,4,0,0" />
+                <ItemsControl ItemsSource="{Binding Hotfixes}" ItemTemplate="{StaticResource BranchTemplate}" Margin="8,0,0,0" />
+            </StackPanel>
+
+            <!-- Status line -->
+            <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap" Margin="0,12,0,0" Style="{StaticResource Muted}" />
+        </StackPanel>
+    </ScrollViewer>
+</DataTemplate>

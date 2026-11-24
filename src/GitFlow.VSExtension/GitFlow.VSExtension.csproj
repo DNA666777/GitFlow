@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>GitFlow.VSExtension</RootNamespace>
+    <NeutralLanguage>fr</NeutralLanguage>
+    <!-- Extension version (vsixmanifest): bump it for each .vsix installed by hand, otherwise the installer refuses the update. -->
+    <Version>1.0.7</Version>
+    <!-- The Output window API is still flagged "preview" in SDK 17.14; it is only used in Services/GitFlowOutput.cs. -->
+    <NoWarn>$(NoWarn);VSEXTPREVIEW_OUTPUTWINDOW</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- SDK 17.14: minimum Visual Studio 2022 17.14, also runs in Visual Studio 2026 (18.x needs net10 / VS 2026 only). -->
+    <PackageReference Include="Microsoft.VisualStudio.Extensibility.Sdk" Version="17.14.40608" />
+    <PackageReference Include="Microsoft.VisualStudio.Extensibility.Build" Version="17.14.40608" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Remote UI: the XAML is sent to Visual Studio as text, embedded under the full name of its control class. -->
+    <EmbeddedResource Include="ToolWindows\*.xaml" />
+    <Page Remove="ToolWindows\*.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GitFlow.Core\GitFlow.Core.csproj" />
+  </ItemGroup>
+
+</Project>

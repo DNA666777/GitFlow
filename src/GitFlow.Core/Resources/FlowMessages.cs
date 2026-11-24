@@ -1,0 +1,39 @@
+using System.Globalization;
+using System.Resources;
+using GitFlow.Core.Config;
+using GitFlow.Core.Model;
+
+namespace GitFlow.Core.Resources;
+
+/// <summary>User facing texts (French by default), centralised in Strings.resx for future translation.</summary>
+public static class FlowMessages
+{
+    private static readonly ResourceManager Resources = new("GitFlow.Core.Resources.Strings", typeof(FlowMessages).Assembly);
+
+    /// <summary>Culture used for messages; null = current UI culture (falls back to French).</summary>
+    public static CultureInfo? Culture { get; set; }
+
+    public static string ReleaseReminder => Get("Info_ReleaseReminder");
+
+    public static string Get(string key) => Resources.GetString(key, Culture) ?? key;
+
+    public static string Format(string key, params object?[] args) =>
+        string.Format(Culture ?? CultureInfo.CurrentUICulture, Get(key), args);
+
+    /// <summary>Message for a failed or conflicting result; empty for a success.</summary>
+    public static string Describe(FlowResult result) => result.Status switch
+    {
+        FlowStatus.Success => string.Empty,
+        FlowStatus.Conflict when result.Conflict is { } c =>
+            Format("Error_MergeConflict", c.SourceBranch, c.TargetBranch, c.Files.Count),
+        _ when result.Error == FlowError.InvalidConfig =>
+            Format("Error_InvalidConfig", string.Join(" ", result.ConfigErrors.Select(Describe))),
+        _ when result.Error == FlowError.GitCommandFailed =>
+            Format("Error_GitCommandFailed", string.IsNullOrWhiteSpace(result.Detail) ? result.FailedCommand?.CommandLine : result.Detail),
+        _ => Format("Error_" + result.Error, result.Detail),
+    };
+
+    public static string Describe(FlowWarning warning) => Format("Warning_" + warning.Kind, warning.Detail);
+
+    public static string Describe(ConfigValidationError error) => Format("Config_" + error.Kind, error.Value);
+}
