@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Référence et dépannage — GitFlow pour Visual Studio</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="index.html"><img class="brand-mark" src="assets/logo.svg" alt="">GitFlow pour Visual Studio</a>
+      <nav class="site-nav" aria-label="Navigation principale">
+        <a href="index.html">Accueil</a>
+        <a href="guide.html">Guide</a>
+        <a href="pull-requests.html">Pull Requests</a>
+        <a href="reference.html" aria-current="page">Référence</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <nav class="toc" aria-label="Sommaire">
+      <strong>Sommaire</strong>
+      <ol>
+        <li><a href="#modele">Le modèle en bref</a></li>
+        <li><a href="#securite">Règles de sécurité</a></li>
+        <li><a href="#cles">Clés de configuration</a></li>
+        <li><a href="#commandes">Commandes git exécutées</a></li>
+        <li><a href="#depannage">Dépannage</a></li>
+        <li><a href="#compat">Compatibilité</a></li>
+      </ol>
+    </nav>
+
+    <article>
+      <h1>Référence et dépannage</h1>
+      <p class="intro">Les règles appliquées, les clés de configuration et les réponses aux problèmes courants.</p>
+
+      <h2 id="modele">Le modèle en bref</h2>
+      <p>L'extension applique strictement le <a href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow">Gitflow Workflow d'Atlassian</a>, sans variante. Seule différence : la branche de production s'appelle <code>master</code> par défaut (configurable).</p>
+      <table>
+        <thead><tr><th>Type</th><th>Préfixe</th><th>Part de</th><th>Se termine dans</th><th>Tag</th><th>Version proposée</th></tr></thead>
+        <tbody>
+          <tr><td>Feature</td><td><span class="branch feature">feature/</span></td><td>develop</td><td>develop</td><td>non</td><td>—</td></tr>
+          <tr><td>Release</td><td><span class="branch release">release/</span></td><td>develop</td><td>master <strong>puis</strong> develop</td><td>oui</td><td>minor + 1 (<code>1.4.1</code> → <code>1.5.0</code>)</td></tr>
+          <tr><td>Hotfix</td><td><span class="branch hotfix">hotfix/</span></td><td>master</td><td>master <strong>puis</strong> develop (ou la release en cours)</td><td>oui</td><td>patch + 1 (<code>1.5.0</code> → <code>1.5.1</code>)</td></tr>
+        </tbody>
+      </table>
+      <ul>
+        <li>Aucun autre type de branche (pas de <code>bugfix/</code>, <code>support/</code>…).</li>
+        <li>Merges en <code>--no-ff</code>, sans squash ni rebase. Tags annotés <code>{préfixe}{version}</code>, message <code>Release x.y.z</code> / <code>Hotfix x.y.z</code> modifiable.</li>
+        <li>Une seule release et un seul hotfix en cours à la fois.</li>
+      </ul>
+
+      <h2 id="securite">Règles de sécurité</h2>
+      <table>
+        <tbody>
+          <tr><td>Arbre de travail sale</td><td>Start et Finish refusés. L'extension ne fait jamais de <em>stash</em> automatique : commitez ou mettez de côté vous-même. Les fichiers non suivis ne bloquent pas.</td></tr>
+          <tr><td>Vérifications avant d'agir</td><td>Branche de base existante, nom valide pour git (<code>git check-ref-format</code>), branche cible inexistante, tag inexistant.</td></tr>
+          <tr><td>Conflit de merge</td><td>Arrêt immédiat, rien n'est supprimé, reprise possible après résolution.</td></tr>
+          <tr><td>Commandes interdites</td><td>Jamais de <code>push --force</code>, <code>reset --hard</code>, <code>branch -D</code>. Une branche non mergée n'est jamais supprimée.</td></tr>
+          <tr><td>Commits</td><td>Refusés sur la branche de production et pendant un merge.</td></tr>
+          <tr><td>Pull Requests</td><td>Créées et suivies, jamais approuvées ni mergées par l'extension. Le tag n'est posé que sur un commit de merge vérifié sur <code>origin/master</code>.</td></tr>
+          <tr><td>Identifiants</td><td>Demandés à git à chaque fois, jamais stockés ni écrits dans les logs.</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="cles">Clés de configuration</h2>
+      <p>Stockées dans la git config du dépôt (<code>--local</code>) ou de l'utilisateur (<code>--global</code>, valeurs par défaut des nouveaux dépôts). La valeur locale l'emporte.</p>
+      <h3>Nommage (clés git-flow standard)</h3>
+      <table>
+        <thead><tr><th>Clé</th><th>Défaut</th><th>Rôle</th></tr></thead>
+        <tbody>
+          <tr><td><code>gitflow.branch.master</code></td><td><code>master</code></td><td>Branche de production</td></tr>
+          <tr><td><code>gitflow.branch.develop</code></td><td><code>develop</code></td><td>Branche d'intégration</td></tr>
+          <tr><td><code>gitflow.prefix.feature</code></td><td><code>feature/</code></td><td>Préfixe des features</td></tr>
+          <tr><td><code>gitflow.prefix.release</code></td><td><code>release/</code></td><td>Préfixe des releases</td></tr>
+          <tr><td><code>gitflow.prefix.hotfix</code></td><td><code>hotfix/</code></td><td>Préfixe des hotfixes</td></tr>
+          <tr><td><code>gitflow.prefix.versiontag</code></td><td><em>(vide)</em></td><td>Préfixe des tags de version (<code>v</code> → <code>v1.4.0</code>)</td></tr>
+        </tbody>
+      </table>
+      <h3>Options de l'extension</h3>
+      <table>
+        <thead><tr><th>Clé</th><th>Défaut</th><th>Rôle</th></tr></thead>
+        <tbody>
+          <tr><td><code>gitflowvs.finish.mode</code></td><td><code>local</code></td><td>Mode pré-sélectionné au Finish : <code>local</code> ou <code>pullrequest</code></td></tr>
+          <tr><td><code>gitflowvs.finish.push</code></td><td><code>false</code></td><td>Pré-coche « Pousser » au Finish local</td></tr>
+          <tr><td><code>gitflowvs.finish.deleteremote</code></td><td><code>false</code></td><td>Pré-coche « Supprimer aussi la branche sur origin »</td></tr>
+          <tr><td><code>gitflowvs.pr.prune</code></td><td><code>false</code></td><td><em>Clore la branche</em> utilise <code>git fetch --prune</code></td></tr>
+          <tr><td><code>gitflowvs.pr.ticketpattern</code></td><td>ABC-123 et #42</td><td>Expression régulière des références de tickets dans les PR</td></tr>
+        </tbody>
+      </table>
+      <p>Les PR suivies sont mémorisées dans la config locale sous <code>gitflowvs-pr.&lt;branche&gt;.link</code>, et effacées à la clôture.</p>
+
+      <h2 id="commandes">Commandes git exécutées</h2>
+      <p>Toutes les commandes passent par le <code>git</code> de Git for Windows : vos hooks, signatures GPG, LFS et identifiants s'appliquent comme dans un terminal. Elles sont visibles dans <span class="menu-path">Affichage &gt; Sortie</span>, canal <strong>GitFlow</strong> :</p>
+<pre><code>=== GitFlow : finish de feature/login ===
+[10:42:03] git switch develop  → 0 (81 ms)
+[10:42:03] git merge --no-ff -m "Merge branch 'feature/login' into develop" feature/login  → 0 (153 ms)
+[10:42:03] git branch -d feature/login  → 0 (54 ms)
+OK</code></pre>
+
+      <h2 id="depannage">Dépannage</h2>
+      <h3>Le menu GitFlow n'apparaît pas</h3>
+      <p>Vérifiez <span class="menu-path">Extensions &gt; Gérer les extensions &gt; Installées</span>. Si l'extension n'y est pas, réinstallez le <code>.vsix</code> <strong>avec Visual Studio fermé</strong> : s'il est ouvert, le Visual Studio Installer se ferme sans rien installer.</p>
+
+      <h3>Un clic ne fait rien</h3>
+      <p>Regardez le canal <strong>GitFlow</strong> de la fenêtre Sortie, puis le journal de l'extension : <code>%TEMP%\servicehub\logs\*GitFlow.VSExtension*.log</code>.</p>
+
+      <h3>« Aucun dépôt Git trouvé »</h3>
+      <p>L'extension cherche le dépôt à partir de la solution ouverte, puis de l'élément sélectionné, puis du document actif. Ouvrez une solution située dans un dépôt Git.</p>
+
+      <h3>« Des modifications ne sont pas commitées »</h3>
+      <p>Commitez (section Commit), ou mettez de côté avec <code>git stash</code>, puis réessayez. Les fichiers non suivis ne comptent pas.</p>
+
+      <h3>Mes fichiers modifiés n'apparaissent pas dans Commit</h3>
+      <p>Enregistrez-les (<kbd>Ctrl</kbd>+<kbd>S</kbd>) : git ne voit que les fichiers écrits sur le disque.</p>
+
+      <h3>La release proposée a déjà un tag</h3>
+      <p>La version suivante est calculée depuis le plus grand tag de version présent sur master. Tapez une autre version : un tag existant est refusé.</p>
+
+      <h3>« Mode Pull Request indisponible »</h3>
+      <p>Le remote <code>origin</code> n'est ni GitHub ni Azure DevOps (un dossier local, GitLab, Bitbucket…) : utilisez le merge local. Vérifiez l'URL avec <code>git remote -v</code>.</p>
+
+      <h3>« La plateforme a refusé la demande »</h3>
+      <p>Le message de GitHub ou d'Azure DevOps est affiché tel quel : droits insuffisants, PR déjà existante, branche cible absente… Après correction, relancez <em>Terminer…</em> : une PR ouverte existante est réutilisée.</p>
+
+      <h3>Clore refuse : branche non contenue dans develop</h3>
+      <p>La PR a été mergée par <em>squash</em> ou <em>rebase</em> : les commits de la branche ne sont pas dans develop. Rien n'est supprimé. Si le contenu est bien livré, supprimez la branche vous-même : <code>git branch -D feature/x</code>.</p>
+
+      <h2 id="compat">Compatibilité</h2>
+      <table>
+        <tbody>
+          <tr><td>Visual Studio</td><td>2022 version 17.14 ou plus, 2026 (18.x). Éditions Community, Professional, Enterprise.</td></tr>
+          <tr><td>Git</td><td>Git for Windows 2.28 ou plus (installé avec Visual Studio)</td></tr>
+          <tr><td>Plateformes (mode PR)</td><td>GitHub (github.com), Azure DevOps (dev.azure.com, *.visualstudio.com)</td></tr>
+          <tr><td>Configuration</td><td>Compatible avec les clés <code>gitflow.*</code> de git-flow / git-flow-avh</td></tr>
+        </tbody>
+      </table>
+
+      <div class="next-prev">
+        <a class="btn" href="pull-requests.html">← Le mode Pull Request</a>
+        <a class="btn primary" href="index.html">Accueil</a>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="inner">
+      <span>GitFlow pour Visual Studio — modèle : <a href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow">Atlassian Gitflow Workflow</a></span>
+      <a href="index.html">Accueil</a>
+    </div>
+  </footer>
+</body>
+</html>
