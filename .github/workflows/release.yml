@@ -113,18 +113,30 @@ jobs:
         env:
           VS_MARKETPLACE_PAT: ${{ secrets.VS_MARKETPLACE_PAT }}
           FILE: ${{ steps.package.outputs.file }}
+          # Versions de VsixPublisher.exe (paquet NuGet Microsoft.VSSDK.BuildTools), essayées dans l'ordre.
+          # La 18.12.1583 (aussi livrée avec VS 2026) échoue à l'authentification hors de VS :
+          # VsixPub0031, Microsoft.Identity.Client en mauvaise version (constaté le 2026-11-24).
+          VSSDK_VERSIONS: "17.14.2142 18.11.1098 18.9.820"
         run: |
-          # VsixPublisher.exe du paquet NuGet Microsoft.VSSDK.BuildTools (autonome, avec ses dépendances).
-          # Celui livré dans Visual Studio 2026 échoue hors de VS (VsixPub0031 : Microsoft.Identity.Client en mauvaise version) :
-          # il ne sert qu'en dernier recours.
-          nuget install Microsoft.VSSDK.BuildTools -OutputDirectory "$env:RUNNER_TEMP\vssdk" -ExcludeVersion -NonInteractive | Out-Null
-          $publisher = Get-ChildItem "$env:RUNNER_TEMP\vssdk" -Recurse -Filter VsixPublisher.exe | Select-Object -First 1 -ExpandProperty FullName
-          if (-not $publisher) {
-            $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-            $publisher = & $vswhere -latest -products * -find "VSSDK\VisualStudioIntegration\Tools\Bin\VsixPublisher.exe" | Select-Object -First 1
+          $failed = @()
+          foreach ($version in $env:VSSDK_VERSIONS -split ' ') {
+            $dir = Join-Path $env:RUNNER_TEMP "vssdk-$version"
+            nuget install Microsoft.VSSDK.BuildTools -Version $version -OutputDirectory $dir -NonInteractive | Out-Null
+            $publisher = Get-ChildItem $dir -Recurse -Filter VsixPublisher.exe | Select-Object -First 1 -ExpandProperty FullName
+            if (-not $publisher) { Write-Host "VSSDK $version : VsixPublisher.exe absent du paquet"; $failed += $version; continue }
+
+            Write-Host "VsixPublisher $version : $publisher"
+            $output = & $publisher publish -payload $env:FILE -publishManifest marketplace/publishManifest.json -personalAccessToken $env:VS_MARKETPLACE_PAT -ignoreWarnings "VSIXValidatorWarning01,VSIXValidatorWarning02" 2>&1
+            $code = $LASTEXITCODE
+            $output | ForEach-Object { Write-Host $_ }
+            if ($code -eq 0) { Write-Host "Publié sur le Visual Studio Marketplace avec VsixPublisher $version."; exit 0 }
+
+            # Seul le défaut connu de l'outil (chargement de bibliothèque) fait essayer la version suivante :
+            # toute autre erreur (jeton, fiche refusée, version déjà publiée…) est réelle et arrête la publication.
+            if (($output -join "`n") -notmatch 'VsixPub0031[\s\S]*Could not load file or assembly') {
+              throw "Échec de la publication sur le Visual Studio Marketplace (VsixPublisher $version, code $code)"
+            }
+            Write-Host "VsixPublisher $version : défaut connu de chargement (VsixPub0031), version suivante."
+            $failed += $version
           }
-          if (-not $publisher) { throw "VsixPublisher.exe introuvable" }
-          & $publisher 2>&1 | Select-Object -First 1   # version de l'outil, pour le diagnostic
-          Write-Host "VsixPublisher : $publisher"
-          & $publisher publish -payload $env:FILE -publishManifest marketplace/publishManifest.json -personalAccessToken $env:VS_MARKETPLACE_PAT -ignoreWarnings "VSIXValidatorWarning01,VSIXValidatorWarning02"
-          if ($LASTEXITCODE -ne 0) { throw "Échec de la publication sur le Visual Studio Marketplace" }
+          throw "Aucune version de VsixPublisher n'a pu s'authentifier ($($failed -join ', '))."
