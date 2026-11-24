@@ -7,6 +7,15 @@ namespace GitFlow.Core.Git;
 public interface IGitRunner
 {
     Task<GitResult> RunAsync(string workingDirectory, IReadOnlyList<string> arguments, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Same, writing <paramref name="standardInput"/> to git (e.g. <c>git credential fill</c>).
+    /// Standard input and standard output are never logged: they can carry credentials.
+    /// </summary>
+    Task<GitResult> RunAsync(string workingDirectory, IReadOnlyList<string> arguments, string? standardInput, CancellationToken cancellationToken) =>
+        standardInput is null
+            ? RunAsync(workingDirectory, arguments, cancellationToken)
+            : throw new NotSupportedException("This runner does not support standard input.");
 }
 
 /// <summary>Receives every executed git command (command line, exit code, stderr).</summary>

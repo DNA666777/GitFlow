@@ -1,5 +1,6 @@
 using System.Runtime.Serialization;
 using GitFlow.Core.Model;
+using GitFlow.Core.PullRequests;
 using GitFlow.Core.Resources;
 using GitFlow.VSExtension.Services;
 using Microsoft.VisualStudio.Extensibility;
@@ -79,6 +80,81 @@ internal sealed class GitFlowToolWindowViewModel : NotifyPropertyChangedObject, 
             _commitMessageEdited = false;
             return RefreshAsync(context, ct);
         });
+    }
+
+    // ---------- Pull requests (optional mode) ----------
+
+    private readonly Dictionary<(string Source, int Id), PullRequestInfo?> _pullRequestStates = [];
+    private DateTime _pullRequestsCheckedAt = DateTime.MinValue;
+    private bool _hasPullRequests;
+
+    [DataMember] public ObservableList<PullRequestGroupViewModel> PullRequestGroups { get; } = [];
+
+    [DataMember]
+    public bool HasPullRequests
+    {
+        get => _hasPullRequests;
+        set => SetProperty(ref _hasPullRequests, value);
+    }
+
+    private AsyncCommand? _refreshPullRequestsCommand;
+
+    [DataMember]
+    public AsyncCommand RefreshPullRequestsCommand =>
+        _refreshPullRequestsCommand ??= new AsyncCommand((_, _, ct) => RefreshPullRequestsAsync(network: true, ct));
+
+    /// <summary>
+    /// Shows the pull requests opened by the extension. Their state is read on the platform only on demand
+    /// (button, or when the window is shown at most once a minute), never on every file change.
+    /// </summary>
+    private async Task RefreshPullRequestsAsync(bool network, CancellationToken ct)
+    {
+        var repository = _repository;
+        if (repository is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var tracked = await _session.PullRequests.GetTrackedAsync(repository, refresh: network, ct);
+            if (network)
+            {
+                _pullRequestsCheckedAt = DateTime.UtcNow;
+                foreach (var pr in tracked)
+                {
+                    _pullRequestStates[(pr.Source, pr.Id)] = pr.Info;
+                }
+
+                if (tracked.FirstOrDefault(t => t.Error is not null)?.Error is { } error)
+                {
+                    StatusText = error;
+                }
+            }
+
+            var config = await _session.Flow.ConfigStore.ReadAsync(repository, Core.Config.ConfigScope.Local, ct);
+            PullRequestGroups.Clear();
+            foreach (var group in tracked.GroupBy(t => t.Source))
+            {
+                var source = group.Key;
+                var items = group.Select(t => new PullRequestItemViewModel(t.Id, t.Target, _pullRequestStates.GetValueOrDefault((t.Source, t.Id)))).ToArray();
+                var branch = config?.TryParseFlowBranch(source);
+                var tagged = await _session.PullRequests.IsTaggedAsync(repository, source, ct);
+                PullRequestGroups.Add(new PullRequestGroupViewModel(
+                    source,
+                    items,
+                    versionName: branch is { Type: not BranchType.Feature } ? branch.Name : null,
+                    tagged,
+                    tag: new AsyncCommand((_, c, t) => RunAsync(c, (ui, repo, x) => ui.TagMergedPullRequestAsync(repo, source, x), t, onSuccess: () => _pullRequestsCheckedAt = DateTime.MinValue)),
+                    complete: new AsyncCommand((_, c, t) => RunAsync(c, (ui, repo, x) => ui.CompletePullRequestsAsync(repo, source, x), t))));
+            }
+
+            HasPullRequests = PullRequestGroups.Count > 0;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _session.Output.WriteLine(ex.ToString());
+        }
     }
 
     [DataMember] public AsyncCommand CommitCommand { get; }
@@ -431,6 +507,9 @@ internal sealed class GitFlowToolWindowViewModel : NotifyPropertyChangedObject, 
         HasNoBranches = state.FlowBranches.Count == 0;
 
         await RefreshCommitAsync(state.RepositoryPath, ct);
+
+        // Platform state at most once a minute while the window is used; local links otherwise.
+        await RefreshPullRequestsAsync(network: _visible && DateTime.UtcNow - _pullRequestsCheckedAt > TimeSpan.FromMinutes(1), ct);
     }
 
     private async Task RefreshCommitAsync(string repository, CancellationToken ct)
@@ -615,6 +694,81 @@ internal sealed class BranchItemViewModel(FlowBranch branch, bool isCurrent, boo
     [DataMember] public string PublishLabel => Strings.ButtonPublish;
 }
 
+/// <summary>The pull requests of one work branch, with the actions that apply.</summary>
+[DataContract]
+internal sealed class PullRequestGroupViewModel
+{
+    /// <param name="versionName">Version of a release/hotfix (null for a feature).</param>
+    public PullRequestGroupViewModel(string source, IReadOnlyList<PullRequestItemViewModel> items, string? versionName, bool tagged, AsyncCommand tag, AsyncCommand complete)
+    {
+        Source = source;
+        Items = new ObservableList<PullRequestItemViewModel>(items);
+        TagCommand = tag;
+        CompleteCommand = complete;
+
+        // Release/hotfix: tag as soon as the PR to production (first target) is merged; "Clore" tags it too if needed.
+        CanTag = versionName is not null && !tagged && items.Count > 0 && items[0].State == PullRequestState.Merged;
+        CanComplete = items.Count > 0 && items.All(i => i.State == PullRequestState.Merged);
+        TagLabel = Strings.Format(Strings.ButtonTag, versionName ?? string.Empty);
+    }
+
+    [DataMember] public string Source { get; }
+
+    [DataMember] public ObservableList<PullRequestItemViewModel> Items { get; }
+
+    [DataMember] public bool CanTag { get; }
+
+    [DataMember] public string TagLabel { get; }
+
+    [DataMember] public AsyncCommand TagCommand { get; }
+
+    [DataMember] public bool CanComplete { get; }
+
+    [DataMember] public string CompleteLabel => Strings.ButtonComplete;
+
+    [DataMember] public AsyncCommand CompleteCommand { get; }
+}
+
+/// <summary>One pull request (#id → target, state, link).</summary>
+[DataContract]
+internal sealed class PullRequestItemViewModel
+{
+    public PullRequestItemViewModel(int id, string target, PullRequestInfo? info)
+    {
+        Label = $"#{id} → {target}";
+        State = info?.State;
+        StateLabel = info?.State switch
+        {
+            PullRequestState.Open => Strings.PrStateOpen,
+            PullRequestState.Merged => Strings.PrStateMerged,
+            PullRequestState.Closed => Strings.PrStateClosed,
+            _ => Strings.PrStateUnknown,
+        };
+        CanOpen = info is not null;
+        OpenCommand = new AsyncCommand((_, _) =>
+        {
+            if (info is not null)
+            {
+                FlowUi.OpenInBrowser(info.WebUrl);
+            }
+
+            return Task.CompletedTask;
+        });
+    }
+
+    public PullRequestState? State { get; }
+
+    [DataMember] public string Label { get; }
+
+    [DataMember] public string StateLabel { get; }
+
+    [DataMember] public bool CanOpen { get; }
+
+    [DataMember] public string OpenLabel => Strings.ButtonOpen;
+
+    [DataMember] public AsyncCommand OpenCommand { get; }
+}
+
 /// <summary>One changed file in the Commit section.</summary>
 [DataContract]
 internal sealed class ChangeItemViewModel(FileChange change)
@@ -666,4 +820,6 @@ internal sealed class ToolWindowLabels
     [DataMember] public string NoChanges => Strings.NoChanges;
     [DataMember] public string Commit => Strings.ButtonCommit;
     [DataMember] public string Regenerate => Strings.ButtonRegenerate;
+    [DataMember] public string PullRequestsSection => Strings.SectionPullRequests;
+    [DataMember] public string RefreshPullRequests => Strings.ButtonRefreshPullRequests;
 }

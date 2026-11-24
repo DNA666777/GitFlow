@@ -24,11 +24,18 @@ public sealed record FinishOptions
 
     /// <summary>Fetch origin first and fast-forward the target branches if they are behind.</summary>
     public bool FetchFromRemote { get; init; }
+
+    /// <summary>
+    /// Pull Request mode (optional, phase 2): one reviewed draft per merge target. When set, nothing is merged locally:
+    /// the branch is pushed and the pull requests are created on the hosting platform.
+    /// </summary>
+    public IReadOnlyList<PullRequests.PullRequestDraft>? PullRequests { get; init; }
 }
 
 /// <summary>Everything a finish strategy needs, validated by <see cref="FlowService"/>.</summary>
 /// <param name="MergeTargets">Branches to merge into, in order (master first for release/hotfix).</param>
 /// <param name="TagName">Tag to create on the first target (master), null for a feature.</param>
+/// <param name="PullRequests">Drafts in Pull Request mode, null for a local merge.</param>
 public sealed record FinishPlan(
     string RepositoryPath,
     FlowBranch Branch,
@@ -37,11 +44,12 @@ public sealed record FinishPlan(
     string? TagName,
     string? TagMessage,
     bool PushAfterFinish,
-    bool DeleteRemoteBranch);
+    bool DeleteRemoteBranch,
+    IReadOnlyList<PullRequests.PullRequestDraft>? PullRequests = null);
 
 /// <summary>
-/// How a branch is finished. Phase 1: <see cref="LocalMergeStrategy"/>.
-/// Phase 2 will add a pull request strategy without touching <see cref="FlowService"/>.
+/// How a branch is finished: <see cref="LocalMergeStrategy"/> (default) or
+/// <see cref="PullRequests.PullRequestStrategy"/> (optional Pull Request mode).
 /// </summary>
 public interface IFinishStrategy
 {

@@ -48,6 +48,14 @@
   <data name="Error_CommitOnMasterRefused" xml:space="preserve"><value>On ne commite jamais directement sur « {0} ». Démarrez une feature (ou un hotfix pour la production).</value></data>
   <data name="Error_DetachedHead" xml:space="preserve"><value>HEAD est détachée : basculez sur une branche avant de commiter.</value></data>
 
+  <!-- Pull Request mode (errors) -->
+  <data name="Error_PullRequestNotSupported" xml:space="preserve"><value>Mode Pull Request indisponible : le remote « origin » n'est ni GitHub ni Azure DevOps. Utilisez le merge local.</value></data>
+  <data name="Error_NoCredentials" xml:space="preserve"><value>Aucun identifiant git pour « {0} ». Faites un push ou un fetch une fois (le Git Credential Manager vous connectera), puis réessayez.</value></data>
+  <data name="Error_PullRequestApiFailed" xml:space="preserve"><value>La plateforme a refusé la demande : {0}</value></data>
+  <data name="Error_PullRequestNotMerged" xml:space="preserve"><value>La pull request vers « {0} » n'est pas encore mergée.</value></data>
+  <data name="Error_MergeCommitNotFound" xml:space="preserve"><value>Commit de merge introuvable sur origin/{0} : le tag n'a pas été posé. Vérifiez la pull request puis réessayez.</value></data>
+  <data name="Error_BranchNotMergedOnRemote" xml:space="preserve"><value>La branche n'est pas contenue dans « {0} » (merge par squash ou rebase ?). Elle n'a pas été supprimée : supprimez-la vous-même si vous êtes sûr.</value></data>
+
   <!-- Generated commit message (content of the commit, French by default) -->
   <data name="Commit_Subject_One_Added" xml:space="preserve"><value>Ajoute {0}</value></data>
   <data name="Commit_Subject_One_Modified" xml:space="preserve"><value>Modifie {0}</value></data>
@@ -73,6 +81,16 @@
   <!-- Settings warnings: key "SettingsWarning_{SettingsWarningKind}", {0} = previous prefix, {1} = count, {2} = list -->
   <data name="SettingsWarning_OrphanedBranches" xml:space="preserve"><value>{1} branche(s) utilisent l'ancien préfixe « {0} » : {2}. Elles ne sont pas renommées et ne seront plus reconnues par GitFlow.</value></data>
   <data name="SettingsWarning_OldTagPrefix" xml:space="preserve"><value>{1} tag(s) de version utilisent l'ancien préfixe de tag « {0} » : {2}. Ils ne serviront plus à proposer les prochaines versions.</value></data>
+
+  <!-- Generated Pull Request description (Markdown) -->
+  <data name="Pr_Header" xml:space="preserve"><value>**{0}** `{1}` → `{2}`</value></data>
+  <data name="Pr_Commits" xml:space="preserve"><value>Commits ({0})</value></data>
+  <data name="Pr_NoCommit" xml:space="preserve"><value>_Aucun commit._</value></data>
+  <data name="Pr_Files" xml:space="preserve"><value>Fichiers</value></data>
+  <data name="Pr_Stats" xml:space="preserve"><value>{0} fichier(s) modifié(s), {1} ligne(s) ajoutée(s), {2} ligne(s) supprimée(s)</value></data>
+  <data name="Pr_Version" xml:space="preserve"><value>Version</value></data>
+  <data name="Pr_VersionText" xml:space="preserve"><value>Version **{0}** : le tag `{1}` sera posé sur la branche de production une fois cette PR mergée.</value></data>
+  <data name="Pr_Tickets" xml:space="preserve"><value>Tickets</value></data>
 
   <data name="Info_ReleaseReminder" xml:space="preserve"><value>Release en cours : corrections, docs et tâches de release uniquement.</value></data>
 </root>

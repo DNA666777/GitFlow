@@ -14,11 +14,15 @@ public sealed class FlowService
 
     private readonly IGitRunner _runner;
     private readonly IFinishStrategy _finishStrategy;
+    private readonly IFinishStrategy? _pullRequestStrategy;
 
-    public FlowService(IGitRunner runner, IFinishStrategy? finishStrategy = null)
+    /// <param name="finishStrategy">Local merge (default: <see cref="LocalMergeStrategy"/>).</param>
+    /// <param name="pullRequestStrategy">Optional Pull Request mode; when null, PR mode is unavailable.</param>
+    public FlowService(IGitRunner runner, IFinishStrategy? finishStrategy = null, IFinishStrategy? pullRequestStrategy = null)
     {
         _runner = runner;
         _finishStrategy = finishStrategy ?? new LocalMergeStrategy(runner);
+        _pullRequestStrategy = pullRequestStrategy;
         ConfigStore = new GitFlowConfigStore(runner);
     }
 
@@ -361,7 +365,13 @@ public sealed class FlowService
             return FlowResult.Fail(FlowError.DirtyWorkingTree);
         }
 
-        if ((options.PushAfterFinish || options.DeleteRemoteBranch || options.FetchFromRemote)
+        var pullRequestMode = options.PullRequests is not null;
+        if (pullRequestMode && _pullRequestStrategy is null)
+        {
+            return FlowResult.Fail(FlowError.PullRequestNotSupported);
+        }
+
+        if ((options.PushAfterFinish || options.DeleteRemoteBranch || options.FetchFromRemote || pullRequestMode)
             && !await git.HasRemoteAsync(RemoteName, ct).ConfigureAwait(false))
         {
             return FlowResult.Fail(FlowError.NoRemote);
@@ -393,8 +403,10 @@ public sealed class FlowService
             }
         }
 
-        var plan = new FinishPlan(repositoryPath, branch, config, targets, tagName, tagMessage, options.PushAfterFinish, options.DeleteRemoteBranch);
-        return await _finishStrategy.ExecuteAsync(plan, ct).ConfigureAwait(false);
+        var plan = new FinishPlan(repositoryPath, branch, config, targets, tagName, tagMessage, options.PushAfterFinish, options.DeleteRemoteBranch, options.PullRequests);
+        return pullRequestMode
+            ? await _pullRequestStrategy!.ExecuteAsync(plan, ct).ConfigureAwait(false)
+            : await _finishStrategy.ExecuteAsync(plan, ct).ConfigureAwait(false);
     });
 
     /// <summary><c>git push -u origin &lt;branch&gt;</c> for a work branch (current branch by default).</summary>

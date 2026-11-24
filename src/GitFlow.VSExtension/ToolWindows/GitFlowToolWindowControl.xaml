@@ -156,6 +156,54 @@
                     </StackPanel>
                 </StackPanel>
 
+                <!-- Pull requests (optional mode): shown only when some are followed -->
+                <StackPanel Visibility="{Binding HasPullRequests, Converter={StaticResource BoolToVisibility}}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding Labels.PullRequestsSection}" Style="{StaticResource SectionHeader}" />
+                        <Button Grid.Column="1" Content="{Binding Labels.RefreshPullRequests}" Command="{Binding RefreshPullRequestsCommand}"
+                                Style="{StaticResource FlowButton}" VerticalAlignment="Bottom" Margin="0,0,0,4" />
+                    </Grid>
+                    <ItemsControl ItemsSource="{Binding PullRequestGroups}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,2,0,8">
+                                    <TextBlock Text="{Binding Source}" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource {x:Static styles:VsBrushes.ToolWindowTextKey}}" />
+                                    <ItemsControl ItemsSource="{Binding Items}" Margin="8,2,0,2">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,1">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="{Binding Label}" VerticalAlignment="Center"
+                                                               Foreground="{DynamicResource {x:Static styles:VsBrushes.ToolWindowTextKey}}" />
+                                                    <TextBlock Grid.Column="1" Text="{Binding StateLabel}" FontStyle="Italic" Margin="8,0,0,0" VerticalAlignment="Center"
+                                                               Foreground="{DynamicResource {x:Static styles:VsBrushes.GrayTextKey}}" />
+                                                    <Button Grid.Column="2" Content="{Binding OpenLabel}" Command="{Binding OpenCommand}" IsEnabled="{Binding CanOpen}"
+                                                            Style="{StaticResource FlowButton}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button Content="{Binding TagLabel}" Command="{Binding TagCommand}" Style="{StaticResource FlowButton}"
+                                                Visibility="{Binding CanTag, Converter={StaticResource BoolToVisibility}}" />
+                                        <Button Content="{Binding CompleteLabel}" Command="{Binding CompleteCommand}" Style="{StaticResource FlowButton}"
+                                                Visibility="{Binding CanComplete, Converter={StaticResource BoolToVisibility}}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
                 <!-- Start -->
                 <TextBlock Text="{Binding Labels.StartSection}" Style="{StaticResource SectionHeader}" />
                 <Grid>

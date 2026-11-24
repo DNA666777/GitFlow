@@ -1,5 +1,6 @@
 using GitFlow.Core.Config;
 using GitFlow.Core.Flow;
+using GitFlow.Core.PullRequests;
 using GitFlow.Core.Git;
 
 namespace GitFlow.VSExtension.Services;
@@ -13,10 +14,16 @@ internal sealed class GitFlowSession : IDisposable
     {
         Output = output;
         var runner = new GitCliRunner(output);
-        Flow = new FlowService(runner);
+        PullRequests = new PullRequestService(runner, Http);
+        Flow = new FlowService(runner, pullRequestStrategy: new PullRequestStrategy(PullRequests));
         Commits = new CommitService(runner);
         Settings = new GitFlowSettingsService(runner);
     }
+
+    /// <summary>One HttpClient for the extension lifetime (GitHub / Azure DevOps REST APIs).</summary>
+    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(30) };
+
+    public PullRequestService PullRequests { get; }
 
     public GitFlowSettingsService Settings { get; }
 

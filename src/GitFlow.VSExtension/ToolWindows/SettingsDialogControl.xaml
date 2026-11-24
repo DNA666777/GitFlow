@@ -85,6 +85,13 @@
 
         <!-- Finish defaults -->
         <TextBlock Text="{Binding Labels.FinishDefaults}" Style="{StaticResource Header}" />
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+            <TextBlock Text="{Binding Labels.FinishMode}" Margin="0,0,12,0" />
+            <RadioButton GroupName="DefaultFinishMode" Content="{Binding Labels.ModeLocal}" IsChecked="{Binding UseLocalMerge}" Margin="0,0,16,0"
+                         Foreground="{DynamicResource {x:Static styles:VsBrushes.WindowTextKey}}" />
+            <RadioButton GroupName="DefaultFinishMode" Content="{Binding Labels.ModePullRequest}" IsChecked="{Binding UsePullRequest}"
+                         Foreground="{DynamicResource {x:Static styles:VsBrushes.WindowTextKey}}" />
+        </StackPanel>
         <CheckBox Content="{Binding Labels.Push}" IsChecked="{Binding PushAfterFinish}" Margin="0,0,0,6"
                   Style="{StaticResource {x:Static styles:VsResourceKeys.CheckBoxStyleKey}}" />
         <CheckBox Content="{Binding Labels.DeleteRemote}" IsChecked="{Binding DeleteRemoteBranch}"
