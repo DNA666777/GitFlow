@@ -247,8 +247,9 @@ SDK .NET figé par `global.json` (10.0.x, `rollForward: latestFeature`) ; les pr
   `Resources/preview.png` (200 px), liens MoreInfo/ReleaseNotes vers GitHub, tags de recherche.
   **Ne jamais changer l'`id` de l'extension** : VS ne reconnaîtrait plus les mises à jour (deux extensions installées).
 - **Visual Studio Marketplace** : dernière étape de `release.yml`, exécutée seulement si le secret GitHub `VS_MARKETPLACE_PAT` existe
-  (jeton Azure DevOps, scope *Marketplace > Publish*, organisations : *All accessible organizations*). `VsixPublisher.exe` (VS du runner,
-  sinon paquet NuGet `Microsoft.VSSDK.BuildTools` téléchargé au moment du job, pas une dépendance du projet) avec
+  (jeton Azure DevOps, scope *Marketplace > Publish*, organisations : *All accessible organizations*). `VsixPublisher.exe` du paquet NuGet
+  `Microsoft.VSSDK.BuildTools` téléchargé au moment du job (pas une dépendance du projet). **Ne pas utiliser celui livré avec VS 2026** :
+  hors de VS il échoue (`VsixPub0031`, `Microsoft.Identity.Client` en mauvaise version, constaté le 2026-11-24). Avec
   `marketplace/publishManifest.json` (éditeur `DNA666777`, fiche `DNA666777.gitflow`, catégorie *source control*) et
   `marketplace/overview.md` (page de présentation). Le Marketplace refuse de republier une version déjà publiée.
   Alternative future : `-oidc` (trusted publishing) au lieu d'un jeton.
