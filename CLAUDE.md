@@ -225,6 +225,7 @@ dotnet test tests/GitFlow.Core.IntegrationTests
 # (VS 2026 passe la main au VS Installer, fenêtre interactive ; installation par machine, donc aussi dans la VS principale) :
 & "H:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\IDE\VSIXInstaller.exe" /instanceIds:f2c0b313 src\GitFlow.VSExtension\bin\Debug\net8.0-windows8.0\GitFlow.VSExtension.vsix
 # puis redémarrer VS. Fermer VS AVANT d'installer : sinon le VS Installer se ferme sans rien installer.
+# Après avoir changé <Version>, rebuild avec --no-incremental : sinon le .vsix garde l'ancienne version.
 # Vérifier la version réellement installée : IDE\VSExtensions\*\extension.vsixmanifest (Identity Version).
 # Dépôt jetable pour les essais : H:\Dev\GitFlowSandbox (origin : H:\Dev\GitFlowSandbox-origin.git).
 # Logs de l'extension (exceptions) : %TEMP%\servicehub\logs\*GitFlow.VSExtension*.log
