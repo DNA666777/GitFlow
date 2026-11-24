@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guide — GitFlow pour Visual Studio</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="index.html"><img class="brand-mark" src="assets/logo.svg" alt="">GitFlow pour Visual Studio</a>
+      <nav class="site-nav" aria-label="Navigation principale">
+        <a href="index.html">Accueil</a>
+        <a href="guide.html" aria-current="page">Guide</a>
+        <a href="pull-requests.html">Pull Requests</a>
+        <a href="reference.html">Référence</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <nav class="toc" aria-label="Sommaire">
+      <strong>Sommaire</strong>
+      <ol>
+        <li><a href="#installation">Installation</a></li>
+        <li><a href="#fenetre">La fenêtre GitFlow</a></li>
+        <li><a href="#init">Initialiser un dépôt</a></li>
+        <li><a href="#feature">Une feature de A à Z</a></li>
+        <li><a href="#commit">Commiter</a></li>
+        <li><a href="#release">Une release</a></li>
+        <li><a href="#hotfix">Un hotfix</a></li>
+        <li><a href="#conflits">Conflits et reprise</a></li>
+        <li><a href="#parametres">Paramètres</a></li>
+        <li><a href="#menu">Les commandes du menu</a></li>
+      </ol>
+    </nav>
+
+    <article>
+      <h1>Guide d'utilisation</h1>
+      <p class="intro">Tout ce qu'il faut pour travailler en Gitflow depuis Visual Studio : installer, initialiser, puis faire vivre features, releases et hotfixes.</p>
+
+      <!-- ===================================================== -->
+      <h2 id="installation">1. Installation</h2>
+      <ol class="steps">
+        <li><strong>Fermez complètement Visual Studio</strong> (toutes les fenêtres). Sinon l'installateur se ferme sans rien installer.</li>
+        <li>Double-cliquez sur <code>GitFlow.VSExtension.vsix</code>. Selon la version de Visual Studio, le <em>VSIX Installer</em> puis le <em>Visual Studio Installer</em> prennent la main : validez jusqu'au bout.</li>
+        <li>Relancez Visual Studio. Le menu <span class="menu-path">Extensions &gt; GitFlow</span> apparaît, et l'extension est listée dans <span class="menu-path">Extensions &gt; Gérer les extensions &gt; Installées</span>.</li>
+      </ol>
+      <p>En ligne de commande, l'équivalent est :</p>
+<pre><code>&amp; "C:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\IDE\VSIXInstaller.exe" GitFlow.VSExtension.vsix</code></pre>
+      <div class="callout">
+        <strong>Mise à jour</strong>
+        <p>Même procédure avec le nouveau <code>.vsix</code>. Pour désinstaller : <span class="menu-path">Extensions &gt; Gérer les extensions</span>, puis <em>Désinstaller</em>.</p>
+      </div>
+
+      <!-- ===================================================== -->
+      <h2 id="fenetre">2. La fenêtre GitFlow</h2>
+      <p>Ouvrez-la par <span class="menu-path">Extensions &gt; GitFlow &gt; Fenêtre GitFlow</span> (ou <span class="menu-path">Affichage &gt; Autres fenêtres</span>). Elle s'ancre en onglet à côté de <em>Git Changes</em> et se met à jour toute seule : à l'enregistrement d'un fichier, au changement de branche, à l'ouverture d'une autre solution.</p>
+
+      <div class="mock-row">
+        <div class="vs-window" aria-label="Aperçu de la fenêtre GitFlow">
+          <div class="vs-title"><span>GitFlow</span><span>▾ ✕</span></div>
+          <div class="vs-body">
+            <div class="head"><span class="repo">MonProjet</span><span><span class="vs-btn">Paramètres</span> <span class="vs-btn">Actualiser</span></span></div>
+            <div class="vs-grid">
+              <span class="k">Branche</span><b>feature/login</b>
+              <span class="k">Type</span><span>Feature</span>
+              <span class="k">État</span><span>Modifications non commitées</span>
+              <span class="k">Distant</span><span>1 commit(s) à pousser, 0 à récupérer</span>
+            </div>
+            <div class="vs-section">Commit</div>
+            <div class="vs-muted">Modifications (2)</div>
+            <div class="vs-file"><b>M</b>src/App/Program.cs</div>
+            <div class="vs-file"><b>A</b>src/App/Login.cs</div>
+            <div class="vs-italic">Toutes les modifications seront commitées (nouveaux fichiers compris).</div>
+            <div class="vs-textarea">Met à jour 2 fichiers dans src/App
+
+Ajoutés (1) :
+- src/App/Login.cs
+Modifiés (1) :
+- src/App/Program.cs (+12 -3)</div>
+            <div class="vs-row"><span class="grow"></span><span class="vs-btn">Régénérer le message</span><span class="vs-btn">Commiter</span></div>
+            <div class="vs-section">Démarrer une branche</div>
+            <div class="vs-row"><span class="vs-input" style="min-width:60px">Feature ▾</span><span class="vs-muted">feature/</span><span class="vs-input grow">&nbsp;</span><span class="vs-btn">Démarrer</span></div>
+            <div class="vs-section">Branches en cours</div>
+            <div class="vs-muted">Features</div>
+            <div class="vs-row" style="padding-left:8px"><span class="grow">login<br><span class="vs-italic" style="font-size:11px">courante</span></span><span class="vs-btn">Publier</span><span class="vs-btn">Terminer…</span></div>
+            <div class="vs-muted">Releases</div>
+            <div class="vs-muted">Hotfixes</div>
+          </div>
+        </div>
+        <div class="mock-text">
+          <h3 style="margin-top:0">Ce que montre la fenêtre</h3>
+          <ul>
+            <li><strong>L'état du dépôt</strong> : branche courante et son type, arbre propre / modifié / merge en cours, commits à pousser ou à récupérer.</li>
+            <li><strong>Commit</strong> : fichiers modifiés et message proposé (<a href="#commit">détails</a>).</li>
+            <li><strong>Démarrer une branche</strong> : type, préfixe, nom. Pour une release ou un hotfix, la version suivante est pré-remplie.</li>
+            <li><strong>Branches en cours</strong>, groupées par type, avec <em>Publier</em> et <em>Terminer…</em> sur chaque ligne : pas besoin d'être sur la branche pour la terminer.</li>
+            <li>Les badges <em>courante</em> et <em>déjà mergée</em> (une branche mergée à la main dans toutes ses cibles).</li>
+            <li>Sur une branche <span class="branch release">release/</span>, le rappel « corrections, docs et tâches de release uniquement ».</li>
+            <li>La section <em>Pull requests</em> apparaît si vous utilisez le <a href="pull-requests.html">mode Pull Request</a>.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ===================================================== -->
+      <h2 id="init">3. Initialiser un dépôt</h2>
+      <p>Sur un dépôt qui n'a jamais utilisé GitFlow, la fenêtre propose <em>Initialiser GitFlow…</em>. L'écran de paramètres s'ouvre, pré-rempli :</p>
+      <ul>
+        <li>avec la configuration git-flow existante si le dépôt en a déjà une (elle est reprise telle quelle) ;</li>
+        <li>sinon avec vos réglages « Tous mes dépôts » ;</li>
+        <li>sinon avec les valeurs standard : <code>master</code>, <code>develop</code>, <code>feature/</code>, <code>release/</code>, <code>hotfix/</code>, préfixe de tag vide.</li>
+      </ul>
+      <p>À la validation, la branche <span class="branch develop">develop</span> est créée depuis <span class="branch master">master</span> si elle n'existe pas (ou depuis <code>origin/develop</code> si elle existe sur le serveur), et la configuration est écrite dans le dépôt (clés standard <code>gitflow.*</code>, compatibles avec les autres outils git-flow).</p>
+      <div class="callout warn">
+        <strong>Le dépôt doit avoir au moins un commit</strong>
+        <p>Sur un dépôt vide, faites d'abord un premier commit sur <code>master</code>.</p>
+      </div>
+
+      <!-- ===================================================== -->
+      <h2 id="feature">4. Une feature de A à Z</h2>
+      <p>Une feature part de <span class="branch develop">develop</span> et y revient. Elle ne touche jamais <span class="branch master">master</span>.</p>
+
+      <h3>Démarrer</h3>
+      <ol class="steps">
+        <li>Dans <em>Démarrer une branche</em>, choisissez <em>Feature</em> et tapez un nom, par exemple <code>login</code> ou <code>ABC-123-login</code>.</li>
+        <li><em>Démarrer</em> : la branche <span class="branch feature">feature/login</span> est créée depuis develop et extraite.</li>
+      </ol>
+      <p>Refus possibles, avec un message en français : arbre de travail sale, nom invalide pour git, branche déjà existante (en local ou sur origin), merge en cours.</p>
+
+      <h3>Publier (optionnel)</h3>
+      <p><em>Publier</em> pousse la branche sur origin (<code>git push -u origin feature/login</code>) pour la partager ou la sauvegarder. Seuls les commits partent : pensez à commiter avant.</p>
+
+      <h3>Terminer</h3>
+      <div class="mock-row">
+        <div class="vs-window vs-dialog" aria-label="Aperçu de la boîte Terminer">
+          <div class="vs-title"><span>Terminer feature/login</span><span>✕</span></div>
+          <div class="vs-body">
+            <div>Terminer « feature/login » ?<br><br>• merge --no-ff dans develop<br>• suppression de la branche locale</div>
+            <div class="vs-section">Mode</div>
+            <div><span class="vs-radio">Merge local</span>&nbsp;&nbsp;&nbsp;<span class="vs-radio off">Pull Request</span></div>
+            <div style="margin-top:8px"><span class="vs-check off">Pousser les branches mergées (et le tag) vers origin à la fin</span></div>
+            <div><span class="vs-check off">Supprimer aussi la branche sur origin</span></div>
+            <div class="vs-footer"><span class="vs-btn primary">OK</span><span class="vs-btn">Annuler</span></div>
+          </div>
+        </div>
+        <div class="mock-text">
+          <p><em>Terminer…</em> ouvre cette boîte. En <strong>merge local</strong> (le mode par défaut) :</p>
+          <ol>
+            <li>merge <code>--no-ff</code> de la feature dans develop, pour garder la trace de la branche dans l'historique ;</li>
+            <li>suppression de la branche locale avec <code>git branch -d</code>, que git refuse si elle n'est pas mergée ;</li>
+            <li>en option : push de develop vers origin, suppression de la branche sur origin ;</li>
+            <li>vous êtes ramené sur develop.</li>
+          </ol>
+          <p>Les deux cases peuvent être pré-cochées dans les <a href="#parametres">paramètres</a>.</p>
+        </div>
+      </div>
+
+      <!-- ===================================================== -->
+      <h2 id="commit">5. Commiter</h2>
+      <p>La section <em>Commit</em> de la fenêtre liste les fichiers modifiés (<code>A</code> ajouté, <code>M</code> modifié, <code>D</code> supprimé, <code>R</code> renommé) et propose un message construit <strong>uniquement à partir de git</strong>, sans IA, toujours identique pour les mêmes modifications.</p>
+<pre><code>Met à jour 2 fichiers
+
+Ajoutés (1) :
+- src/Login.cs
+Modifiés (1) :
+- README.md (+2 -1)
+
+Réf. : ABC-12        <span class="c">← tickets trouvés dans le nom de branche (ABC-123, #42)</span></code></pre>
+      <ul>
+        <li><strong>Quoi est commité</strong> : si des fichiers sont déjà indexés (<code>git add</code>), seulement eux ; sinon tout, nouveaux fichiers compris, comme « Commit All ».</li>
+        <li><strong>Le message est à vous</strong> : dès que vous le modifiez, il n'est plus remplacé. <em>Régénérer le message</em> remet la proposition.</li>
+        <li><strong>Réécrivez la première ligne</strong> pour les gros commits : le générateur sait <em>quels</em> fichiers ont changé, pas <em>pourquoi</em>.</li>
+        <li>Les fichiers apparaissent <strong>après enregistrement</strong> (<kbd>Ctrl</kbd>+<kbd>S</kbd>) : git ne voit pas une modification encore dans l'éditeur.</li>
+      </ul>
+      <div class="callout warn">
+        <strong>Commits refusés</strong>
+        <p>Sur <code>master</code> (on ne commite jamais directement en production : démarrez une feature ou un hotfix) et pendant un merge en conflit (le commit reviendrait à finir le merge à la place du Finish).</p>
+      </div>
+
+      <!-- ===================================================== -->
+      <h2 id="release">6. Une release</h2>
+      <p>Quand assez de features sont dans develop, une release les prépare pour la production. Sur la branche de release : <strong>corrections, documentation et tâches de release uniquement</strong>, plus de nouvelles features.</p>
+      <ol class="steps">
+        <li><em>Démarrer une branche</em> &gt; <em>Release</em> : la version suivante est proposée en incrémentant le <em>minor</em> du dernier tag de master (<code>1.4.1</code> → <code>1.5.0</code>). Modifiable.</li>
+        <li>Si develop ne contient rien de nouveau depuis la dernière release, un avertissement s'affiche : la release serait identique à la précédente. Vous pouvez continuer quand même.</li>
+        <li>Faites vos derniers ajustements (numéro de version, changelog…) et commitez.</li>
+        <li><em>Terminer…</em> : le message du tag est proposé (<code>Release 1.5.0</code>), modifiable.</li>
+      </ol>
+      <p>Le Finish d'une release, dans l'ordre :</p>
+      <ol>
+        <li>merge <code>--no-ff</code> dans <span class="branch master">master</span> ;</li>
+        <li><strong>tag annoté</strong> <code>1.5.0</code> sur master (ou <code>v1.5.0</code> avec le préfixe <code>v</code>) ;</li>
+        <li>merge <code>--no-ff</code> dans <span class="branch develop">develop</span> ;</li>
+        <li>suppression de la branche, retour sur develop.</li>
+      </ol>
+      <div class="callout ok">
+        <strong>Astuce</strong>
+        <p>Cochez « Pousser » pour envoyer master, develop et le tag en une fois.</p>
+      </div>
+
+      <!-- ===================================================== -->
+      <h2 id="hotfix">7. Un hotfix</h2>
+      <p>Un problème en production ? Le hotfix est la <strong>seule</strong> branche qui part directement de <span class="branch master">master</span>.</p>
+      <ol class="steps">
+        <li><em>Démarrer une branche</em> &gt; <em>Hotfix</em> : version proposée = <em>patch</em> du dernier tag + 1 (<code>1.5.0</code> → <code>1.5.1</code>).</li>
+        <li>Corrigez, commitez.</li>
+        <li><em>Terminer…</em> : merge dans master + tag, puis merge dans develop.</li>
+      </ol>
+      <div class="callout">
+        <strong>Hotfix pendant une release</strong>
+        <p>Si une branche <span class="branch release">release/</span> est en cours, le hotfix est mergé dans master puis <strong>dans la release</strong> au lieu de develop : la correction rejoindra develop au Finish de la release.</p>
+      </div>
+      <p>Il ne peut y avoir qu'une release et qu'un hotfix en cours à la fois.</p>
+
+      <!-- ===================================================== -->
+      <h2 id="conflits">8. Conflits et reprise</h2>
+      <p>Si un merge du Finish rencontre un conflit, l'extension <strong>s'arrête immédiatement et ne supprime rien</strong>. Le message liste les fichiers en conflit, et le dépôt reste dans l'état de merge.</p>
+      <ol class="steps">
+        <li>Résolvez les conflits (éditeur de fusion de Visual Studio ou à la main) et enregistrez.</li>
+        <li>Marquez les fichiers comme résolus : <em>Indexer</em> dans Git Changes, ou <code>git add &lt;fichier&gt;</code>.</li>
+        <li><strong>Ne commitez pas vous-même</strong> : cliquez sur <em>Reprendre le finish…</em> dans la fenêtre (ou relancez <em>Terminer…</em>).</li>
+      </ol>
+      <p>Le Finish conclut le merge, saute les étapes déjà faites (merge dans master, tag) et termine le reste.</p>
+      <div class="callout warn">
+        <strong>Le merge a déjà été conclu par Visual Studio ?</strong>
+        <p>Pas de problème : la branche apparaît avec le badge <em>déjà mergée</em>. <em>Terminer…</em> sur sa ligne posera le tag s'il manque et la supprimera.</p>
+        <p>Pour tout annuler à la place : <code>git merge --abort</code>.</p>
+      </div>
+
+      <!-- ===================================================== -->
+      <h2 id="parametres">9. Paramètres</h2>
+      <p>Bouton <em>Paramètres</em> de la fenêtre, ou <span class="menu-path">Extensions &gt; GitFlow &gt; Paramètres GitFlow…</span></p>
+      <div class="mock-row">
+        <div class="vs-window vs-dialog" aria-label="Aperçu des paramètres">
+          <div class="vs-title"><span>Paramètres GitFlow</span><span>✕</span></div>
+          <div class="vs-body">
+            <div class="vs-section" style="margin-top:0">Portée</div>
+            <div><span class="vs-radio">Ce dépôt</span>&nbsp;&nbsp;<span class="vs-radio off">Tous mes dépôts</span></div>
+            <div class="vs-section">Branches permanentes</div>
+            <div class="vs-row"><span style="width:110px">Production</span><span class="vs-input grow">master ▾</span></div>
+            <div class="vs-row"><span style="width:110px">Développement</span><span class="vs-input grow">develop ▾</span></div>
+            <div class="vs-section">Préfixes</div>
+            <div class="vs-row"><span style="width:110px">Feature</span><span class="vs-input grow">feature/</span></div>
+            <div class="vs-row"><span style="width:110px">Release</span><span class="vs-input grow">release/</span></div>
+            <div class="vs-row"><span style="width:110px">Hotfix</span><span class="vs-input grow">hotfix/</span></div>
+            <div class="vs-row"><span style="width:110px">Préfixe de tag</span><span class="vs-input grow">&nbsp;</span></div>
+            <div class="vs-section">Options par défaut du Finish</div>
+            <div>Mode&nbsp;&nbsp;<span class="vs-radio">Merge local</span>&nbsp;&nbsp;<span class="vs-radio off">Pull Request</span></div>
+            <div><span class="vs-check off">Pousser les branches mergées (et le tag)…</span></div>
+            <div><span class="vs-check off">Supprimer aussi la branche sur origin</span></div>
+            <div><span class="vs-check off">Pull Request : Clore… (git fetch --prune)</span></div>
+            <div class="vs-footer"><span class="vs-btn">Réinitialiser aux valeurs par défaut</span><span class="grow"></span><span class="vs-btn primary">OK</span></div>
+          </div>
+        </div>
+        <div class="mock-text">
+          <ul>
+            <li><strong>Portée</strong> : <em>Ce dépôt</em> (git config locale) ou <em>Tous mes dépôts</em> (git config globale, valeurs par défaut des nouveaux dépôts).</li>
+            <li><strong>Seul le nommage est configurable</strong>, pas le comportement du flow.</li>
+            <li><strong>Préfixe de tag</strong> : vide par défaut (tags <code>1.4.0</code>), ou <code>v</code> (tags <code>v1.4.0</code>).</li>
+            <li><strong>Validation en direct</strong> : préfixe vide ou en double, production = développement. Les noms refusés par git sont signalés à l'enregistrement, et rien n'est écrit.</li>
+            <li>Changer un préfixe <strong>ne renomme pas</strong> les branches existantes : un avertissement les liste avant d'enregistrer.</li>
+          </ul>
+          <p>Toutes les clés sont décrites dans la <a href="reference.html#cles">référence</a>.</p>
+        </div>
+      </div>
+
+      <!-- ===================================================== -->
+      <h2 id="menu">10. Les commandes du menu</h2>
+      <p>Tout est aussi accessible par <span class="menu-path">Extensions &gt; GitFlow</span>, sur la solution ouverte :</p>
+      <table>
+        <thead><tr><th>Commande</th><th>Effet</th></tr></thead>
+        <tbody>
+          <tr><td>Fenêtre GitFlow</td><td>Ouvre la fenêtre décrite plus haut.</td></tr>
+          <tr><td>Démarrer une feature / une release / un hotfix…</td><td>Demande le nom (version pré-remplie pour release/hotfix) et crée la branche.</td></tr>
+          <tr><td>Terminer la branche courante…</td><td>Finish de la branche courante, ou reprise d'un Finish arrêté sur un conflit.</td></tr>
+          <tr><td>Publier la branche courante</td><td><code>git push -u origin &lt;branche&gt;</code>.</td></tr>
+          <tr><td>Paramètres GitFlow…</td><td>Écran des paramètres (ou d'initialisation si le dépôt ne l'est pas).</td></tr>
+          <tr><td>Initialiser GitFlow…</td><td>Écran d'initialisation.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="next-prev">
+        <a class="btn" href="index.html">← Accueil</a>
+        <a class="btn primary" href="pull-requests.html">Le mode Pull Request →</a>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="inner">
+      <span>GitFlow pour Visual Studio — modèle : <a href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow">Atlassian Gitflow Workflow</a></span>
+      <a href="reference.html#depannage">Un problème ?</a>
+    </div>
+  </footer>
+</body>
+</html>

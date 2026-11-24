@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mode Pull Request — GitFlow pour Visual Studio</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="index.html"><img class="brand-mark" src="assets/logo.svg" alt="">GitFlow pour Visual Studio</a>
+      <nav class="site-nav" aria-label="Navigation principale">
+        <a href="index.html">Accueil</a>
+        <a href="guide.html">Guide</a>
+        <a href="pull-requests.html" aria-current="page">Pull Requests</a>
+        <a href="reference.html">Référence</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <nav class="toc" aria-label="Sommaire">
+      <strong>Sommaire</strong>
+      <ol>
+        <li><a href="#quand">Quand l'utiliser</a></li>
+        <li><a href="#prerequis">Prérequis</a></li>
+        <li><a href="#feature">Une feature par PR</a></li>
+        <li><a href="#message">Le message généré</a></li>
+        <li><a href="#suivi">Suivre les PR</a></li>
+        <li><a href="#release">Release et hotfix : le tag</a></li>
+        <li><a href="#clore">Clore la branche</a></li>
+        <li><a href="#plateformes">GitHub et Azure DevOps</a></li>
+      </ol>
+    </nav>
+
+    <article>
+      <h1>Le mode Pull Request</h1>
+      <p class="intro">Une option du Finish pour les dépôts où <code>master</code> et <code>develop</code> sont protégées : au lieu de merger en local, l'extension pousse la branche et ouvre les pull requests. La revue et le merge restent humains.</p>
+
+      <h2 id="quand">Quand l'utiliser</h2>
+      <table>
+        <thead><tr><th></th><th>Merge local (défaut)</th><th>Pull Request (option)</th></tr></thead>
+        <tbody>
+          <tr><td>Branches protégées sur le serveur</td><td>Push refusé</td><td>✅ Prévu pour</td></tr>
+          <tr><td>Revue de code</td><td>—</td><td>✅ Sur la plateforme</td></tr>
+          <tr><td>Rapidité</td><td>✅ Immédiat</td><td>Après validation de la PR</td></tr>
+          <tr><td>Remote requis</td><td>Non (ou n'importe lequel)</td><td>GitHub ou Azure DevOps</td></tr>
+        </tbody>
+      </table>
+      <p>Le choix se fait <strong>à chaque Finish</strong> dans la boîte <em>Terminer</em>. Pour pré-sélectionner <em>Pull Request</em> sur un dépôt, réglez « Mode de Finish par défaut » dans les <a href="guide.html#parametres">paramètres</a>.</p>
+
+      <h2 id="prerequis">Prérequis</h2>
+      <ul>
+        <li>Le remote <code>origin</code> pointe vers <strong>GitHub</strong> (<code>github.com</code>) ou <strong>Azure DevOps</strong> (<code>dev.azure.com</code> ou <code>*.visualstudio.com</code>), en https ou en ssh.</li>
+        <li><strong>Git connaît déjà vos identifiants</strong> : si vous avez déjà fait un push ou un fetch en https sur ce serveur (depuis Visual Studio ou un terminal), c'est le cas. L'extension les demande à git (<code>git credential fill</code>, en pratique au Git Credential Manager). Elle n'en stocke aucun, et ils n'apparaissent jamais dans les logs.</li>
+        <li><strong>Aucun outil supplémentaire</strong> : ni <code>gh</code>, ni <code>az</code>.</li>
+      </ul>
+      <div class="callout warn">
+        <strong>« Aucun identifiant git pour dev.azure.com »</strong>
+        <p>Connectez-vous une fois en lançant dans un terminal <code>git ls-remote &lt;url du dépôt&gt;</code> : la fenêtre de connexion du Git Credential Manager s'ouvre. Ensuite, réessayez.</p>
+      </div>
+
+      <h2 id="feature">Une feature par PR</h2>
+      <ol class="steps">
+        <li>Démarrez et développez la feature comme d'habitude (<a href="guide.html#feature">guide</a>).</li>
+        <li><em>Terminer…</em> : choisissez <strong>Pull Request</strong>. Les options push / suppression distante disparaissent : elles ne servent pas en mode PR.</li>
+        <li>L'écran suivant montre le <strong>titre et la description générés</strong>, modifiables, pour chaque PR.</li>
+        <li>OK : l'extension pousse la branche puis crée la PR <span class="branch feature">feature/x</span> → <span class="branch develop">develop</span>. S'il en existe déjà une ouverte, elle est réutilisée et vos nouveaux commits y arrivent. Rien n'est mergé en local.</li>
+        <li>Faites relire et <strong>mergez la PR sur la plateforme</strong> (merge sans fast-forward de préférence, voir <a href="#clore">squash</a>).</li>
+        <li>Dans la fenêtre GitFlow : <em>Actualiser les PR</em> puis <em>Clore la branche</em>.</li>
+      </ol>
+
+      <h2 id="message">Le message généré</h2>
+      <p>Construit uniquement depuis git (déterministe, sans IA). Le titre suit la convention <code>Feature: nom</code> / <code>Release 1.5.0</code> / <code>Hotfix 1.5.1</code>. La description :</p>
+<pre><code>**Feature** `feature/ABC-12-login` → `develop`
+
+### Commits (2)
+- Ajoute la page de connexion
+- Corrige le style du bouton (#42)
+
+### Fichiers
+5 fichier(s) modifié(s), 120 ligne(s) ajoutée(s), 8 ligne(s) supprimée(s)
+
+### Tickets
+ABC-12, #42</code></pre>
+      <p>Pour une release ou un hotfix, une section <em>Version</em> rappelle le tag qui sera posé après le merge.</p>
+      <h3>Personnaliser</h3>
+      <ul>
+        <li><strong>Votre modèle</strong> : <code>.gitflow/pull_request_template.md</code> dans le dépôt, avec les variables <code>{type}</code> <code>{source}</code> <code>{target}</code> <code>{commits}</code> <code>{stats}</code> <code>{version}</code> <code>{tickets}</code>.</li>
+        <li><strong>Le modèle de la plateforme</strong> (<code>.github/pull_request_template.md</code>, <code>.azuredevops/pull_request_template.md</code>…) est utilisé comme base : la description générée est ajoutée en dessous.</li>
+        <li><strong>Motif des tickets</strong> : clé <code>gitflowvs.pr.ticketpattern</code> (expression régulière). Par défaut <code>ABC-123</code> et <code>#42</code>.</li>
+      </ul>
+
+      <h2 id="suivi">Suivre les PR</h2>
+      <div class="mock-row">
+        <div class="vs-window" aria-label="Aperçu de la section Pull requests">
+          <div class="vs-title"><span>GitFlow</span><span>▾ ✕</span></div>
+          <div class="vs-body">
+            <div class="vs-row"><span class="vs-section grow" style="margin:0">Pull requests</span><span class="vs-btn">Actualiser les PR</span></div>
+            <div style="margin-top:6px"><b>release/1.5.0</b></div>
+            <div class="vs-row" style="padding-left:8px"><span>#12 → master</span><span class="vs-italic grow">mergée</span><span class="vs-btn">Ouvrir</span></div>
+            <div class="vs-row" style="padding-left:8px"><span>#13 → develop</span><span class="vs-italic grow">ouverte</span><span class="vs-btn">Ouvrir</span></div>
+            <div class="vs-row"><span class="grow"></span><span class="vs-btn">Poser le tag 1.5.0</span></div>
+          </div>
+        </div>
+        <div class="mock-text">
+          <p>Une section <em>Pull requests</em> apparaît dans la fenêtre dès qu'une PR est suivie : une ligne par PR, avec son état (<em>ouverte</em>, <em>mergée</em>, <em>fermée sans merge</em>) et un bouton <em>Ouvrir</em> vers le navigateur.</p>
+          <p>L'état est lu sur la plateforme <strong>au plus une fois par minute</strong> quand la fenêtre est visible, ou immédiatement avec <em>Actualiser les PR</em>.</p>
+          <p>L'extension <strong>n'approuve ni ne merge jamais</strong> une PR.</p>
+        </div>
+      </div>
+
+      <h2 id="release">Release et hotfix : le tag</h2>
+      <p>Une release ouvre <strong>deux PR</strong> : vers <span class="branch master">master</span> et vers <span class="branch develop">develop</span>. Un hotfix aussi, vers master puis vers develop (ou vers la release en cours).</p>
+      <p>Le tag ne peut être posé qu'<strong>une fois la PR vers master mergée</strong>, sur son commit de merge :</p>
+      <ol class="steps">
+        <li>Mergez la PR vers master sur la plateforme.</li>
+        <li><em>Actualiser les PR</em> : le bouton <em>Poser le tag 1.5.0</em> apparaît.</li>
+        <li>L'extension récupère master, vérifie que le commit de merge est bien sur <code>origin/master</code>, pose le tag annoté (avec le message saisi au Finish) et le pousse.</li>
+      </ol>
+      <p><em>Clore la branche</em> pose aussi le tag s'il manque : un seul clic suffit si les deux PR sont déjà mergées.</p>
+
+      <h2 id="clore">Clore la branche</h2>
+      <p>Quand <strong>toutes</strong> les PR d'une branche sont mergées, <em>Clore la branche</em> :</p>
+      <ol>
+        <li>pose le tag s'il s'agit d'une release ou d'un hotfix et qu'il manque ;</li>
+        <li>récupère le serveur (<code>git fetch</code>, ou <code>git fetch --prune</code> si l'option est cochée dans les paramètres) ;</li>
+        <li>met à jour vos <code>develop</code> / <code>master</code> locales, en fast-forward uniquement ;</li>
+        <li>supprime la branche locale avec <code>git branch -d</code> et oublie ses PR ;</li>
+        <li>vous laisse sur develop (ou sur la release en cours).</li>
+      </ol>
+      <div class="callout warn">
+        <strong>Merge par « squash » ou « rebase »</strong>
+        <p>Dans ce cas, les commits de votre branche ne sont pas dans develop : l'extension le détecte et <strong>ne supprime pas</strong> la branche. Supprimez-la vous-même si vous êtes sûr. Pour éviter ça, choisissez le merge classique (<em>Merge</em> / <em>Merge (no fast-forward)</em>).</p>
+      </div>
+      <div class="callout ok">
+        <strong>Branches distantes</strong>
+        <p>Clore ne supprime pas la branche sur le serveur : cochez <em>Delete branch after merging</em> (Azure) ou activez <em>Automatically delete head branches</em> (GitHub). Avec l'option <em>git fetch --prune</em>, les références <code>origin/…</code> correspondantes disparaissent ensuite toutes seules de votre poste.</p>
+      </div>
+
+      <h2 id="plateformes">GitHub et Azure DevOps</h2>
+      <table>
+        <thead><tr><th></th><th>GitHub</th><th>Azure DevOps</th></tr></thead>
+        <tbody>
+          <tr><td>URL du remote</td><td><code>https://github.com/org/repo.git</code><br><code>git@github.com:org/repo.git</code></td><td><code>https://dev.azure.com/org/projet/_git/repo</code><br><code>git@ssh.dev.azure.com:v3/org/projet/repo</code><br><code>https://org.visualstudio.com/projet/_git/repo</code></td></tr>
+          <tr><td>Identifiants</td><td>Ceux de git pour <code>github.com</code></td><td>Ceux de git pour <code>dev.azure.com</code> (compte Microsoft ou jeton personnel)</td></tr>
+          <tr><td>Branches protégées</td><td>Branch protection rules</td><td>Branch policies</td></tr>
+          <tr><td>Supprimer la branche après merge</td><td><em>Delete branch</em> sur la PR, ou réglage du dépôt</td><td>Case <em>Delete … after merging</em> au Complete</td></tr>
+        </tbody>
+      </table>
+      <p>Avec un remote <code>ssh</code>, l'extension demande quand même des identifiants https au Git Credential Manager pour appeler l'API : connectez-vous une fois en https si besoin.</p>
+
+      <div class="next-prev">
+        <a class="btn" href="guide.html">← Guide</a>
+        <a class="btn primary" href="reference.html">Référence et dépannage →</a>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="inner">
+      <span>GitFlow pour Visual Studio — modèle : <a href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow">Atlassian Gitflow Workflow</a></span>
+      <a href="reference.html#depannage">Un problème ?</a>
+    </div>
+  </footer>
+</body>
+</html>
