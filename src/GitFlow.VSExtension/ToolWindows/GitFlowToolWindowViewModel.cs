@@ -62,6 +62,7 @@ internal sealed class GitFlowToolWindowViewModel : NotifyPropertyChangedObject, 
         StartTypes = new ObservableList<string>([Strings.TypeFeature, Strings.TypeRelease, Strings.TypeHotfix]);
         RefreshCommand = new AsyncCommand((_, context, ct) => RefreshAsync(context, ct));
         InitCommand = new AsyncCommand((_, context, ct) => RunAsync(context, (ui, repo, c) => ui.InitAsync(repo, c), ct));
+        SettingsCommand = new AsyncCommand((_, context, ct) => RunAsync(context, (ui, repo, c) => ui.SettingsAsync(repo, c), ct));
         StartCommand = new AsyncCommand((_, context, ct) => RunAsync(
             context,
             (ui, repo, c) => ui.StartAsync(repo, StartTypeOrder[Math.Clamp(SelectedStartTypeIndex, 0, 2)], NewBranchName, showSuccess: false, c),
@@ -156,6 +157,8 @@ internal sealed class GitFlowToolWindowViewModel : NotifyPropertyChangedObject, 
     [DataMember] public AsyncCommand RefreshCommand { get; }
 
     [DataMember] public AsyncCommand InitCommand { get; }
+
+    [DataMember] public AsyncCommand SettingsCommand { get; }
 
     [DataMember] public AsyncCommand StartCommand { get; }
 
@@ -642,6 +645,7 @@ internal sealed class ChangeItemViewModel(FileChange change)
 internal sealed class ToolWindowLabels
 {
     [DataMember] public string Refresh => Strings.ButtonRefresh;
+    [DataMember] public string Settings => Strings.ButtonSettings;
     [DataMember] public string Branch => Strings.LabelBranch;
     [DataMember] public string Type => Strings.LabelType;
     [DataMember] public string State => Strings.LabelState;

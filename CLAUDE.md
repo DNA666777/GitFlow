@@ -95,6 +95,8 @@ Uniquement les trois types du modèle standard — **aucun autre type** (pas de 
 - Seul le **nommage** est configurable (noms des branches `master`/`develop`, préfixes des 3 types, préfixe de tag) — le comportement du flow, lui, ne l'est pas.
   Stockage dans la git config locale du repo avec les clés git-flow standard : `gitflow.branch.master`, `gitflow.branch.develop`,
   `gitflow.prefix.feature`, `gitflow.prefix.release`, `gitflow.prefix.hotfix`, `gitflow.prefix.versiontag`.
+  Options par défaut du Finish (propres à l'extension, hors de l'espace `gitflow.*`) : `gitflowvs.finish.push`, `gitflowvs.finish.deleteremote`
+  (booléens, local prioritaire sur global, `false` par défaut).
 
 ### Opérations
 - **Init** : ouvre l'écran de paramètres pré-rempli avec les valeurs par défaut (`master`, `develop`, préfixes ci-dessus, préfixe de tag vide), puis crée `develop` depuis `master` si absente et écrit la config `gitflow.*`. Si une config git-flow existe déjà dans le repo, la reprendre telle quelle.

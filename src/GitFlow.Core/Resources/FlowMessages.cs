@@ -36,4 +36,12 @@ public static class FlowMessages
     public static string Describe(FlowWarning warning) => Format("Warning_" + warning.Kind, warning.Detail);
 
     public static string Describe(ConfigValidationError error) => Format("Config_" + error.Kind, error.Value);
+
+    public static string Describe(SettingsWarning warning)
+    {
+        const int MaxListed = 5;
+        var list = string.Join(", ", warning.Items.Take(MaxListed)) + (warning.Items.Count > MaxListed ? ", …" : string.Empty);
+        var prefix = warning.Prefix.Length == 0 ? "∅" : warning.Prefix;
+        return Format("SettingsWarning_" + warning.Kind, prefix, warning.Items.Count, list);
+    }
 }

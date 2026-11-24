@@ -6,5 +6,6 @@
   "GitFlow.VSExtension.StartHotfixCommand.DisplayName": "Démarrer un hotfix...",
   "GitFlow.VSExtension.FinishCommand.DisplayName": "Terminer la branche courante...",
   "GitFlow.VSExtension.PublishCommand.DisplayName": "Publier la branche courante",
-  "GitFlow.VSExtension.InitCommand.DisplayName": "Initialiser GitFlow..."
+  "GitFlow.VSExtension.InitCommand.DisplayName": "Initialiser GitFlow...",
+  "GitFlow.VSExtension.SettingsCommand.DisplayName": "Paramètres GitFlow..."
 }

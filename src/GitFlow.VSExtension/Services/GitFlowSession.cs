@@ -1,3 +1,4 @@
+using GitFlow.Core.Config;
 using GitFlow.Core.Flow;
 using GitFlow.Core.Git;
 
@@ -14,7 +15,10 @@ internal sealed class GitFlowSession : IDisposable
         var runner = new GitCliRunner(output);
         Flow = new FlowService(runner);
         Commits = new CommitService(runner);
+        Settings = new GitFlowSettingsService(runner);
     }
+
+    public GitFlowSettingsService Settings { get; }
 
     public GitFlowOutput Output { get; }
 

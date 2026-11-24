@@ -70,5 +70,9 @@
   <data name="Commit_More" xml:space="preserve"><value>… et {0} autre(s) fichier(s)</value></data>
   <data name="Commit_Refs" xml:space="preserve"><value>Réf. : {0}</value></data>
 
+  <!-- Settings warnings: key "SettingsWarning_{SettingsWarningKind}", {0} = previous prefix, {1} = count, {2} = list -->
+  <data name="SettingsWarning_OrphanedBranches" xml:space="preserve"><value>{1} branche(s) utilisent l'ancien préfixe « {0} » : {2}. Elles ne sont pas renommées et ne seront plus reconnues par GitFlow.</value></data>
+  <data name="SettingsWarning_OldTagPrefix" xml:space="preserve"><value>{1} tag(s) de version utilisent l'ancien préfixe de tag « {0} » : {2}. Ils ne serviront plus à proposer les prochaines versions.</value></data>
+
   <data name="Info_ReleaseReminder" xml:space="preserve"><value>Release en cours : corrections, docs et tâches de release uniquement.</value></data>
 </root>

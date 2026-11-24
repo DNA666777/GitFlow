@@ -24,9 +24,18 @@ internal static class GitFlowMenu
             MenuChild.Command<FinishCommand>(),
             MenuChild.Command<PublishCommand>(),
             MenuChild.Separator,
+            MenuChild.Command<SettingsCommand>(),
             MenuChild.Command<InitCommand>(),
         ],
     };
+}
+
+[VisualStudioContribution]
+internal sealed class SettingsCommand(GitFlowSession session) : GitFlowCommand(session)
+{
+    public override CommandConfiguration CommandConfiguration => new("%GitFlow.VSExtension.SettingsCommand.DisplayName%");
+
+    protected override Task ExecuteAsync(FlowUi ui, string repository, CancellationToken ct) => ui.SettingsAsync(repository, ct);
 }
 
 /// <summary>Opens the GitFlow tool window (also under View &gt; Other Windows).</summary>
