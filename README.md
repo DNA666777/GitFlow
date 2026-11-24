@@ -122,6 +122,10 @@ Pour (re)publier un tag existant : onglet *Actions* > *Release* > *Run workflow*
 
 Le workflow [`ci.yml`](.github/workflows/ci.yml) compile et teste chaque push sur `develop` ou `master` et chaque pull request. Le `.vsix` de chaque build reste disponible 7 jours en artefact.
 
+## Licence
+
+[MIT](LICENSE) — © 2026 DNA666777.
+
 ## Documentation
 
 Le tutoriel est dans [`docs/`](docs/README.md), en deux formats au contenu identique :
