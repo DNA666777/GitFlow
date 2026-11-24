@@ -15,15 +15,18 @@ Priorités, dans l'ordre : **fiabilité** (ne jamais perdre de travail) > **simp
 ## Stack technique
 
 - **SDK** : `Microsoft.VisualStudio.Extensibility` (modèle *out-of-process*, VisualStudio.Extensibility).
-  - Cible : VS 2022 (17.9+) et VS 2026. Vérifier la plage `InstallationTargetVersion` dans la doc Microsoft à jour avant de la figer.
+  - Cible : **VS 2022 17.14+ et VS 2026** (décision 2026-11-24). Packages `Microsoft.VisualStudio.Extensibility.Sdk` / `.Build` **17.14.x** :
+    une version 17.N du SDK exige VS ≥ 17.N, et les 18.x sont compilées pour net10 (VS 2026 uniquement). La plage d'installation
+    `[17.14,)` est générée automatiquement dans le `.vsixmanifest`. Ne pas monter en 18.x tant que VS 2022 est supporté.
+  - L'API Output window est marquée *preview* en 17.14 (`VSEXTPREVIEW_OUTPUTWINDOW` supprimé dans le csproj, usage isolé dans `Services/GitFlowOutput.cs`).
   - Ne PAS utiliser le VSSDK in-process (`AsyncPackage`) sauf si une fonctionnalité indispensable est introuvable en out-of-process — dans ce cas, demander avant.
 - **Langage** : C# (dernière version supportée), `nullable enable`, `TreatWarningsAsErrors` dans `GitFlow.Core`.
-- **Framework** : `net8.0` (ou supérieur si le SDK d'extensibilité l'exige).
+- **Framework** : `net8.0` pour `GitFlow.Core` et les tests, `net8.0-windows8.0` pour `GitFlow.VSExtension`.
 - **UI** : Remote UI (XAML + ViewModel `NotifyPropertyChangedObject`) pour la tool window.
 - **Moteur Git** : appel du **`git` CLI** (Git for Windows) via `Process`, pas LibGit2Sharp.
   Raisons : respecte la config utilisateur (credentials, hooks, signatures GPG, LFS), comportement identique au terminal.
 - **Aucune dépendance** à git-flow / git-flow-avh / git-flow-next : la logique GitFlow est implémentée dans `GitFlow.Core`.
-- **Tests** : xUnit + FluentAssertions (ou Shouldly).
+- **Tests** : xUnit + Shouldly (FluentAssertions v8 est sous licence commerciale). Pas de bibliothèque de mock : `FakeGitRunner` écrit à la main.
 
 ---
 
@@ -92,6 +95,8 @@ Uniquement les trois types du modèle standard — **aucun autre type** (pas de 
 - Seul le **nommage** est configurable (noms des branches `master`/`develop`, préfixes des 3 types, préfixe de tag) — le comportement du flow, lui, ne l'est pas.
   Stockage dans la git config locale du repo avec les clés git-flow standard : `gitflow.branch.master`, `gitflow.branch.develop`,
   `gitflow.prefix.feature`, `gitflow.prefix.release`, `gitflow.prefix.hotfix`, `gitflow.prefix.versiontag`.
+  Options par défaut du Finish (propres à l'extension, hors de l'espace `gitflow.*`) : `gitflowvs.finish.push`, `gitflowvs.finish.deleteremote`
+  (booléens, local prioritaire sur global, `false` par défaut).
 
 ### Opérations
 - **Init** : ouvre l'écran de paramètres pré-rempli avec les valeurs par défaut (`master`, `develop`, préfixes ci-dessus, préfixe de tag vide), puis crée `develop` depuis `master` si absente et écrit la config `gitflow.*`. Si une config git-flow existe déjà dans le repo, la reprendre telle quelle.
@@ -111,7 +116,7 @@ Le Finish local de la phase 1 sert à valider la logique et aux repos non proté
 
 **Conception dès la phase 1** : le Finish doit passer par une abstraction `IFinishStrategy` (`LocalMergeStrategy` en phase 1,
 `PullRequestStrategy` en phase 2) pour que la phase 2 se branche sans réécrire `FlowService`.
-Plateforme Git derrière une interface `IPullRequestProvider` (plateforme cible : **à préciser**, voir fin de section).
+Plateforme Git derrière une interface `IPullRequestProvider` (plateformes cibles : **GitHub et Azure DevOps**, voir fin de section).
 
 Flow en mode PR :
 | Type    | Au Finish                                                        | Après merge de la PR vers master |
@@ -137,8 +142,14 @@ Flow en mode PR :
   si le repo contient un template PR de la plateforme, l'utiliser comme base.
 - Tests unitaires obligatoires sur la génération du message (cas : aucun commit, commits multiples, tickets, caractères spéciaux).
 
-Plateforme cible : **à préciser par l'utilisateur** (GitHub, Azure DevOps, GitLab, Bitbucket…). Avant de commencer la phase 2, demander laquelle
-et comment s'authentifier (CLI officielle déjà connectée sur le poste de préférence — `gh`, `az repos`, `glab` — plutôt que stocker un token dans l'extension).
+**Plateformes cibles (décision du 2026-11-24) : GitHub et Azure DevOps (Azure Repos)** — deux implémentations de `IPullRequestProvider`.
+- Détection d'après l'URL du remote `origin` : `github.com` → GitHub ; `dev.azure.com/{org}/{projet}/_git/{repo}` ou `{org}.visualstudio.com/…` → Azure DevOps.
+  Remote non reconnu → mode PR indisponible, le Finish local reste utilisable.
+- API REST de chaque plateforme (GitHub REST API ; Azure DevOps `…/_apis/git/repositories/{repo}/pullrequests`).
+- **Authentification : via le Git Credential Manager** (`git credential fill` / `git credential approve|reject`, appelés par `IGitRunner`),
+  c.-à-d. les identifiants que git utilise déjà pour push/fetch. **Pas de `gh` ni d'`az`**, aucun token stocké par l'extension
+  (l'extension reste dépendante de Git for Windows seulement). Ne jamais écrire un token dans l'Output Pane ni dans les logs.
+- Côté Azure DevOps, les « branch policies » jouent le rôle des branches protégées.
 
 ### Règles de sécurité (non négociables)
 1. **Refuser** Start/Finish si l'arbre de travail est sale (fichiers modifiés non commités) — proposer à l'utilisateur de commiter ou stasher, ne jamais stasher automatiquement en silence.
@@ -197,19 +208,26 @@ et comment s'authentifier (CLI officielle déjà connectée sur le poste de pré
 ## Commandes
 
 ```powershell
-# Build complet
+# Build complet (produit aussi le .vsix, MSBuild de VS non requis)
 dotnet build GitFlowVS.sln -c Debug
+#   → src/GitFlow.VSExtension/bin/Debug/net8.0-windows8.0/GitFlow.VSExtension.vsix
 
-# Tests
+# Tests (intégration : plusieurs minutes, vrais dépôts git dans %TEMP%\gitflow-tests)
 dotnet test tests/GitFlow.Core.Tests
 dotnet test tests/GitFlow.Core.IntegrationTests
 
-# Si le projet d'extension exige MSBuild de Visual Studio :
-# & "$(& "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -prerelease -find MSBuild\**\Bin\MSBuild.exe)" GitFlowVS.sln /p:Configuration=Debug
-
-# Lancer l'instance expérimentale pour test manuel (après build) :
-# devenv /rootsuffix Exp
+# Test manuel — le F5 ne charge PAS l'extension pour l'instant (à investiguer).
+# Contournement : incrémenter <Version> dans GitFlow.VSExtension.csproj, rebuild, puis installer le .vsix
+# (VS 2026 passe la main au VS Installer, fenêtre interactive ; installation par machine, donc aussi dans la VS principale) :
+& "H:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\IDE\VSIXInstaller.exe" /instanceIds:f2c0b313 src\GitFlow.VSExtension\bin\Debug\net8.0-windows8.0\GitFlow.VSExtension.vsix
+# puis redémarrer VS. Fermer VS AVANT d'installer : sinon le VS Installer se ferme sans rien installer.
+# Vérifier la version réellement installée : IDE\VSExtensions\*\extension.vsixmanifest (Identity Version).
+# Dépôt jetable pour les essais : H:\Dev\GitFlowSandbox (origin : H:\Dev\GitFlowSandbox-origin.git).
+# Logs de l'extension (exceptions) : %TEMP%\servicehub\logs\*GitFlow.VSExtension*.log
 ```
+
+Note : `dotnet sln add` du SDK 11 échoue sur cette solution (« Solution folder 'src' already contains… ») —
+ajouter les projets en éditant `GitFlowVS.sln` à la main.
 
 Mettre à jour cette section si les commandes réelles diffèrent.
 
