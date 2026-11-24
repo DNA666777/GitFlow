@@ -151,6 +151,7 @@ Si les conflits sont résolus et les fichiers ajoutés (git add), le finish va r
   <data name="PrStateMerged" xml:space="preserve"><value>mergée</value></data>
   <data name="PrStateClosed" xml:space="preserve"><value>fermée sans merge</value></data>
   <data name="PrStateUnknown" xml:space="preserve"><value>état non vérifié</value></data>
+  <data name="SettingsPruneOnComplete" xml:space="preserve"><value>Pull Request : « Clore la branche » nettoie les références des branches supprimées sur le serveur (git fetch --prune)</value></data>
   <data name="SettingsFinishMode" xml:space="preserve"><value>Mode de Finish par défaut</value></data>
   <data name="StatusWorking" xml:space="preserve"><value>Opération en cours…</value></data>
   <data name="StatusSucceeded" xml:space="preserve"><value>Terminé.</value></data>

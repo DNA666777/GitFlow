@@ -103,6 +103,7 @@ internal static class Strings
     public static string PrStateClosed => Get(nameof(PrStateClosed));
     public static string PrStateUnknown => Get(nameof(PrStateUnknown));
     public static string SettingsFinishMode => Get(nameof(SettingsFinishMode));
+    public static string SettingsPruneOnComplete => Get(nameof(SettingsPruneOnComplete));
     public static string ButtonSettings => Get(nameof(ButtonSettings));
     public static string SettingsDialogTitle => Get(nameof(SettingsDialogTitle));
     public static string InitDialogTitle => Get(nameof(InitDialogTitle));

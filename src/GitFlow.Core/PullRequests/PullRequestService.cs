@@ -211,7 +211,11 @@ public sealed class PullRequestService
     /// When every PR of the branch is merged: updates the local targets (fast-forward only) and deletes the local branch
     /// with <c>git branch -d</c> (refused by git if it is not merged, e.g. after a squash merge). Release/hotfix must be tagged first.
     /// </summary>
-    public async Task<FlowResult> CompleteAsync(string repositoryPath, string branchName, CancellationToken ct = default)
+    /// <param name="prune">
+    /// Optional: fetch with <c>--prune</c>, which removes the local origin/* references to branches deleted on the server
+    /// (e.g. the branch of the merged PR). Local branches are never touched by it.
+    /// </param>
+    public async Task<FlowResult> CompleteAsync(string repositoryPath, string branchName, bool prune = false, CancellationToken ct = default)
     {
         try
         {
@@ -250,7 +254,14 @@ public sealed class PullRequestService
                 return FlowResult.Fail(FlowError.DirtyWorkingTree);
             }
 
-            await git.RunCheckedAsync(ct, "fetch", Remote).ConfigureAwait(false);
+            if (prune)
+            {
+                await git.RunCheckedAsync(ct, "fetch", "--prune", Remote).ConfigureAwait(false);
+            }
+            else
+            {
+                await git.RunCheckedAsync(ct, "fetch", Remote).ConfigureAwait(false);
+            }
             var targets = prs.Select(p => p.Target).Distinct().ToArray();
             var switchedForSync = false;
             foreach (var target in targets)

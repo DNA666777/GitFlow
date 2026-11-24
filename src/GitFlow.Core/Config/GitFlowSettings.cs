@@ -2,7 +2,11 @@ namespace GitFlow.Core.Config;
 
 /// <summary>Default state of the Finish options (the user can still change them in the Finish dialog).</summary>
 /// <param name="UsePullRequest">Pull Request mode pre-selected in the Finish dialog (optional mode; local merge by default).</param>
-public sealed record FinishDefaults(bool PushAfterFinish, bool DeleteRemoteBranch, bool UsePullRequest = false)
+/// <param name="PruneOnComplete">
+/// "Clore la branche" (PR mode) fetches with --prune: local origin/* references to branches deleted on the server are removed.
+/// Off by default; local branches are never touched.
+/// </param>
+public sealed record FinishDefaults(bool PushAfterFinish, bool DeleteRemoteBranch, bool UsePullRequest = false, bool PruneOnComplete = false)
 {
     public static FinishDefaults None { get; } = new(false, false);
 }
@@ -21,6 +25,9 @@ public static class GitFlowVsConfigKeys
 
     /// <summary>"local" (default) or "pullrequest".</summary>
     public const string FinishMode = "gitflowvs.finish.mode";
+
+    /// <summary>Boolean: "Clore la branche" uses <c>git fetch --prune</c> (default false).</summary>
+    public const string PruneOnComplete = "gitflowvs.pr.prune";
 
     /// <summary>Regular expression for ticket references in PR descriptions (default: ABC-123 and #42).</summary>
     public const string TicketPattern = "gitflowvs.pr.ticketpattern";
