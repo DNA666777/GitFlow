@@ -96,6 +96,8 @@
                   Style="{StaticResource {x:Static styles:VsResourceKeys.CheckBoxStyleKey}}" />
         <CheckBox Content="{Binding Labels.DeleteRemote}" IsChecked="{Binding DeleteRemoteBranch}"
                   Style="{StaticResource {x:Static styles:VsResourceKeys.CheckBoxStyleKey}}" />
+        <CheckBox Content="{Binding Labels.Prune}" IsChecked="{Binding PruneOnComplete}" Margin="0,6,0,0"
+                  Style="{StaticResource {x:Static styles:VsResourceKeys.CheckBoxStyleKey}}" />
 
         <!-- Live validation -->
         <Border Visibility="{Binding HasValidationErrors, Converter={StaticResource BoolToVisibility}}"

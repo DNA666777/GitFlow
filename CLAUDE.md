@@ -113,6 +113,8 @@ Uniquement les trois types du modèle standard — **aucun autre type** (pas de 
 
 Contexte : sur certains repos, `master` et `develop` sont protégées côté serveur → aucun merge direct n'est possible, tout passe par PR.
 **Le mode PR est une OPTION, pas le mode par défaut** (décision utilisateur du 2026-11-24) : le Finish local reste le défaut.
+- Option « Clore la branche » avec `git fetch --prune` (nettoie les `origin/*` des branches supprimées sur le serveur) :
+  clé `gitflowvs.pr.prune`, booléen, **désactivée par défaut** ; ne touche jamais aux branches locales.
 - Paramètres : « Mode de Finish par défaut » = *Merge local* (défaut) ou *Pull Request*, clé `gitflowvs.finish.mode` = `local` | `pullrequest`
   (même portée locale/globale que les autres options).
 - Boîte de dialogue de Finish : choix *Merge local / Pull Request* pré-sélectionné d'après ce paramètre, modifiable à chaque Finish.

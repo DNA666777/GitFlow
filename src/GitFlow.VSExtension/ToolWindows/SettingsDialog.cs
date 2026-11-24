@@ -22,6 +22,7 @@ internal sealed class SettingsDialogViewModel : NotifyPropertyChangedObject
     private bool _pushAfterFinish;
     private bool _deleteRemoteBranch;
     private bool _usePullRequest;
+    private bool _pruneOnComplete;
     private bool _isGlobalScope;
     private string _validationText = string.Empty;
 
@@ -118,6 +119,14 @@ internal sealed class SettingsDialogViewModel : NotifyPropertyChangedObject
         }
     }
 
+    /// <summary>"Clore la branche" (PR mode) uses git fetch --prune.</summary>
+    [DataMember]
+    public bool PruneOnComplete
+    {
+        get => _pruneOnComplete;
+        set => SetProperty(ref _pruneOnComplete, value);
+    }
+
     [DataMember]
     public bool UseLocalMerge
     {
@@ -166,7 +175,7 @@ internal sealed class SettingsDialogViewModel : NotifyPropertyChangedObject
 
     public GitFlowSettings ToSettings() => new(
         new GitFlowConfig(MasterBranch.Trim(), DevelopBranch.Trim(), FeaturePrefix.Trim(), ReleasePrefix.Trim(), HotfixPrefix.Trim(), VersionTagPrefix.Trim()),
-        new FinishDefaults(PushAfterFinish, DeleteRemoteBranch, UsePullRequest));
+        new FinishDefaults(PushAfterFinish, DeleteRemoteBranch, UsePullRequest, PruneOnComplete));
 
     private void Apply(GitFlowSettings settings)
     {
@@ -184,6 +193,7 @@ internal sealed class SettingsDialogViewModel : NotifyPropertyChangedObject
         PushAfterFinish = settings.Finish.PushAfterFinish;
         DeleteRemoteBranch = settings.Finish.DeleteRemoteBranch;
         UsePullRequest = settings.Finish.UsePullRequest;
+        PruneOnComplete = settings.Finish.PruneOnComplete;
         Validate();
     }
 
@@ -230,6 +240,7 @@ internal sealed class SettingsLabels
     [DataMember] public string FinishMode => Strings.SettingsFinishMode;
     [DataMember] public string ModeLocal => Strings.FinishModeLocal;
     [DataMember] public string ModePullRequest => Strings.FinishModePullRequest;
+    [DataMember] public string Prune => Strings.SettingsPruneOnComplete;
 }
 
 internal sealed class SettingsDialogControl(SettingsDialogViewModel dataContext) : RemoteUserControl(dataContext);

@@ -218,6 +218,38 @@ public class PullRequestIntegrationTests
         (await s.Repo.GitAsync("rev-parse", "2.0.0^{commit}")).ShouldBe(await s.Repo.GitAsync("rev-parse", "master"));
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Complete_prunes_deleted_remote_branches_only_when_asked(bool prune)
+    {
+        await using var s = await CreateAsync();
+        await s.Flow.StartAsync(s.Repo.WorkDir, BranchType.Feature, "old");
+        await s.Repo.CommitFileAsync("o.txt", "o\n", "O");
+        var finish = await FinishWithPullRequestsAsync(s, "feature/old");
+        await s.Platform.MergeAsync(finish.PullRequests[0].Id);
+        // The platform deletes the source branch after the merge ("delete branch after merging").
+        await s.Repo.GitInAsync(s.Repo.OriginDir, "branch", "-D", "feature/old");
+        // An unrelated local branch, never touched by --prune.
+        await s.Repo.GitAsync("branch", "keep-me", "develop");
+
+        var complete = await s.PullRequests.CompleteAsync(s.Repo.WorkDir, "feature/old", prune);
+
+        complete.IsSuccess.ShouldBeTrue(complete.Detail);
+        var remoteRefs = await s.Repo.GitAsync("for-each-ref", "--format=%(refname:short)", "refs/remotes/origin/");
+        if (prune)
+        {
+            remoteRefs.ShouldNotContain("origin/feature/old");
+        }
+        else
+        {
+            remoteRefs.ShouldContain("origin/feature/old", Case.Sensitive, "without the option the stale reference stays");
+        }
+
+        (await s.Repo.LocalBranchesAsync()).ShouldContain("keep-me");
+        (await s.Repo.LocalBranchesAsync()).ShouldNotContain("feature/old");
+    }
+
     [Fact]
     public async Task Squash_merged_branch_is_never_deleted()
     {
