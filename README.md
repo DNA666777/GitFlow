@@ -106,6 +106,22 @@ GitFlowVS.sln
   - xUnit + Shouldly pour les tests.
 - **Règle d'or** : toute la logique est dans `GitFlow.Core`. L'extension VS ne fait qu'afficher, recueillir les choix de l'utilisateur et appeler le Core. Un bug reproductible sans VS doit l'être par un test du Core.
 
+## Publier une version
+
+La publication est automatique (GitHub Actions) et suit le flow :
+
+1. **Démarrer une release** avec l'extension (version proposée, par exemple `1.4.0`).
+2. **Terminer** la release avec « Pousser » coché, ou en mode Pull Request puis *Poser le tag*. Le tag `1.4.0` arrive sur GitHub.
+3. Le workflow [`release.yml`](.github/workflows/release.yml) se déclenche sur ce tag :
+   - build Release, **à la version du tag** ;
+   - tests unitaires et d'intégration ;
+   - vérification de la version du paquet ;
+   - création de la **GitHub Release** avec `GitFlow.VSExtension-1.4.0.vsix` attaché et des notes générées à partir des commits.
+
+Pour (re)publier un tag existant : onglet *Actions* > *Release* > *Run workflow*, puis indiquer le tag.
+
+Le workflow [`ci.yml`](.github/workflows/ci.yml) compile et teste chaque push sur `develop` ou `master` et chaque pull request. Le `.vsix` de chaque build reste disponible 7 jours en artefact.
+
 ## Documentation
 
 Le tutoriel est dans [`docs/`](docs/README.md), en deux formats au contenu identique :

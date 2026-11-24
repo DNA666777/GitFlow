@@ -1,0 +1,60 @@
+# Build + tests à chaque push sur develop/master et sur chaque pull request.
+name: CI
+
+on:
+  push:
+    branches: [develop, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Build et tests
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Runtime .NET 8 : les projets ciblent net8.0 (tests compris).
+      - name: .NET 8 (runtime des tests)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      # SDK figé par global.json, comme sur le poste de développement.
+      - name: SDK .NET (global.json)
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Build (Release)
+        run: dotnet build GitFlowVS.sln -c Release -nologo
+
+      - name: Tests unitaires
+        run: dotnet test tests/GitFlow.Core.Tests -c Release --no-build -nologo --logger trx --results-directory TestResults
+
+      - name: Tests d'intégration (vrais dépôts git)
+        run: dotnet test tests/GitFlow.Core.IntegrationTests -c Release --no-build -nologo --logger trx --results-directory TestResults
+
+      - name: Résultats des tests
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults/
+          retention-days: 7
+
+      - name: Paquet .vsix (artefact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: GitFlow.VSExtension-ci
+          path: src/GitFlow.VSExtension/bin/Release/net8.0-windows8.0/GitFlow.VSExtension.vsix
+          retention-days: 7
