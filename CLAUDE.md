@@ -242,7 +242,11 @@ SDK .NET figé par `global.json` (10.0.x, `rollForward: latestFeature`) ; les pr
   puis GitHub Release avec `GitFlow.VSExtension-<version>.vsix`. Relance manuelle possible (*Run workflow* + tag).
 - Un workflow ne se déclenche que sur les commits qui le contiennent : il n'agit qu'à partir de la première release
   qui inclut `.github/workflows/`.
-- Prochaine étape prévue (non faite) : préparation du paquet (publisher, `Preview=false`, icône, licence) puis Marketplace.
+- Paquet (fiche de l'extension, `ExtensionEntrypoint.cs`) : éditeur `DNA666777`, `Preview = false`, licence **MIT** (`LICENSE` à la racine,
+  copié en `LICENSE.txt` dans le .vsix par la cible `CopyLicenseForVsix` du csproj), icône `Resources/icon.png` (128 px) et
+  `Resources/preview.png` (200 px), liens MoreInfo/ReleaseNotes vers GitHub, tags de recherche.
+  **Ne jamais changer l'`id` de l'extension** : VS ne reconnaîtrait plus les mises à jour (deux extensions installées).
+- Prochaine étape prévue (non faite) : publication sur le Visual Studio Marketplace (compte éditeur `DNA666777`, PAT en secret GitHub).
 Note : `dotnet sln add` du SDK 11 échoue sur cette solution (« Solution folder 'src' already contains… ») —
 ajouter les projets en éditant `GitFlowVS.sln` à la main.
 

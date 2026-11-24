@@ -20,6 +20,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Extension listing (Manage Extensions, Marketplace): icon, preview image and license shipped in the .vsix. -->
+    <Content Include="Resources\icon.png" />
+    <Content Include="Resources\preview.png" />
+    <!-- The .vsix needs a .txt/.rtf license: the repository LICENSE is copied as LICENSE.txt at build time (single source). -->
+    <Content Include="$(BaseIntermediateOutputPath)LICENSE.txt" Link="LICENSE.txt" />
+  </ItemGroup>
+
+  <Target Name="CopyLicenseForVsix" BeforeTargets="PrepareForBuild">
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\LICENSE" DestinationFiles="$(BaseIntermediateOutputPath)LICENSE.txt" SkipUnchangedFiles="true" />
+  </Target>
+
+  <ItemGroup>
     <!-- Remote UI: the XAML is sent to Visual Studio as text, embedded under the full name of its control class. -->
     <EmbeddedResource Include="ToolWindows\*.xaml" />
     <Page Remove="ToolWindows\*.xaml" />
