@@ -1,7 +1,8 @@
 namespace GitFlow.Core.Config;
 
 /// <summary>Default state of the Finish options (the user can still change them in the Finish dialog).</summary>
-public sealed record FinishDefaults(bool PushAfterFinish, bool DeleteRemoteBranch)
+/// <param name="UsePullRequest">Pull Request mode pre-selected in the Finish dialog (optional mode; local merge by default).</param>
+public sealed record FinishDefaults(bool PushAfterFinish, bool DeleteRemoteBranch, bool UsePullRequest = false)
 {
     public static FinishDefaults None { get; } = new(false, false);
 }
@@ -17,6 +18,12 @@ public static class GitFlowVsConfigKeys
 {
     public const string FinishPush = "gitflowvs.finish.push";
     public const string FinishDeleteRemote = "gitflowvs.finish.deleteremote";
+
+    /// <summary>"local" (default) or "pullrequest".</summary>
+    public const string FinishMode = "gitflowvs.finish.mode";
+
+    /// <summary>Regular expression for ticket references in PR descriptions (default: ABC-123 and #42).</summary>
+    public const string TicketPattern = "gitflowvs.pr.ticketpattern";
 }
 
 public enum SettingsWarningKind

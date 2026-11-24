@@ -18,7 +18,10 @@ public sealed class GitCliRunner(IGitCommandLog? log = null, GitCliRunnerOptions
 {
     private readonly GitCliRunnerOptions _options = options ?? new GitCliRunnerOptions();
 
-    public async Task<GitResult> RunAsync(string workingDirectory, IReadOnlyList<string> arguments, CancellationToken cancellationToken)
+    public Task<GitResult> RunAsync(string workingDirectory, IReadOnlyList<string> arguments, CancellationToken cancellationToken) =>
+        RunAsync(workingDirectory, arguments, null, cancellationToken);
+
+    public async Task<GitResult> RunAsync(string workingDirectory, IReadOnlyList<string> arguments, string? standardInput, CancellationToken cancellationToken)
     {
         var startInfo = new ProcessStartInfo(_options.GitExecutable)
         {
@@ -28,6 +31,7 @@ public sealed class GitCliRunner(IGitCommandLog? log = null, GitCliRunnerOptions
             RedirectStandardInput = true,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
+            StandardInputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
             StandardOutputEncoding = Encoding.UTF8,
             StandardErrorEncoding = Encoding.UTF8,
         };
@@ -62,6 +66,11 @@ public sealed class GitCliRunner(IGitCommandLog? log = null, GitCliRunnerOptions
                 result = new GitResult(arguments, -1, string.Empty, $"Unable to start '{_options.GitExecutable}': {ex.Message}");
                 log?.Log(new GitCommandLogEntry(workingDirectory, result, stopwatch.Elapsed));
                 return result;
+            }
+
+            if (standardInput is not null)
+            {
+                await process.StandardInput.WriteAsync(standardInput.AsMemory(), cancellationToken).ConfigureAwait(false);
             }
 
             process.StandardInput.Close();

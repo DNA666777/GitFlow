@@ -123,6 +123,35 @@ Si les conflits sont résolus et les fichiers ajoutés (git add), le finish va r
   <data name="SettingsConfirmWarnings" xml:space="preserve"><value>Enregistrer quand même ?</value></data>
   <data name="SettingsSavedLocal" xml:space="preserve"><value>Paramètres GitFlow enregistrés pour ce dépôt.</value></data>
   <data name="SettingsSavedGlobal" xml:space="preserve"><value>Paramètres GitFlow enregistrés pour tous vos dépôts. Ils servent de valeurs par défaut à l'initialisation des nouveaux dépôts.</value></data>
+  <!-- Pull Request mode (optional) -->
+  <data name="FinishMode" xml:space="preserve"><value>Mode</value></data>
+  <data name="FinishModeLocal" xml:space="preserve"><value>Merge local</value></data>
+  <data name="FinishModePullRequest" xml:space="preserve"><value>Pull Request</value></data>
+  <data name="FinishPullRequestNote" xml:space="preserve"><value>La branche sera poussée et une pull request sera créée pour chaque cible. Vous relirez les messages à l'étape suivante. Rien n'est mergé localement.</value></data>
+  <data name="FinishPullRequestNotNow" xml:space="preserve"><value>Mode Pull Request indisponible : un merge local est en cours ou déjà fait pour cette branche.</value></data>
+  <data name="PullRequestDraftsTitle" xml:space="preserve"><value>Pull requests de {0}</value></data>
+  <data name="PullRequestDraftsIntro" xml:space="preserve"><value>Messages générés depuis git. Relisez-les et modifiez-les si besoin avant la création sur {0}.</value></data>
+  <data name="PullRequestTitleLabel" xml:space="preserve"><value>Titre</value></data>
+  <data name="PullRequestDescriptionLabel" xml:space="preserve"><value>Description</value></data>
+  <data name="ProgressPullRequests" xml:space="preserve"><value>GitFlow : pull requests pour {0}</value></data>
+  <data name="PullRequestsCreated" xml:space="preserve"><value>Pull request(s) prête(s) pour « {0} » :</value></data>
+  <data name="PullRequestsTagLater" xml:space="preserve"><value>Le tag « {0} » sera posé quand la PR vers {1} sera mergée : fenêtre GitFlow, section Pull requests.</value></data>
+  <data name="PullRequestsOpenAsk" xml:space="preserve"><value>Ouvrir dans le navigateur ?</value></data>
+  <data name="ProgressTag" xml:space="preserve"><value>GitFlow : tag de {0}</value></data>
+  <data name="TagDone" xml:space="preserve"><value>Tag « {0} » posé sur le commit de merge et poussé vers origin.</value></data>
+  <data name="ProgressComplete" xml:space="preserve"><value>GitFlow : clôture de {0}</value></data>
+  <data name="CompleteDone" xml:space="preserve"><value>« {0} » est terminée : ses pull requests sont mergées et la branche locale est supprimée.</value></data>
+  <data name="SectionPullRequests" xml:space="preserve"><value>Pull requests</value></data>
+  <data name="NoPullRequests" xml:space="preserve"><value>Aucune pull request suivie.</value></data>
+  <data name="ButtonRefreshPullRequests" xml:space="preserve"><value>Actualiser les PR</value></data>
+  <data name="ButtonOpen" xml:space="preserve"><value>Ouvrir</value></data>
+  <data name="ButtonTag" xml:space="preserve"><value>Poser le tag {0}</value></data>
+  <data name="ButtonComplete" xml:space="preserve"><value>Clore la branche</value></data>
+  <data name="PrStateOpen" xml:space="preserve"><value>ouverte</value></data>
+  <data name="PrStateMerged" xml:space="preserve"><value>mergée</value></data>
+  <data name="PrStateClosed" xml:space="preserve"><value>fermée sans merge</value></data>
+  <data name="PrStateUnknown" xml:space="preserve"><value>état non vérifié</value></data>
+  <data name="SettingsFinishMode" xml:space="preserve"><value>Mode de Finish par défaut</value></data>
   <data name="StatusWorking" xml:space="preserve"><value>Opération en cours…</value></data>
   <data name="StatusSucceeded" xml:space="preserve"><value>Terminé.</value></data>
   <data name="StatusSucceededWithWarnings" xml:space="preserve"><value>Terminé, avec des avertissements.</value></data>

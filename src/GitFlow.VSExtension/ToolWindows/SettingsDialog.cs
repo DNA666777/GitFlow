@@ -21,6 +21,7 @@ internal sealed class SettingsDialogViewModel : NotifyPropertyChangedObject
     private string _versionTagPrefix = string.Empty;
     private bool _pushAfterFinish;
     private bool _deleteRemoteBranch;
+    private bool _usePullRequest;
     private bool _isGlobalScope;
     private string _validationText = string.Empty;
 
@@ -103,6 +104,27 @@ internal sealed class SettingsDialogViewModel : NotifyPropertyChangedObject
         set => SetProperty(ref _deleteRemoteBranch, value);
     }
 
+    /// <summary>Default Finish mode: Pull Request (option) instead of the local merge (default).</summary>
+    [DataMember]
+    public bool UsePullRequest
+    {
+        get => _usePullRequest;
+        set
+        {
+            if (SetProperty(ref _usePullRequest, value))
+            {
+                RaiseNotifyPropertyChangedEvent(nameof(UseLocalMerge));
+            }
+        }
+    }
+
+    [DataMember]
+    public bool UseLocalMerge
+    {
+        get => !UsePullRequest;
+        set => UsePullRequest = !value;
+    }
+
     /// <summary>"Tous mes dépôts" (git config --global); otherwise "Ce dépôt".</summary>
     [DataMember]
     public bool IsGlobalScope
@@ -144,7 +166,7 @@ internal sealed class SettingsDialogViewModel : NotifyPropertyChangedObject
 
     public GitFlowSettings ToSettings() => new(
         new GitFlowConfig(MasterBranch.Trim(), DevelopBranch.Trim(), FeaturePrefix.Trim(), ReleasePrefix.Trim(), HotfixPrefix.Trim(), VersionTagPrefix.Trim()),
-        new FinishDefaults(PushAfterFinish, DeleteRemoteBranch));
+        new FinishDefaults(PushAfterFinish, DeleteRemoteBranch, UsePullRequest));
 
     private void Apply(GitFlowSettings settings)
     {
@@ -161,6 +183,7 @@ internal sealed class SettingsDialogViewModel : NotifyPropertyChangedObject
 
         PushAfterFinish = settings.Finish.PushAfterFinish;
         DeleteRemoteBranch = settings.Finish.DeleteRemoteBranch;
+        UsePullRequest = settings.Finish.UsePullRequest;
         Validate();
     }
 
@@ -204,6 +227,9 @@ internal sealed class SettingsLabels
     [DataMember] public string DeleteRemote => Strings.FinishDeleteRemoteOption;
     [DataMember] public string Reset => Strings.SettingsReset;
     [DataMember] public string RenameNote => Strings.SettingsRenameNote;
+    [DataMember] public string FinishMode => Strings.SettingsFinishMode;
+    [DataMember] public string ModeLocal => Strings.FinishModeLocal;
+    [DataMember] public string ModePullRequest => Strings.FinishModePullRequest;
 }
 
 internal sealed class SettingsDialogControl(SettingsDialogViewModel dataContext) : RemoteUserControl(dataContext);

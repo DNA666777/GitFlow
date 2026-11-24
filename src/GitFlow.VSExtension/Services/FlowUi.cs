@@ -2,6 +2,7 @@ using System.Text;
 using GitFlow.Core.Config;
 using GitFlow.Core.Flow;
 using GitFlow.Core.Model;
+using GitFlow.Core.PullRequests;
 using GitFlow.Core.Resources;
 using GitFlow.VSExtension.ToolWindows;
 using Microsoft.VisualStudio.Extensibility;
@@ -193,15 +194,21 @@ internal sealed class FlowUi(VisualStudioExtensibility extensibility, GitFlowSes
         }
 
         var defaults = await session.Settings.ReadFinishDefaultsAsync(repository, ConfigScope.Local, ct);
+        var remote = await session.PullRequests.GetRemoteAsync(repository, ct);
+        var pullRequestUnavailable = resume || alreadyMerged
+            ? Strings.FinishPullRequestNotNow
+            : remote is null ? FlowMessages.Describe(FlowResult.Fail(FlowError.PullRequestNotSupported)) : null;
         var dialog = new FinishDialogViewModel(
             summary,
             showTagMessage: branch.Type != BranchType.Feature && !resume && !alreadyMerged,
             tagLabel: Strings.Format(Strings.FinishAskTagMessage, config.GetTagName(branch.Name)),
             tagMessage: FlowService.GetDefaultTagMessage(branch.Type, branch.Name),
-            hasRemote: state.HasRemote)
+            hasRemote: state.HasRemote,
+            pullRequestUnavailable)
         {
             PushAfterFinish = state.HasRemote && defaults.PushAfterFinish,
             DeleteRemoteBranch = state.HasRemote && defaults.DeleteRemoteBranch,
+            UsePullRequest = defaults.UsePullRequest,
         };
 
         using (var control = new FinishDialogControl(dialog))
@@ -213,10 +220,16 @@ internal sealed class FlowUi(VisualStudioExtensibility extensibility, GitFlowSes
             }
         }
 
+        var tagMessage = dialog.ShowTagMessage && !string.IsNullOrWhiteSpace(dialog.TagMessage) ? dialog.TagMessage.Trim() : null;
+        if (dialog.UsePullRequest && remote is not null)
+        {
+            return await FinishWithPullRequestsAsync(repository, config, branch, targets, tagMessage, remote, ct);
+        }
+
         var options = new FinishOptions
         {
             BranchName = branch.FullName,
-            TagMessage = dialog.ShowTagMessage && !string.IsNullOrWhiteSpace(dialog.TagMessage) ? dialog.TagMessage.Trim() : null,
+            TagMessage = tagMessage,
             PushAfterFinish = state.HasRemote && dialog.PushAfterFinish,
             DeleteRemoteBranch = state.HasRemote && dialog.DeleteRemoteBranch,
         };
@@ -228,6 +241,77 @@ internal sealed class FlowUi(VisualStudioExtensibility extensibility, GitFlowSes
         await ShowResultAsync(result, success, showSuccess, ct);
         return result;
     }, ct);
+
+    /// <summary>Pull Request mode: generated messages reviewed by the user, then push + one PR per target.</summary>
+    private async Task<FlowResult?> FinishWithPullRequestsAsync(
+        string repository, GitFlowConfig config, FlowBranch branch, IReadOnlyList<string> targets, string? tagMessage, RemoteRepository remote, CancellationToken ct)
+    {
+        var tagName = branch.Type == BranchType.Feature ? null : config.GetTagName(branch.Name);
+        var drafts = await session.PullRequests.PrepareAsync(repository, branch, targets, tagName, ct);
+        var review = new PullRequestDraftsViewModel(Strings.Format(Strings.PullRequestDraftsIntro, remote.WebUrl), drafts);
+        using (var control = new PullRequestDraftsControl(review))
+        {
+            if (await extensibility.Shell().ShowDialogAsync(control, Strings.Format(Strings.PullRequestDraftsTitle, branch.FullName), DialogOption.OKCancel, ct) != DialogResult.OK)
+            {
+                return null;
+            }
+        }
+
+        var options = new FinishOptions { BranchName = branch.FullName, TagMessage = tagMessage, PullRequests = review.ToDrafts() };
+        var result = await RunAsync(Strings.Format(Strings.ProgressPullRequests, branch.FullName), c => Flow.FinishAsync(repository, options, c), ct);
+        if (!result.IsSuccess)
+        {
+            await ShowResultAsync(result, string.Empty, showSuccess: false, ct);
+            return result;
+        }
+
+        var text = new StringBuilder(Strings.Format(Strings.PullRequestsCreated, branch.FullName)).AppendLine();
+        foreach (var pr in result.PullRequests)
+        {
+            text.AppendLine().Append($"• #{pr.Id} → {pr.Target} : {pr.WebUrl}");
+        }
+
+        if (tagName is not null)
+        {
+            text.AppendLine().AppendLine().Append(Strings.Format(Strings.PullRequestsTagLater, tagName, config.MasterBranch));
+        }
+
+        text.AppendLine().AppendLine().Append(Strings.PullRequestsOpenAsk);
+        if (await ConfirmAsync(text.ToString(), ct))
+        {
+            foreach (var pr in result.PullRequests)
+            {
+                OpenInBrowser(pr.WebUrl);
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>Release/hotfix in PR mode: tags the merge commit of the PR to production and pushes the tag.</summary>
+    public Task<FlowResult?> TagMergedPullRequestAsync(string repository, string branchName, CancellationToken ct) => ExclusiveAsync(async () =>
+    {
+        var result = await RunAsync(Strings.Format(Strings.ProgressTag, branchName), c => session.PullRequests.TagMergedAsync(repository, branchName, c), ct);
+        await ShowResultAsync(result, Strings.Format(Strings.TagDone, result.TagName), showSuccess: true, ct);
+        return result;
+    }, ct);
+
+    /// <summary>PR mode: once every PR is merged, updates the local targets and deletes the local branch.</summary>
+    public Task<FlowResult?> CompletePullRequestsAsync(string repository, string branchName, CancellationToken ct) => ExclusiveAsync(async () =>
+    {
+        var result = await RunAsync(Strings.Format(Strings.ProgressComplete, branchName), c => session.PullRequests.CompleteAsync(repository, branchName, c), ct);
+        await ShowResultAsync(result, Strings.Format(Strings.CompleteDone, branchName), showSuccess: true, ct);
+        return result;
+    }, ct);
+
+    /// <summary>Opens a pull request page in the default browser (https only).</summary>
+    public static void OpenInBrowser(Uri url)
+    {
+        if (url.Scheme == Uri.UriSchemeHttps)
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url.AbsoluteUri) { UseShellExecute = true })?.Dispose();
+        }
+    }
 
     public Task<FlowResult?> PublishAsync(string repository, string? branchName, bool showSuccess, CancellationToken ct) => ExclusiveAsync(async () =>
     {

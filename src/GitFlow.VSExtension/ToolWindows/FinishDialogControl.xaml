@@ -8,17 +8,35 @@
         <TextBlock Text="{Binding Summary}" TextWrapping="Wrap" Margin="0,0,0,12"
                    Foreground="{DynamicResource {x:Static styles:VsBrushes.WindowTextKey}}" />
 
-        <StackPanel Visibility="{Binding ShowTagMessage, Converter={StaticResource BoolToVisibility}}" Margin="0,0,0,12">
+        <!-- Mode: local merge (default) or Pull Request (option) -->
+        <TextBlock Text="{Binding ModeLabel}" FontWeight="SemiBold" Margin="0,0,0,4"
+                   Foreground="{DynamicResource {x:Static styles:VsBrushes.WindowTextKey}}" />
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+            <RadioButton GroupName="FinishMode" Content="{Binding LocalLabel}" IsChecked="{Binding UseLocalMerge}" Margin="0,0,16,0"
+                         Foreground="{DynamicResource {x:Static styles:VsBrushes.WindowTextKey}}" />
+            <RadioButton GroupName="FinishMode" Content="{Binding PullRequestLabel}" IsChecked="{Binding UsePullRequest}" IsEnabled="{Binding PullRequestAvailable}"
+                         Foreground="{DynamicResource {x:Static styles:VsBrushes.WindowTextKey}}" />
+        </StackPanel>
+        <TextBlock Text="{Binding PullRequestUnavailableText}" TextWrapping="Wrap" FontStyle="Italic" Margin="0,0,0,8"
+                   Visibility="{Binding ShowPullRequestUnavailable, Converter={StaticResource BoolToVisibility}}"
+                   Foreground="{DynamicResource {x:Static styles:VsBrushes.GrayTextKey}}" />
+        <TextBlock Text="{Binding PullRequestNote}" TextWrapping="Wrap" FontStyle="Italic" Margin="0,0,0,8"
+                   Visibility="{Binding ShowPullRequestNote, Converter={StaticResource BoolToVisibility}}"
+                   Foreground="{DynamicResource {x:Static styles:VsBrushes.GrayTextKey}}" />
+
+        <StackPanel Visibility="{Binding ShowTagMessage, Converter={StaticResource BoolToVisibility}}" Margin="0,4,0,12">
             <TextBlock Text="{Binding TagLabel}" Margin="0,0,0,4"
                        Foreground="{DynamicResource {x:Static styles:VsBrushes.WindowTextKey}}" />
             <TextBox Text="{Binding TagMessage, UpdateSourceTrigger=PropertyChanged}"
                      Style="{StaticResource {x:Static styles:VsResourceKeys.TextBoxStyleKey}}" />
         </StackPanel>
 
-        <CheckBox Content="{Binding PushLabel}" IsChecked="{Binding PushAfterFinish}" IsEnabled="{Binding HasRemote}" Margin="0,0,0,6"
-                  Style="{StaticResource {x:Static styles:VsResourceKeys.CheckBoxStyleKey}}" />
-        <CheckBox Content="{Binding DeleteRemoteLabel}" IsChecked="{Binding DeleteRemoteBranch}" IsEnabled="{Binding HasRemote}"
-                  Style="{StaticResource {x:Static styles:VsResourceKeys.CheckBoxStyleKey}}" />
+        <StackPanel Visibility="{Binding ShowLocalOptions, Converter={StaticResource BoolToVisibility}}">
+            <CheckBox Content="{Binding PushLabel}" IsChecked="{Binding PushAfterFinish}" IsEnabled="{Binding HasRemote}" Margin="0,0,0,6"
+                      Style="{StaticResource {x:Static styles:VsResourceKeys.CheckBoxStyleKey}}" />
+            <CheckBox Content="{Binding DeleteRemoteLabel}" IsChecked="{Binding DeleteRemoteBranch}" IsEnabled="{Binding HasRemote}"
+                      Style="{StaticResource {x:Static styles:VsResourceKeys.CheckBoxStyleKey}}" />
+        </StackPanel>
         <TextBlock Text="{Binding NoRemoteText}" TextWrapping="Wrap" Margin="0,8,0,0" FontStyle="Italic"
                    Visibility="{Binding ShowNoRemote, Converter={StaticResource BoolToVisibility}}"
                    Foreground="{DynamicResource {x:Static styles:VsBrushes.GrayTextKey}}" />

@@ -109,10 +109,14 @@ Uniquement les trois types du modèle standard — **aucun autre type** (pas de 
 - **Publish** : `git push -u origin <branche>`.
 - **Finish + push** : option pour pousser master, develop et les tags à la fin.
 
-### Phase 2 — Finish par Pull Request (après la base, ne pas implémenter en phase 1)
+### Phase 2 — Finish par Pull Request (phase 1 validée et livrée en 1.0.0 le 2026-11-24)
 
-Contexte : `master` et `develop` sont protégées côté serveur → **aucun merge direct n'est possible, tout passe par PR**.
-Le Finish local de la phase 1 sert à valider la logique et aux repos non protégés ; la phase 2 fait du mode PR **le mode par défaut**.
+Contexte : sur certains repos, `master` et `develop` sont protégées côté serveur → aucun merge direct n'est possible, tout passe par PR.
+**Le mode PR est une OPTION, pas le mode par défaut** (décision utilisateur du 2026-11-24) : le Finish local reste le défaut.
+- Paramètres : « Mode de Finish par défaut » = *Merge local* (défaut) ou *Pull Request*, clé `gitflowvs.finish.mode` = `local` | `pullrequest`
+  (même portée locale/globale que les autres options).
+- Boîte de dialogue de Finish : choix *Merge local / Pull Request* pré-sélectionné d'après ce paramètre, modifiable à chaque Finish.
+  *Pull Request* est grisé (avec la raison) si le remote n'est ni GitHub ni Azure DevOps.
 
 **Conception dès la phase 1** : le Finish doit passer par une abstraction `IFinishStrategy` (`LocalMergeStrategy` en phase 1,
 `PullRequestStrategy` en phase 2) pour que la phase 2 se branche sans réécrire `FlowService`.

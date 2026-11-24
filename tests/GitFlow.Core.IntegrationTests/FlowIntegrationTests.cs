@@ -498,6 +498,25 @@ public class FlowIntegrationTests
         (await repo.Flow.SuggestVersionAsync(repo.WorkDir, BranchType.Hotfix)).ShouldBe("1.0.1");
     }
 
+    // ---------- Credentials (Pull Request mode) ----------
+
+    [Fact]
+    public async Task Credentials_are_read_through_git_credential_fill_with_stdin()
+    {
+        await using var repo = await TestRepository.CreateAsync();
+        var store = Path.Combine(repo.Root, "credentials-store");
+        await File.WriteAllTextAsync(store, "https://someone:t0ken-value@github.com\n");
+        await repo.GitAsync("config", "--global", "credential.helper", $"store --file={store.Replace('\\', '/')}");
+        var remote = Core.PullRequests.RemoteRepository.TryParse("https://github.com/o/r.git")!;
+
+        var credential = await new Core.PullRequests.GitCredentialProvider(repo.Runner).GetAsync(repo.WorkDir, remote);
+
+        credential.ShouldNotBeNull();
+        credential.Username.ShouldBe("someone");
+        credential.Secret.ShouldBe("t0ken-value");
+        repo.Log.Entries.ShouldAllBe(e => !e.Result.CommandLine.Contains("t0ken") && !e.Result.StandardError.Contains("t0ken"));
+    }
+
     // ---------- Settings ----------
 
     [Fact]
