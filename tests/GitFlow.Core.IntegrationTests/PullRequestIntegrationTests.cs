@@ -170,6 +170,7 @@ public class PullRequestIntegrationTests
         await s.Platform.MergeAsync(finish.PullRequests[1].Id);
         (await s.PullRequests.CompleteAsync(s.Repo.WorkDir, "release/1.0.0")).IsSuccess.ShouldBeTrue();
 
+        (await s.Repo.CurrentBranchAsync()).ShouldBe("develop", "ends on develop even after fast-forwarding master");
         (await s.Repo.LocalBranchesAsync()).ShouldNotContain("release/1.0.0");
         (await s.Repo.IsAncestorAsync(bump, "master")).ShouldBeTrue();
         (await s.Repo.IsAncestorAsync(bump, "develop")).ShouldBeTrue();
@@ -190,8 +191,31 @@ public class PullRequestIntegrationTests
 
         complete.IsSuccess.ShouldBeTrue(complete.Detail);
         complete.TagName.ShouldBe("0.0.1");
+        (await s.Repo.CurrentBranchAsync()).ShouldBe("develop");
         (await s.Repo.GitAsync("rev-parse", "0.0.1^{commit}")).ShouldBe(mergeCommit);
         (await s.Repo.LocalBranchesAsync()).ShouldNotContain("hotfix/0.0.1");
+    }
+
+    [Fact]
+    public async Task Release_without_own_commits_ends_on_develop()
+    {
+        // Real case seen on Azure DevOps: the PR to develop has nothing to merge, only master moves.
+        await using var s = await CreateAsync();
+        await s.Flow.StartAsync(s.Repo.WorkDir, BranchType.Feature, "x");
+        await s.Repo.CommitFileAsync("x.txt", "x\n", "X");
+        await s.Repo.Flow.FinishAsync(s.Repo.WorkDir, new FinishOptions { PushAfterFinish = true });
+        await s.Flow.StartAsync(s.Repo.WorkDir, BranchType.Release, "2.0.0");
+        var finish = await FinishWithPullRequestsAsync(s, "release/2.0.0");
+        await s.Platform.MergeAsync(finish.PullRequests[0].Id);
+        await s.Platform.MergeAsync(finish.PullRequests[1].Id);
+        var developBefore = await s.Repo.GitAsync("rev-parse", "develop");
+
+        var complete = await s.PullRequests.CompleteAsync(s.Repo.WorkDir, "release/2.0.0");
+
+        complete.IsSuccess.ShouldBeTrue(complete.Detail);
+        (await s.Repo.GitAsync("rev-parse", "develop")).ShouldBe(developBefore, "nothing to merge into develop");
+        (await s.Repo.CurrentBranchAsync()).ShouldBe("develop", "not left on master");
+        (await s.Repo.GitAsync("rev-parse", "2.0.0^{commit}")).ShouldBe(await s.Repo.GitAsync("rev-parse", "master"));
     }
 
     [Fact]
