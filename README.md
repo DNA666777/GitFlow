@@ -124,6 +124,8 @@ La publication est automatique (GitHub Actions) et suit le flow :
 
 Pour (re)publier un tag existant : onglet *Actions* > *Release* > *Run workflow*, puis indiquer le tag.
 
+**Visual Studio Marketplace** : si le secret `VS_MARKETPLACE_PAT` est configuré dans le dépôt, la release est aussi publiée sur le Marketplace (fiche décrite par [`marketplace/publishManifest.json`](marketplace/publishManifest.json) et [`marketplace/overview.md`](marketplace/overview.md)). Sans ce secret, l'étape est simplement sautée.
+
 Le workflow [`ci.yml`](.github/workflows/ci.yml) compile et teste chaque push sur `develop` ou `master` et chaque pull request. Le `.vsix` de chaque build reste disponible 7 jours en artefact.
 
 ## Licence

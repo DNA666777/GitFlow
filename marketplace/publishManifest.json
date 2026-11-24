@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json.schemastore.org/vsix-publish",
+  "categories": [ "source control" ],
+  "identity": {
+    "internalName": "gitflow"
+  },
+  "overview": "overview.md",
+  "priceCategory": "free",
+  "publisher": "DNA666777",
+  "private": false,
+  "qna": true,
+  "repo": "https://github.com/DNA666777/GitFlow"
+}

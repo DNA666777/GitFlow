@@ -246,7 +246,12 @@ SDK .NET figé par `global.json` (10.0.x, `rollForward: latestFeature`) ; les pr
   copié en `LICENSE.txt` dans le .vsix par la cible `CopyLicenseForVsix` du csproj), icône `Resources/icon.png` (128 px) et
   `Resources/preview.png` (200 px), liens MoreInfo/ReleaseNotes vers GitHub, tags de recherche.
   **Ne jamais changer l'`id` de l'extension** : VS ne reconnaîtrait plus les mises à jour (deux extensions installées).
-- Prochaine étape prévue (non faite) : publication sur le Visual Studio Marketplace (compte éditeur `DNA666777`, PAT en secret GitHub).
+- **Visual Studio Marketplace** : dernière étape de `release.yml`, exécutée seulement si le secret GitHub `VS_MARKETPLACE_PAT` existe
+  (jeton Azure DevOps, scope *Marketplace > Publish*, organisations : *All accessible organizations*). `VsixPublisher.exe` (VS du runner,
+  sinon paquet NuGet `Microsoft.VSSDK.BuildTools` téléchargé au moment du job, pas une dépendance du projet) avec
+  `marketplace/publishManifest.json` (éditeur `DNA666777`, fiche `DNA666777.gitflow`, catégorie *source control*) et
+  `marketplace/overview.md` (page de présentation). Le Marketplace refuse de republier une version déjà publiée.
+  Alternative future : `-oidc` (trusted publishing) au lieu d'un jeton.
 Note : `dotnet sln add` du SDK 11 échoue sur cette solution (« Solution folder 'src' already contains… ») —
 ajouter les projets en éditant `GitFlowVS.sln` à la main.
 
