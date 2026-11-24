@@ -2,7 +2,7 @@
 
 Extension Visual Studio pour appliquer le **Gitflow standard** sans quitter l'IDE. Elle démarre et termine les branches `feature/`, `release/` et `hotfix/` en un ou deux clics, en respectant strictement le [Gitflow Workflow d'Atlassian](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
 
-> 📖 **Tutoriel complet** : [`docs/`](docs/index.html) — [Guide](docs/guide.html) · [Mode Pull Request](docs/pull-requests.html) · [Référence et dépannage](docs/reference.html)
+> 📖 **Tutoriel complet** : [Accueil](docs/README.md) · [Guide](docs/guide.md) · [Mode Pull Request](docs/pull-requests.md) · [Référence et dépannage](docs/reference.md)
 
 ## Fonctionnalités
 
@@ -55,7 +55,7 @@ Pour obtenir le `.vsix`, voir [Compiler](#compiler) ci-dessous.
 4. Travaillez, puis **Commiter** depuis la section Commit.
 5. **Terminer…** sur la ligne de la branche, en *Merge local* ou en *Pull Request*.
 
-Le reste est dans le [guide](docs/guide.html).
+Le reste est dans le [guide](docs/guide.md).
 
 ## Le modèle appliqué
 
@@ -96,7 +96,7 @@ GitFlowVS.sln
 ├── tests/
 │   ├── GitFlow.Core.Tests/              # Tests unitaires
 │   └── GitFlow.Core.IntegrationTests/   # Tests sur de vrais dépôts git temporaires
-└── docs/                        # Tutoriel (site statique)
+└── docs/                        # Tutoriel (Markdown + petit site statique)
 ```
 
 - **Stack** :
@@ -108,4 +108,7 @@ GitFlowVS.sln
 
 ## Documentation
 
-Le dossier [`docs/`](docs/) contient le tutoriel sous forme de petit site statique, sans build ni dépendance. Ouvrez `docs/index.html` dans un navigateur, ou publiez-le avec GitHub Pages (*Settings > Pages > Deploy from a branch*, dossier `/docs`).
+Le tutoriel est dans [`docs/`](docs/README.md), en deux formats au contenu identique :
+
+- **Markdown**, lisible directement sur GitHub : [accueil](docs/README.md), [guide](docs/guide.md), [mode Pull Request](docs/pull-requests.md), [référence](docs/reference.md).
+- **Petit site web statique**, sans build ni dépendance : ouvrez `docs/index.html` dans un navigateur, ou publiez-le avec GitHub Pages (*Settings > Pages > Deploy from a branch*, dossier `/docs`).
