@@ -1,0 +1,103 @@
+# Publication : un tag de version poussé (fin d'une release ou d'un hotfix GitFlow) produit une GitHub Release
+# avec le .vsix compilé en Release, à la version du tag, après les tests.
+name: Release
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'    # préfixe de tag vide (défaut GitFlow) : 1.4.0
+      - 'v[0-9]+.[0-9]+.[0-9]+'   # préfixe de tag « v » : v1.4.0
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag existant à publier (ex. 1.4.0)"
+        required: true
+
+permissions:
+  contents: write   # créer la release et y attacher le .vsix
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Publier la release
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      # Le tag vient de l'événement ; il passe par une variable d'environnement, jamais directement dans un script.
+      - name: Version depuis le tag
+        id: version
+        shell: pwsh
+        env:
+          TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        run: |
+          if ($env:TAG -notmatch '^v?(\d+\.\d+\.\d+)$') { throw "Tag de version invalide : '$env:TAG' (attendu 1.2.3 ou v1.2.3)" }
+          "tag=$env:TAG" >> $env:GITHUB_OUTPUT
+          "version=$($Matches[1])" >> $env:GITHUB_OUTPUT
+
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ steps.version.outputs.tag }}
+
+      - name: .NET 8 (runtime des tests)
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: SDK .NET (global.json)
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Build (Release, version ${{ steps.version.outputs.version }})
+        run: dotnet build GitFlowVS.sln -c Release -nologo "-p:Version=${{ steps.version.outputs.version }}"
+
+      - name: Tests unitaires
+        run: dotnet test tests/GitFlow.Core.Tests -c Release --no-build -nologo
+
+      - name: Tests d'intégration
+        run: dotnet test tests/GitFlow.Core.IntegrationTests -c Release --no-build -nologo
+
+      - name: Vérifier la version du paquet
+        id: package
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          $vsix = "src/GitFlow.VSExtension/bin/Release/net8.0-windows8.0/GitFlow.VSExtension.vsix"
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip = [IO.Compression.ZipFile]::OpenRead((Resolve-Path $vsix))
+          $manifest = (New-Object IO.StreamReader($zip.GetEntry("extension.vsixmanifest").Open())).ReadToEnd()
+          $zip.Dispose()
+          $packaged = ([regex]'Identity[^>]*Version="([^"]+)"').Match($manifest).Groups[1].Value
+          if ($packaged -ne "$env:VERSION.0") { throw "Le .vsix est en $packaged au lieu de $env:VERSION" }
+          $out = "GitFlow.VSExtension-$env:VERSION.vsix"
+          Copy-Item $vsix $out
+          "file=$out" >> $env:GITHUB_OUTPUT
+
+      - name: Créer la GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+          FILE: ${{ steps.package.outputs.file }}
+        run: |
+          gh release view $env:TAG *> $null
+          if ($LASTEXITCODE -eq 0) {
+            # Release déjà créée (relance) : on remplace seulement le paquet.
+            gh release upload $env:TAG $env:FILE --clobber
+          } else {
+            gh release create $env:TAG $env:FILE --verify-tag --title "GitFlow pour Visual Studio $env:VERSION" --generate-notes
+          }
+          if ($LASTEXITCODE -ne 0) { throw "Échec de la publication de la release" }
+
+      - name: Paquet .vsix (artefact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.package.outputs.file }}
+          path: ${{ steps.package.outputs.file }}
+          retention-days: 30
