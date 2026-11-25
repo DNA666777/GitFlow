@@ -131,7 +131,7 @@ public class ConfigAndModelTests
             FlowMessages.Get("Config_" + kind).ShouldNotBe("Config_" + kind);
         }
 
-        FlowMessages.ReleaseReminder.ShouldBe("Release en cours : corrections, docs et tâches de release uniquement.");
+        FlowMessages.ReleaseReminder.ShouldBe("Release en cours : uniquement des corrections, de la doc et les tâches de release.");
     }
 
     [Fact]
@@ -140,7 +140,7 @@ public class ConfigAndModelTests
         FlowMessages.Describe(FlowResult.Fail(FlowError.BranchAlreadyExists, "feature/x"))
             .ShouldBe("La branche « feature/x » existe déjà.");
         FlowMessages.Describe(FlowResult.Conflicted(new MergeConflict("feature/x", "develop", ["a", "b"])))
-            .ShouldStartWith("Conflits lors du merge de « feature/x » dans « develop » (2 fichier(s))");
+            .ShouldStartWith("Conflits pendant le merge de « feature/x » dans « develop » (2 fichier(s))");
         FlowMessages.Describe(FlowResult.Ok()).ShouldBeEmpty();
     }
 

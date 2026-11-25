@@ -6,6 +6,7 @@
   <title>Mode Pull Request — GitFlow pour Visual Studio</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/style.css">
+  <link rel="alternate" hreflang="en" href="en/pull-requests.html">
 </head>
 <body>
   <header class="site-header">
@@ -16,6 +17,7 @@
         <a href="guide.html">Guide</a>
         <a href="pull-requests.html" aria-current="page">Pull Requests</a>
         <a href="reference.html">Référence</a>
+        <a href="en/pull-requests.html" lang="en" hreflang="en">English</a>
       </nav>
     </div>
   </header>
@@ -30,7 +32,7 @@
         <li><a href="#message">Le message généré</a></li>
         <li><a href="#suivi">Suivre les PR</a></li>
         <li><a href="#release">Release et hotfix : le tag</a></li>
-        <li><a href="#clore">Clore la branche</a></li>
+        <li><a href="#finaliser">Finaliser la branche</a></li>
         <li><a href="#plateformes">GitHub et Azure DevOps</a></li>
       </ol>
     </nav>
@@ -65,11 +67,11 @@
       <h2 id="feature">Une feature par PR</h2>
       <ol class="steps">
         <li>Démarrez et développez la feature comme d'habitude (<a href="guide.html#feature">guide</a>).</li>
-        <li><em>Terminer…</em> : choisissez <strong>Pull Request</strong>. Les options push / suppression distante disparaissent : elles ne servent pas en mode PR.</li>
+        <li><em>Terminer…</em> : choisissez <strong>Pull Request</strong>. Les options de push et de suppression sur origin disparaissent : elles ne servent pas en mode PR.</li>
         <li>L'écran suivant montre le <strong>titre et la description générés</strong>, modifiables, pour chaque PR.</li>
         <li>OK : l'extension pousse la branche puis crée la PR <span class="branch feature">feature/x</span> → <span class="branch develop">develop</span>. S'il en existe déjà une ouverte, elle est réutilisée et vos nouveaux commits y arrivent. Rien n'est mergé en local.</li>
-        <li>Faites relire et <strong>mergez la PR sur la plateforme</strong> (merge sans fast-forward de préférence, voir <a href="#clore">squash</a>).</li>
-        <li>Dans la fenêtre GitFlow : <em>Actualiser les PR</em> puis <em>Clore la branche</em>.</li>
+        <li>Faites relire et <strong>mergez la PR sur la plateforme</strong> (merge sans fast-forward de préférence, voir <a href="#finaliser">squash</a>).</li>
+        <li>Dans la fenêtre GitFlow : <em>Actualiser les PR</em> puis <em>Finaliser la branche</em>.</li>
       </ol>
 
       <h2 id="message">Le message généré</h2>
@@ -85,7 +87,7 @@
 
 ### Tickets
 ABC-12, #42</code></pre>
-      <p>Pour une release ou un hotfix, une section <em>Version</em> rappelle le tag qui sera posé après le merge.</p>
+      <p>Pour une release ou un hotfix, une section <em>Version</em> rappelle le tag qui sera créé après le merge.</p>
       <h3>Personnaliser</h3>
       <ul>
         <li><strong>Votre modèle</strong> : <code>.gitflow/pull_request_template.md</code> dans le dépôt, avec les variables <code>{type}</code> <code>{source}</code> <code>{target}</code> <code>{commits}</code> <code>{stats}</code> <code>{version}</code> <code>{tickets}</code>.</li>
@@ -102,7 +104,7 @@ ABC-12, #42</code></pre>
             <div style="margin-top:6px"><b>release/1.5.0</b></div>
             <div class="vs-row" style="padding-left:8px"><span>#12 → master</span><span class="vs-italic grow">mergée</span><span class="vs-btn">Ouvrir</span></div>
             <div class="vs-row" style="padding-left:8px"><span>#13 → develop</span><span class="vs-italic grow">ouverte</span><span class="vs-btn">Ouvrir</span></div>
-            <div class="vs-row"><span class="grow"></span><span class="vs-btn">Poser le tag 1.5.0</span></div>
+            <div class="vs-row"><span class="grow"></span><span class="vs-btn">Créer le tag 1.5.0</span></div>
           </div>
         </div>
         <div class="mock-text">
@@ -114,19 +116,19 @@ ABC-12, #42</code></pre>
 
       <h2 id="release">Release et hotfix : le tag</h2>
       <p>Une release ouvre <strong>deux PR</strong> : vers <span class="branch master">master</span> et vers <span class="branch develop">develop</span>. Un hotfix aussi, vers master puis vers develop (ou vers la release en cours).</p>
-      <p>Le tag ne peut être posé qu'<strong>une fois la PR vers master mergée</strong>, sur son commit de merge :</p>
+      <p>Le tag ne peut être créé qu'<strong>une fois la PR vers master mergée</strong>, sur son commit de merge :</p>
       <ol class="steps">
         <li>Mergez la PR vers master sur la plateforme.</li>
-        <li><em>Actualiser les PR</em> : le bouton <em>Poser le tag 1.5.0</em> apparaît.</li>
-        <li>L'extension récupère master, vérifie que le commit de merge est bien sur <code>origin/master</code>, pose le tag annoté (avec le message saisi au Finish) et le pousse.</li>
+        <li><em>Actualiser les PR</em> : le bouton <em>Créer le tag 1.5.0</em> apparaît.</li>
+        <li>L'extension fait un fetch de master, vérifie que le commit de merge est bien sur <code>origin/master</code>, crée le tag annoté (avec le message saisi au Finish) et le pousse.</li>
       </ol>
-      <p><em>Clore la branche</em> pose aussi le tag s'il manque : un seul clic suffit si les deux PR sont déjà mergées.</p>
+      <p><em>Finaliser la branche</em> crée aussi le tag s'il manque, si les deux PR sont déjà mergées.</p>
 
-      <h2 id="clore">Clore la branche</h2>
-      <p>Quand <strong>toutes</strong> les PR d'une branche sont mergées, <em>Clore la branche</em> :</p>
+      <h2 id="finaliser">Finaliser la branche</h2>
+      <p>Quand <strong>toutes</strong> les PR d'une branche sont mergées, <em>Finaliser la branche</em> :</p>
       <ol>
-        <li>pose le tag s'il s'agit d'une release ou d'un hotfix et qu'il manque ;</li>
-        <li>récupère le serveur (<code>git fetch</code>, ou <code>git fetch --prune</code> si l'option est cochée dans les paramètres) ;</li>
+        <li>crée le tag s'il s'agit d'une release ou d'un hotfix et qu'il manque ;</li>
+        <li>fait un <code>git fetch</code> (ou <code>git fetch --prune</code> si l'option est cochée dans les paramètres) ;</li>
         <li>met à jour vos <code>develop</code> / <code>master</code> locales, en fast-forward uniquement ;</li>
         <li>supprime la branche locale avec <code>git branch -d</code> et oublie ses PR ;</li>
         <li>vous laisse sur develop (ou sur la release en cours).</li>
@@ -136,8 +138,8 @@ ABC-12, #42</code></pre>
         <p>Dans ce cas, les commits de votre branche ne sont pas dans develop : l'extension le détecte et <strong>ne supprime pas</strong> la branche. Supprimez-la vous-même si vous êtes sûr. Pour éviter ça, choisissez le merge classique (<em>Merge</em> / <em>Merge (no fast-forward)</em>).</p>
       </div>
       <div class="callout ok">
-        <strong>Branches distantes</strong>
-        <p>Clore ne supprime pas la branche sur le serveur : cochez <em>Delete branch after merging</em> (Azure) ou activez <em>Automatically delete head branches</em> (GitHub). Avec l'option <em>git fetch --prune</em>, les références <code>origin/…</code> correspondantes disparaissent ensuite toutes seules de votre poste.</p>
+        <strong>Branches sur le serveur</strong>
+        <p>Finaliser ne supprime pas la branche sur le serveur : cochez <em>Delete branch after merging</em> (Azure) ou activez <em>Automatically delete head branches</em> (GitHub). Avec l'option <em>git fetch --prune</em>, les références <code>origin/…</code> correspondantes disparaissent ensuite toutes seules de votre poste.</p>
       </div>
 
       <h2 id="plateformes">GitHub et Azure DevOps</h2>

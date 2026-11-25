@@ -60,7 +60,7 @@ public class PullRequestMessageTests
         var draft = PullRequestMessageGenerator.Build(context);
 
         draft.Title.ShouldBe("Release 1.4.0");
-        draft.Description.ShouldContain("### Version" + Nl + "Version **1.4.0** : le tag `v1.4.0` sera posé");
+        draft.Description.ShouldContain("### Version" + Nl + "Version **1.4.0** : le tag `v1.4.0` sera créé");
     }
 
     [Fact]

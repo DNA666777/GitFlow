@@ -6,6 +6,7 @@
   <title>Référence et dépannage — GitFlow pour Visual Studio</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/style.css">
+  <link rel="alternate" hreflang="en" href="en/reference.html">
 </head>
 <body>
   <header class="site-header">
@@ -16,6 +17,7 @@
         <a href="guide.html">Guide</a>
         <a href="pull-requests.html">Pull Requests</a>
         <a href="reference.html" aria-current="page">Référence</a>
+        <a href="en/reference.html" lang="en" hreflang="en">English</a>
       </nav>
     </div>
   </header>
@@ -56,12 +58,12 @@
       <h2 id="securite">Règles de sécurité</h2>
       <table>
         <tbody>
-          <tr><td>Arbre de travail sale</td><td>Start et Finish refusés. L'extension ne fait jamais de <em>stash</em> automatique : commitez ou mettez de côté vous-même. Les fichiers non suivis ne bloquent pas.</td></tr>
+          <tr><td>Modifications non commitées</td><td>Start et Finish refusés. L'extension ne fait jamais de stash automatique : faites un commit ou un <code>git stash</code> vous-même. Les fichiers non suivis ne bloquent pas.</td></tr>
           <tr><td>Vérifications avant d'agir</td><td>Branche de base existante, nom valide pour git (<code>git check-ref-format</code>), branche cible inexistante, tag inexistant.</td></tr>
           <tr><td>Conflit de merge</td><td>Arrêt immédiat, rien n'est supprimé, reprise possible après résolution.</td></tr>
           <tr><td>Commandes interdites</td><td>Jamais de <code>push --force</code>, <code>reset --hard</code>, <code>branch -D</code>. Une branche non mergée n'est jamais supprimée.</td></tr>
           <tr><td>Commits</td><td>Refusés sur la branche de production et pendant un merge.</td></tr>
-          <tr><td>Pull Requests</td><td>Créées et suivies, jamais approuvées ni mergées par l'extension. Le tag n'est posé que sur un commit de merge vérifié sur <code>origin/master</code>.</td></tr>
+          <tr><td>Pull Requests</td><td>Créées et suivies, jamais approuvées ni mergées par l'extension. Le tag n'est créé que sur un commit de merge vérifié sur <code>origin/master</code>.</td></tr>
           <tr><td>Identifiants</td><td>Demandés à git à chaque fois, jamais stockés ni écrits dans les logs.</td></tr>
         </tbody>
       </table>
@@ -87,11 +89,11 @@
           <tr><td><code>gitflowvs.finish.mode</code></td><td><code>local</code></td><td>Mode pré-sélectionné au Finish : <code>local</code> ou <code>pullrequest</code></td></tr>
           <tr><td><code>gitflowvs.finish.push</code></td><td><code>false</code></td><td>Pré-coche « Pousser » au Finish local</td></tr>
           <tr><td><code>gitflowvs.finish.deleteremote</code></td><td><code>false</code></td><td>Pré-coche « Supprimer aussi la branche sur origin »</td></tr>
-          <tr><td><code>gitflowvs.pr.prune</code></td><td><code>false</code></td><td><em>Clore la branche</em> utilise <code>git fetch --prune</code></td></tr>
+          <tr><td><code>gitflowvs.pr.prune</code></td><td><code>false</code></td><td><em>Finaliser la branche</em> utilise <code>git fetch --prune</code></td></tr>
           <tr><td><code>gitflowvs.pr.ticketpattern</code></td><td>ABC-123 et #42</td><td>Expression régulière des références de tickets dans les PR</td></tr>
         </tbody>
       </table>
-      <p>Les PR suivies sont mémorisées dans la config locale sous <code>gitflowvs-pr.&lt;branche&gt;.link</code>, et effacées à la clôture.</p>
+      <p>Les PR suivies sont mémorisées dans la config locale sous <code>gitflowvs-pr.&lt;branche&gt;.link</code>, et effacées quand la branche est finalisée.</p>
 
       <h2 id="commandes">Commandes git exécutées</h2>
       <p>Toutes les commandes passent par le <code>git</code> de Git for Windows : vos hooks, signatures GPG, LFS et identifiants s'appliquent comme dans un terminal. Elles sont visibles dans <span class="menu-path">Affichage &gt; Sortie</span>, canal <strong>GitFlow</strong> :</p>
@@ -112,7 +114,7 @@ OK</code></pre>
       <p>L'extension cherche le dépôt à partir de la solution ouverte, puis de l'élément sélectionné, puis du document actif. Ouvrez une solution située dans un dépôt Git.</p>
 
       <h3>« Des modifications ne sont pas commitées »</h3>
-      <p>Commitez (section Commit), ou mettez de côté avec <code>git stash</code>, puis réessayez. Les fichiers non suivis ne comptent pas.</p>
+      <p>Faites un commit (section Commit) ou un <code>git stash</code>, puis réessayez. Les fichiers non suivis ne comptent pas.</p>
 
       <h3>Mes fichiers modifiés n'apparaissent pas dans Commit</h3>
       <p>Enregistrez-les (<kbd>Ctrl</kbd>+<kbd>S</kbd>) : git ne voit que les fichiers écrits sur le disque.</p>
@@ -126,7 +128,7 @@ OK</code></pre>
       <h3>« La plateforme a refusé la demande »</h3>
       <p>Le message de GitHub ou d'Azure DevOps est affiché tel quel : droits insuffisants, PR déjà existante, branche cible absente… Après correction, relancez <em>Terminer…</em> : une PR ouverte existante est réutilisée.</p>
 
-      <h3>Clore refuse : branche non contenue dans develop</h3>
+      <h3>Finaliser refuse : branche non contenue dans develop</h3>
       <p>La PR a été mergée par <em>squash</em> ou <em>rebase</em> : les commits de la branche ne sont pas dans develop. Rien n'est supprimé. Si le contenu est bien livré, supprimez la branche vous-même : <code>git branch -D feature/x</code>.</p>
 
       <h2 id="compat">Compatibilité</h2>

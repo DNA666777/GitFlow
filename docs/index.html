@@ -7,6 +7,7 @@
   <meta name="description" content="Appliquer le Gitflow standard (feature, release, hotfix) sans quitter Visual Studio 2022 / 2026.">
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/style.css">
+  <link rel="alternate" hreflang="en" href="en/index.html">
 </head>
 <body>
   <header class="site-header">
@@ -17,6 +18,7 @@
         <a href="guide.html">Guide</a>
         <a href="pull-requests.html">Pull Requests</a>
         <a href="reference.html">Référence</a>
+        <a href="en/index.html" lang="en" hreflang="en">English</a>
       </nav>
     </div>
   </header>
@@ -26,7 +28,7 @@
     <p class="lead">
       Démarrez et terminez vos branches <span class="branch feature">feature/</span>
       <span class="branch release">release/</span> <span class="branch hotfix">hotfix/</span>
-      en un ou deux clics, en respectant strictement le Gitflow Workflow d'Atlassian.
+     , en respectant strictement le Gitflow Workflow d'Atlassian.
       Merge local par défaut, ou Pull Request sur GitHub et Azure DevOps quand vos branches sont protégées.
     </p>
     <div class="actions">
@@ -95,12 +97,12 @@
       </figure>
 
       <div class="cards">
-        <div class="card"><span class="icon">⚡</span><h3>Un ou deux clics</h3><p>Démarrer, pousser, terminer : depuis le menu <span class="menu-path">Extensions &gt; GitFlow</span> ou la fenêtre GitFlow ancrée à côté de Git Changes.</p></div>
-        <div class="card"><span class="icon">🛡️</span><h3>Ne perd jamais de travail</h3><p>Arbre sale refusé, arrêt propre sur conflit avec reprise, jamais de <code>push --force</code>, <code>reset --hard</code> ni de branche non mergée supprimée.</p></div>
-        <div class="card"><span class="icon">🔀</span><h3>Pull Requests en option</h3><p>Branches protégées ? Terminez par PR sur GitHub ou Azure DevOps : message généré, suivi, tag posé après le merge.</p></div>
-        <div class="card"><span class="icon">📝</span><h3>Commit intégré</h3><p>Liste des modifications et message de commit généré depuis git (fichiers, lignes, tickets), modifiable.</p></div>
-        <div class="card"><span class="icon">🧩</span><h3>Autonome</h3><p>Seulement Visual Studio et Git for Windows. Pas de git-flow, pas de <code>gh</code> ni d'<code>az</code> : vos identifiants git suffisent.</p></div>
-        <div class="card"><span class="icon">📜</span><h3>Traçable</h3><p>Chaque commande git exécutée apparaît dans <span class="menu-path">Sortie &gt; GitFlow</span>, avec son code retour.</p></div>
+        <div class="card"><span class="icon">⚡</span><h3>Menu et fenêtre</h3><p>Démarrer, pousser et terminer depuis le menu <span class="menu-path">Extensions &gt; GitFlow</span> ou la fenêtre GitFlow.</p></div>
+        <div class="card"><span class="icon">🛡️</span><h3>Sécurité</h3><p>Refus s'il y a des modifications non commitées, arrêt sur conflit avec reprise, jamais de <code>push --force</code>, <code>reset --hard</code> ni de branche non mergée supprimée.</p></div>
+        <div class="card"><span class="icon">🔀</span><h3>Pull Requests (option)</h3><p>Branches protégées ? Terminez par PR sur GitHub ou Azure DevOps : message généré, suivi, tag créé après le merge.</p></div>
+        <div class="card"><span class="icon">📝</span><h3>Commit</h3><p>Liste des modifications et message de commit généré depuis git (fichiers, lignes, tickets), modifiable.</p></div>
+        <div class="card"><span class="icon">🧩</span><h3>Dépendances</h3><p>Seulement Visual Studio et Git for Windows. Pas de git-flow, pas de <code>gh</code> ni d'<code>az</code> : vos identifiants git suffisent.</p></div>
+        <div class="card"><span class="icon">📜</span><h3>Journal</h3><p>Chaque commande git exécutée apparaît dans <span class="menu-path">Sortie &gt; GitFlow</span>, avec son code retour.</p></div>
       </div>
 
       <h2 id="demarrage">Démarrage rapide</h2>
@@ -112,10 +114,10 @@
         <li>Une solution ouverte <strong>dans un dépôt Git</strong> qui contient au moins un commit.</li>
       </ul>
 
-      <h3>En cinq minutes</h3>
+      <h3>Premiers pas</h3>
       <ol class="steps">
         <li><strong>Installez l'extension</strong> : fermez Visual Studio, double-cliquez sur <code>GitFlow.VSExtension.vsix</code>, validez, relancez Visual Studio. <a href="guide.html#installation">Détails</a></li>
-        <li><strong>Ouvrez la fenêtre GitFlow</strong> : <span class="menu-path">Extensions &gt; GitFlow &gt; Fenêtre GitFlow</span>. Elle s'ancre à côté de Git Changes.</li>
+        <li><strong>Ouvrez la fenêtre GitFlow</strong> : <span class="menu-path">Extensions &gt; GitFlow &gt; Fenêtre GitFlow</span>. Elle s'ouvre en onglet à côté de Git Changes.</li>
         <li><strong>Initialisez</strong> le dépôt : bouton <em>Initialiser GitFlow…</em>, vérifiez les noms proposés (<code>master</code>, <code>develop</code>, <code>feature/</code>…), OK. La branche <span class="branch develop">develop</span> est créée.</li>
         <li><strong>Démarrez une feature</strong> : type <em>Feature</em>, nom <code>login</code>, <em>Démarrer</em>. Vous êtes sur <span class="branch feature">feature/login</span>.</li>
         <li><strong>Travaillez et commitez</strong> depuis la section <em>Commit</em> de la fenêtre : le message est proposé, modifiez-le si besoin, <em>Commiter</em>.</li>
@@ -123,7 +125,7 @@
       </ol>
 
       <div class="callout">
-        <strong>Et ensuite ?</strong>
+        <strong>Pour aller plus loin</strong>
         <p>Le <a href="guide.html">guide complet</a> couvre les releases, les hotfixes, les conflits et les paramètres. Si <code>master</code> et <code>develop</code> sont protégées sur votre serveur, lisez <a href="pull-requests.html">le mode Pull Request</a>.</p>
       </div>
     </article>

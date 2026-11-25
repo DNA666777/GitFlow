@@ -119,7 +119,7 @@ internal sealed class SettingsDialogViewModel : NotifyPropertyChangedObject
         }
     }
 
-    /// <summary>"Clore la branche" (PR mode) uses git fetch --prune.</summary>
+    /// <summary>"Complete branch" (PR mode) uses git fetch --prune.</summary>
     [DataMember]
     public bool PruneOnComplete
     {
