@@ -129,7 +129,12 @@ jobs:
             $output = & $publisher publish -payload $env:FILE -publishManifest marketplace/publishManifest.json -personalAccessToken $env:VS_MARKETPLACE_PAT -ignoreWarnings "VSIXValidatorWarning01,VSIXValidatorWarning02" 2>&1
             $code = $LASTEXITCODE
             $output | ForEach-Object { Write-Host $_ }
-            if ($code -eq 0) { Write-Host "Publié sur le Visual Studio Marketplace avec VsixPublisher $version."; exit 0 }
+            # Succès = confirmation du Marketplace (VsixPub0038 « Uploaded »). La 17.14 plante ensuite dans sa télémétrie
+            # (System.Runtime.CompilerServices.Unsafe, code -532462766) alors que la publication est faite : ce code est ignoré.
+            if ($code -eq 0 -or ($output -join "`n") -match 'VsixPub0038') {
+              Write-Host "Publié sur le Visual Studio Marketplace avec VsixPublisher $version."
+              exit 0
+            }
 
             # Seul le défaut connu de l'outil (chargement de bibliothèque) fait essayer la version suivante :
             # toute autre erreur (jeton, fiche refusée, version déjà publiée…) est réelle et arrête la publication.
