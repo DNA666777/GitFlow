@@ -55,7 +55,7 @@ gitGraph
 
 | | |
 |---|---|
-| ⚡ **Un ou deux clics** | Démarrer, publier, terminer depuis **Extensions > GitFlow** ou la fenêtre GitFlow ancrée à côté de Git Changes. |
+| ⚡ **Un ou deux clics** | Démarrer, pousser, terminer depuis **Extensions > GitFlow** ou la fenêtre GitFlow ancrée à côté de Git Changes. |
 | 🛡️ **Ne perd jamais de travail** | Arbre sale refusé, arrêt propre sur conflit avec reprise, jamais de `push --force`, `reset --hard` ni de branche non mergée supprimée. |
 | 🔀 **Pull Requests en option** | Branches protégées ? Terminez par PR sur GitHub ou Azure DevOps : message généré, suivi, tag posé après le merge. |
 | 📝 **Commit intégré** | Liste des modifications et message de commit généré depuis git (fichiers, lignes, tickets), modifiable. |

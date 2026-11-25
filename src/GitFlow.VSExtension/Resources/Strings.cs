@@ -3,7 +3,10 @@ using System.Resources;
 
 namespace GitFlow.VSExtension;
 
-/// <summary>User facing texts of the extension (French by default), from Resources/Strings.resx.</summary>
+/// <summary>
+/// User facing texts of the extension: English by default (Resources/Strings.resx), French translation (Resources/Strings.fr.resx),
+/// chosen from the UI culture of the extension process.
+/// </summary>
 internal static class Strings
 {
     // Strings.resx sits next to this class, so MSBuild embeds it under the class full name (GitFlow.VSExtension.Strings).

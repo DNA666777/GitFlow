@@ -368,7 +368,8 @@ internal sealed class FlowUi(VisualStudioExtensibility extensibility, GitFlowSes
         catch (Exception displayError)
         {
             session.Output.WriteLine(displayError.ToString());
-            await extensibility.Shell().ShowPromptAsync("GitFlow : erreur inattendue. " + ex.Message, PromptOptions.OK, CancellationToken.None);
+            // Last resort when even the resources fail: neutral English text.
+            await extensibility.Shell().ShowPromptAsync("GitFlow: unexpected error. " + ex.Message, PromptOptions.OK, CancellationToken.None);
         }
     }
 

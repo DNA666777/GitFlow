@@ -6,6 +6,7 @@ using Shouldly;
 
 namespace GitFlow.Core.Tests;
 
+[Collection(MessagesCulture.Collection)]
 public class CommitTests
 {
     private const string Repo = @"C:\repo";
@@ -15,7 +16,7 @@ public class CommitTests
 
     private static IReadOnlyDictionary<string, FileStat> NoStats => new Dictionary<string, FileStat>();
 
-    public CommitTests() => FlowMessages.Culture = new System.Globalization.CultureInfo("fr-FR");
+    public CommitTests() => FlowMessages.Culture = MessagesCulture.French;
 
     // ---------- status / numstat parsing ----------
 

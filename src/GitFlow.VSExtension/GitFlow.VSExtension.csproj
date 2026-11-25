@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>GitFlow.VSExtension</RootNamespace>
-    <NeutralLanguage>fr</NeutralLanguage>
+    <NeutralLanguage>en</NeutralLanguage>
     <!-- Extension version (vsixmanifest): bump it for each .vsix installed by hand, otherwise the installer refuses the update. -->
     <Version>1.1.2</Version>
     <!-- The Output window API is still flagged "preview" in SDK 17.14; it is only used in Services/GitFlowOutput.cs. -->

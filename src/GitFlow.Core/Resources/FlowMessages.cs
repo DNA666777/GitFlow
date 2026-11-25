@@ -5,12 +5,12 @@ using GitFlow.Core.Model;
 
 namespace GitFlow.Core.Resources;
 
-/// <summary>User facing texts (French by default), centralised in Strings.resx for future translation.</summary>
+/// <summary>User facing texts: English by default (Strings.resx), French translation (Strings.fr.resx), following the UI culture.</summary>
 public static class FlowMessages
 {
     private static readonly ResourceManager Resources = new("GitFlow.Core.Resources.Strings", typeof(FlowMessages).Assembly);
 
-    /// <summary>Culture used for messages; null = current UI culture (falls back to French).</summary>
+    /// <summary>Culture used for messages; null = current UI culture (falls back to English).</summary>
     public static CultureInfo? Culture { get; set; }
 
     public static string ReleaseReminder => Get("Info_ReleaseReminder");

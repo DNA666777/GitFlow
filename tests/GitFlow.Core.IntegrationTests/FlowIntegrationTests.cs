@@ -7,6 +7,9 @@ namespace GitFlow.Core.IntegrationTests;
 
 public class FlowIntegrationTests
 {
+    // Generated texts are asserted in French: fixed language, whatever the machine's (CI runs in English).
+    public FlowIntegrationTests() => Resources.FlowMessages.Culture = new System.Globalization.CultureInfo("fr-FR");
+
     private static async Task<TestRepository> CreateInitializedAsync(bool withOrigin = true, GitFlowConfig? config = null)
     {
         config ??= GitFlowConfig.Default;
