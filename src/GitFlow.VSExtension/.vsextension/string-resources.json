@@ -1,11 +1,11 @@
 {
   "GitFlow.VSExtension.Menu.DisplayName": "GitFlow",
-  "GitFlow.VSExtension.ShowGitFlowWindowCommand.DisplayName": "Fenêtre GitFlow",
-  "GitFlow.VSExtension.StartFeatureCommand.DisplayName": "Démarrer une feature...",
-  "GitFlow.VSExtension.StartReleaseCommand.DisplayName": "Démarrer une release...",
-  "GitFlow.VSExtension.StartHotfixCommand.DisplayName": "Démarrer un hotfix...",
-  "GitFlow.VSExtension.FinishCommand.DisplayName": "Terminer la branche courante...",
-  "GitFlow.VSExtension.PublishCommand.DisplayName": "Publier la branche courante",
-  "GitFlow.VSExtension.InitCommand.DisplayName": "Initialiser GitFlow...",
-  "GitFlow.VSExtension.SettingsCommand.DisplayName": "Paramètres GitFlow..."
+  "GitFlow.VSExtension.ShowGitFlowWindowCommand.DisplayName": "GitFlow Window",
+  "GitFlow.VSExtension.StartFeatureCommand.DisplayName": "Start Feature...",
+  "GitFlow.VSExtension.StartReleaseCommand.DisplayName": "Start Release...",
+  "GitFlow.VSExtension.StartHotfixCommand.DisplayName": "Start Hotfix...",
+  "GitFlow.VSExtension.FinishCommand.DisplayName": "Finish Current Branch...",
+  "GitFlow.VSExtension.PublishCommand.DisplayName": "Push Current Branch",
+  "GitFlow.VSExtension.InitCommand.DisplayName": "Initialize GitFlow...",
+  "GitFlow.VSExtension.SettingsCommand.DisplayName": "GitFlow Settings..."
 }

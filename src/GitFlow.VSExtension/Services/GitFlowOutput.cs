@@ -25,7 +25,13 @@ internal sealed class GitFlowOutput : IGitCommandLog, IDisposable
         try
         {
             // Creating two channels with the same name throws: create once per extension lifetime.
-            _channel ??= await extensibility.Views().Output.CreateOutputChannelAsync(Strings.OutputPaneTitle, ct).ConfigureAwait(false);
+            if (_channel is null)
+            {
+                _channel = await extensibility.Views().Output.CreateOutputChannelAsync(Strings.OutputPaneTitle, ct).ConfigureAwait(false);
+
+                // Diagnostic: the UI language drives the texts (English by default, French for "fr").
+                WriteLine($"GitFlow — UI culture: {CultureInfo.CurrentUICulture.Name}");
+            }
         }
         finally
         {

@@ -5,11 +5,12 @@ using Shouldly;
 
 namespace GitFlow.Core.Tests;
 
+[Collection(MessagesCulture.Collection)]
 public class SettingsTests
 {
     private const string Repo = @"C:\repo";
 
-    public SettingsTests() => FlowMessages.Culture = new System.Globalization.CultureInfo("fr-FR");
+    public SettingsTests() => FlowMessages.Culture = MessagesCulture.French;
 
     private static FakeGitRunner WithVsKeys(FakeGitRunner git, string? local = null, string? global = null)
     {

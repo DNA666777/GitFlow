@@ -5,8 +5,11 @@ using Shouldly;
 
 namespace GitFlow.Core.Tests;
 
+[Collection(MessagesCulture.Collection)]
 public class ConfigAndModelTests
 {
+    public ConfigAndModelTests() => FlowMessages.Culture = MessagesCulture.French;
+
     [Fact]
     public void Defaults_follow_git_flow()
     {

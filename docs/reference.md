@@ -132,6 +132,7 @@ La PR a été mergée par *squash* ou *rebase* : les commits de la branche ne so
 | Visual Studio | 2022 version 17.14 ou plus, 2026 (18.x). Éditions Community, Professional, Enterprise. |
 | Git | Git for Windows 2.28 ou plus (installé avec Visual Studio) |
 | Plateformes (mode PR) | GitHub (github.com), Azure DevOps (dev.azure.com, *.visualstudio.com) |
+| Langues | Anglais (par défaut) et français, selon la langue de Visual Studio. Les messages générés (commit, PR) suivent la même langue. |
 | Configuration | Compatible avec les clés `gitflow.*` de git-flow / git-flow-avh |
 
 ---

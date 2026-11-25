@@ -86,7 +86,7 @@ Modifiés (1) :
             <div class="vs-row"><span class="vs-input" style="min-width:60px">Feature ▾</span><span class="vs-muted">feature/</span><span class="vs-input grow">&nbsp;</span><span class="vs-btn">Démarrer</span></div>
             <div class="vs-section">Branches en cours</div>
             <div class="vs-muted">Features</div>
-            <div class="vs-row" style="padding-left:8px"><span class="grow">login<br><span class="vs-italic" style="font-size:11px">courante</span></span><span class="vs-btn">Publier</span><span class="vs-btn">Terminer…</span></div>
+            <div class="vs-row" style="padding-left:8px"><span class="grow">login<br><span class="vs-italic" style="font-size:11px">courante</span></span><span class="vs-btn">Pousser</span><span class="vs-btn">Terminer…</span></div>
             <div class="vs-muted">Releases</div>
             <div class="vs-muted">Hotfixes</div>
           </div>
@@ -97,7 +97,7 @@ Modifiés (1) :
             <li><strong>L'état du dépôt</strong> : branche courante et son type, arbre propre / modifié / merge en cours, commits à pousser ou à récupérer.</li>
             <li><strong>Commit</strong> : fichiers modifiés et message proposé (<a href="#commit">détails</a>).</li>
             <li><strong>Démarrer une branche</strong> : type, préfixe, nom. Pour une release ou un hotfix, la version suivante est pré-remplie.</li>
-            <li><strong>Branches en cours</strong>, groupées par type, avec <em>Publier</em> et <em>Terminer…</em> sur chaque ligne : pas besoin d'être sur la branche pour la terminer.</li>
+            <li><strong>Branches en cours</strong>, groupées par type, avec <em>Pousser</em> et <em>Terminer…</em> sur chaque ligne : pas besoin d'être sur la branche pour la terminer.</li>
             <li>Les badges <em>courante</em> et <em>déjà mergée</em> (une branche mergée à la main dans toutes ses cibles).</li>
             <li>Sur une branche <span class="branch release">release/</span>, le rappel « corrections, docs et tâches de release uniquement ».</li>
             <li>La section <em>Pull requests</em> apparaît si vous utilisez le <a href="pull-requests.html">mode Pull Request</a>.</li>
@@ -130,8 +130,8 @@ Modifiés (1) :
       </ol>
       <p>Refus possibles, avec un message en français : arbre de travail sale, nom invalide pour git, branche déjà existante (en local ou sur origin), merge en cours.</p>
 
-      <h3>Publier (optionnel)</h3>
-      <p><em>Publier</em> pousse la branche sur origin (<code>git push -u origin feature/login</code>) pour la partager ou la sauvegarder. Seuls les commits partent : pensez à commiter avant.</p>
+      <h3>Pousser (optionnel)</h3>
+      <p><em>Pousser</em> envoie la branche sur origin (<code>git push -u origin feature/login</code>) pour la partager ou la sauvegarder. Seuls les commits partent : pensez à commiter avant.</p>
 
       <h3>Terminer</h3>
       <div class="mock-row">
@@ -276,7 +276,7 @@ Réf. : ABC-12        <span class="c">← tickets trouvés dans le nom de branch
           <tr><td>Fenêtre GitFlow</td><td>Ouvre la fenêtre décrite plus haut.</td></tr>
           <tr><td>Démarrer une feature / une release / un hotfix…</td><td>Demande le nom (version pré-remplie pour release/hotfix) et crée la branche.</td></tr>
           <tr><td>Terminer la branche courante…</td><td>Finish de la branche courante, ou reprise d'un Finish arrêté sur un conflit.</td></tr>
-          <tr><td>Publier la branche courante</td><td><code>git push -u origin &lt;branche&gt;</code>.</td></tr>
+          <tr><td>Pousser la branche courante</td><td><code>git push -u origin &lt;branche&gt;</code>.</td></tr>
           <tr><td>Paramètres GitFlow…</td><td>Écran des paramètres (ou d'initialisation si le dépôt ne l'est pas).</td></tr>
           <tr><td>Initialiser GitFlow…</td><td>Écran d'initialisation.</td></tr>
         </tbody>

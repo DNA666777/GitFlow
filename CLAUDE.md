@@ -190,7 +190,16 @@ Flow en mode PR :
 
 ## Conventions de code
 
-- Code, identifiants et commentaires de code en **anglais** ; textes affichés à l'utilisateur en **français** (centralisés dans un fichier de ressources pour permettre une traduction future).
+- Code, identifiants et commentaires de code en **anglais**.
+- Textes affichés et textes générés (messages de commit, descriptions de PR) : **anglais par défaut** (`Strings.resx`),
+  **traduction française** (`Strings.fr.resx`), dans `GitFlow.Core/Resources` et `GitFlow.VSExtension/Resources` (décision du 2026-11-25,
+  version 1.7.0). La langue suit `CurrentUICulture` (langue de VS) : `fr*` → français, toute autre langue → anglais.
+  **Toute nouvelle clé va dans les deux fichiers** (test `French_translation_has_every_key_of_the_english_resources`).
+  Libellés de menu : `.vsextension/string-resources.json` (anglais) et `.vsextension/fr/string-resources.json` (prise en compte par VS
+  non documentée, à vérifier). Les noms de branches, titres de PR (`Feature: x`, `Release 1.7.0`) et messages de tag restent en anglais.
+- Tests qui changent `FlowMessages.Culture` (statique) : dans la collection xUnit `MessagesCulture.Collection` ; les tests d'intégration
+  fixent `fr-FR` (assertions en français, indépendantes de la langue de la machine).
+- Libellé « Publish » de l'interface : **Pousser** / **Push** (décision du 2026-11-25) ; l'opération Publish du modèle reste `git push -u origin <branche>`.
 - `async`/`await` partout pour l'I/O, `CancellationToken` propagé.
 - `IGitRunner` est la seule porte vers git : `Task<GitResult> RunAsync(string workingDir, IReadOnlyList<string> args, CancellationToken ct)`.
   Toujours passer les arguments en liste (pas de concaténation de chaînes → pas d'injection via un nom de branche).
@@ -247,8 +256,14 @@ SDK .NET figé par `global.json` (10.0.x, `rollForward: latestFeature`) ; les pr
   `Resources/preview.png` (200 px), liens MoreInfo/ReleaseNotes vers GitHub, tags de recherche.
   **Ne jamais changer l'`id` de l'extension** : VS ne reconnaîtrait plus les mises à jour (deux extensions installées).
 - **Visual Studio Marketplace** : dernière étape de `release.yml`, exécutée seulement si le secret GitHub `VS_MARKETPLACE_PAT` existe
-  (jeton Azure DevOps, scope *Marketplace > Publish*, organisations : *All accessible organizations*). `VsixPublisher.exe` (VS du runner,
-  sinon paquet NuGet `Microsoft.VSSDK.BuildTools` téléchargé au moment du job, pas une dépendance du projet) avec
+  (jeton Azure DevOps, scope *Marketplace > Publish*, organisations : *All accessible organizations*). `VsixPublisher.exe` du paquet NuGet
+  `Microsoft.VSSDK.BuildTools` téléchargé au moment du job (pas une dépendance du projet), **version figée** par `VSSDK_VERSIONS`
+  dans `release.yml` (17.14.2142 d'abord). La 18.12.1583 — celle livrée avec VS 2026 et la dernière du paquet NuGet — échoue
+  hors de VS (`VsixPub0031`, `Microsoft.Identity.Client` en mauvaise version, constaté le 2026-11-24) ; seul ce défaut précis
+  fait essayer la version suivante, toute autre erreur arrête la publication. La 17.14 plante après l'envoi dans sa télémétrie
+  (code -532462766) : le succès est donc détecté par le message `VsixPub0038` (« Uploaded »), pas par le code retour.
+  Le nom affiché de l'éditeur sur le Marketplace doit être **identique** à `publisherName` de l'extension (`DNA666777`), sinon VsixPub0029.
+  Fiche publiée : https://marketplace.visualstudio.com/items?itemName=DNA666777.gitflow (première version : 1.6.0, le 2026-11-25). Avec
   `marketplace/publishManifest.json` (éditeur `DNA666777`, fiche `DNA666777.gitflow`, catégorie *source control*) et
   `marketplace/overview.md` (page de présentation). Le Marketplace refuse de republier une version déjà publiée.
   Alternative future : `-oidc` (trusted publishing) au lieu d'un jeton.

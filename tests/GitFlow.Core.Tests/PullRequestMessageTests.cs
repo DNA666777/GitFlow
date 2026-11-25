@@ -5,11 +5,12 @@ using Shouldly;
 
 namespace GitFlow.Core.Tests;
 
+[Collection(MessagesCulture.Collection)]
 public class PullRequestMessageTests
 {
     private static readonly string Nl = Environment.NewLine;
 
-    public PullRequestMessageTests() => FlowMessages.Culture = new System.Globalization.CultureInfo("fr-FR");
+    public PullRequestMessageTests() => FlowMessages.Culture = MessagesCulture.French;
 
     private static PullRequestContext Feature(string name, string[] commits, string messages = "", DiffSummary? diff = null) =>
         new(new FlowBranch(BranchType.Feature, name, "feature/" + name), "develop", commits, messages, diff ?? new DiffSummary(2, 10, 3), null);

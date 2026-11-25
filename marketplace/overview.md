@@ -2,7 +2,7 @@
 
 **Le Gitflow standard, sans quitter Visual Studio.** Démarrez et terminez vos branches `feature/`, `release/` et `hotfix/` en un ou deux clics, en respectant strictement le [Gitflow Workflow d'Atlassian](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
 
-*The standard Gitflow, without leaving Visual Studio: start and finish feature, release and hotfix branches in one or two clicks. Local merge by default, or Pull Requests on GitHub and Azure DevOps. User interface in French.*
+*The standard Gitflow, without leaving Visual Studio: start and finish feature, release and hotfix branches in one or two clicks. Local merge by default, or Pull Requests on GitHub and Azure DevOps. **Available in English and French** (follows the Visual Studio language).*
 
 📖 **Tutoriel complet** : https://dna666777.github.io/GitFlow/
 
@@ -12,8 +12,8 @@
   - **Init** : crée `develop` et écrit la config git-flow standard.
   - **Start** : version suivante proposée pour une release ou un hotfix.
   - **Finish** : merges `--no-ff`, tag annoté. Un hotfix pendant une release est mergé dans la release.
-  - **Publish** : pousse la branche sur origin.
-- **Fenêtre GitFlow** ancrée à côté de *Git Changes* : état du dépôt, branches en cours avec leurs boutons *Publier* et *Terminer*, rappel des règles sur une branche de release.
+  - **Push** : pousse la branche sur origin.
+- **Fenêtre GitFlow** ancrée à côté de *Git Changes* : état du dépôt, branches en cours avec leurs boutons *Pousser* et *Terminer*, rappel des règles sur une branche de release.
 - **Commit intégré** : liste des modifications et message de commit **généré depuis git** (fichiers, lignes ajoutées/supprimées, tickets du nom de branche), modifiable.
 - **Mode Pull Request (option)** pour les dépôts où `master` et `develop` sont protégées, sur **GitHub** et **Azure DevOps** : message de PR généré, suivi des PR dans la fenêtre, tag posé sur le commit de merge, clôture de la branche.
 - **Paramètres** : noms des branches, préfixes, préfixe de tag, options par défaut du Finish, pour un dépôt ou pour tous vos dépôts.
