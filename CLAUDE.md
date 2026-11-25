@@ -251,7 +251,10 @@ SDK .NET figé par `global.json` (10.0.x, `rollForward: latestFeature`) ; les pr
   `Microsoft.VSSDK.BuildTools` téléchargé au moment du job (pas une dépendance du projet), **version figée** par `VSSDK_VERSIONS`
   dans `release.yml` (17.14.2142 d'abord). La 18.12.1583 — celle livrée avec VS 2026 et la dernière du paquet NuGet — échoue
   hors de VS (`VsixPub0031`, `Microsoft.Identity.Client` en mauvaise version, constaté le 2026-11-24) ; seul ce défaut précis
-  fait essayer la version suivante, toute autre erreur arrête la publication. Avec
+  fait essayer la version suivante, toute autre erreur arrête la publication. La 17.14 plante après l'envoi dans sa télémétrie
+  (code -532462766) : le succès est donc détecté par le message `VsixPub0038` (« Uploaded »), pas par le code retour.
+  Le nom affiché de l'éditeur sur le Marketplace doit être **identique** à `publisherName` de l'extension (`DNA666777`), sinon VsixPub0029.
+  Fiche publiée : https://marketplace.visualstudio.com/items?itemName=DNA666777.gitflow (première version : 1.6.0, le 2026-11-25). Avec
   `marketplace/publishManifest.json` (éditeur `DNA666777`, fiche `DNA666777.gitflow`, catégorie *source control*) et
   `marketplace/overview.md` (page de présentation). Le Marketplace refuse de republier une version déjà publiée.
   Alternative future : `-oidc` (trusted publishing) au lieu d'un jeton.
