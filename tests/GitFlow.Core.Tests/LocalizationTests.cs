@@ -57,7 +57,7 @@ public class LocalizationTests
     {
         FlowMessages.Culture = new CultureInfo(culture);
 
-        FlowMessages.ReleaseReminder.ShouldBe("Release en cours : corrections, docs et tâches de release uniquement.");
+        FlowMessages.ReleaseReminder.ShouldBe("Release en cours : uniquement des corrections, de la doc et les tâches de release.");
     }
 
     [Fact]

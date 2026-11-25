@@ -143,7 +143,7 @@ public class SettingsTests
         warning.Kind.ShouldBe(SettingsWarningKind.OrphanedBranches);
         warning.Prefix.ShouldBe("feature/");
         warning.Items.ShouldBe(["feature/a", "feature/b"]);
-        FlowMessages.Describe(warnings[0]).ShouldStartWith("2 branche(s) utilisent l'ancien préfixe « feature/ » : feature/a, feature/b.");
+        FlowMessages.Describe(warnings[0]).ShouldStartWith("2 branche(s) utilisent encore l'ancien préfixe « feature/ » : feature/a, feature/b.");
         git.MutatingCalls.ShouldBeEmpty();
     }
 

@@ -4,8 +4,8 @@
   "GitFlow.VSExtension.StartFeatureCommand.DisplayName": "Démarrer une feature...",
   "GitFlow.VSExtension.StartReleaseCommand.DisplayName": "Démarrer une release...",
   "GitFlow.VSExtension.StartHotfixCommand.DisplayName": "Démarrer un hotfix...",
-  "GitFlow.VSExtension.FinishCommand.DisplayName": "Terminer la branche courante...",
-  "GitFlow.VSExtension.PublishCommand.DisplayName": "Pousser la branche courante",
+  "GitFlow.VSExtension.FinishCommand.DisplayName": "Terminer la branche actuelle...",
+  "GitFlow.VSExtension.PublishCommand.DisplayName": "Pousser la branche actuelle",
   "GitFlow.VSExtension.InitCommand.DisplayName": "Initialiser GitFlow...",
   "GitFlow.VSExtension.SettingsCommand.DisplayName": "Paramètres GitFlow..."
 }

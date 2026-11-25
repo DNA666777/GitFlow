@@ -706,7 +706,7 @@ internal sealed class PullRequestGroupViewModel
         TagCommand = tag;
         CompleteCommand = complete;
 
-        // Release/hotfix: tag as soon as the PR to production (first target) is merged; "Clore" tags it too if needed.
+        // Release/hotfix: tag as soon as the PR to production (first target) is merged; "Complete branch" tags it too if needed.
         CanTag = versionName is not null && !tagged && items.Count > 0 && items[0].State == PullRequestState.Merged;
         CanComplete = items.Count > 0 && items.All(i => i.State == PullRequestState.Merged);
         TagLabel = Strings.Format(Strings.ButtonTag, versionName ?? string.Empty);

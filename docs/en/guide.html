@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guide — GitFlow for Visual Studio</title>
+  <link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="alternate" hreflang="fr" href="../guide.html">
+</head>
+<body>
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="index.html"><img class="brand-mark" src="../assets/logo.svg" alt="">GitFlow for Visual Studio</a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="guide.html" aria-current="page">Guide</a>
+        <a href="pull-requests.html">Pull Requests</a>
+        <a href="reference.html">Reference</a>
+        <a href="../guide.html" lang="fr" hreflang="fr">Français</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <nav class="toc" aria-label="Contents">
+      <strong>Contents</strong>
+      <ol>
+        <li><a href="#installation">Installation</a></li>
+        <li><a href="#window">The GitFlow window</a></li>
+        <li><a href="#init">Initializing a repository</a></li>
+        <li><a href="#feature">A feature</a></li>
+        <li><a href="#commit">Committing</a></li>
+        <li><a href="#release">A release</a></li>
+        <li><a href="#hotfix">A hotfix</a></li>
+        <li><a href="#conflicts">Conflicts and resuming</a></li>
+        <li><a href="#settings">Settings</a></li>
+        <li><a href="#menu">Menu commands</a></li>
+      </ol>
+    </nav>
+
+    <article>
+      <h1>User guide</h1>
+      <p class="intro">Installation, initialization, then day-to-day work: features, releases and hotfixes.</p>
+
+      <!-- ===================================================== -->
+      <h2 id="installation">1. Installation</h2>
+      <ol class="steps">
+        <li><strong>Close Visual Studio completely</strong> (all windows). Otherwise the installer closes without installing anything.</li>
+        <li>Double-click <code>GitFlow.VSExtension.vsix</code>. Depending on the Visual Studio version, the <em>VSIX Installer</em> and then the <em>Visual Studio Installer</em> take over: confirm until the end.</li>
+        <li>Restart Visual Studio. The <span class="menu-path">Extensions &gt; GitFlow</span> menu appears, and the extension is listed in <span class="menu-path">Extensions &gt; Manage Extensions &gt; Installed</span>.</li>
+      </ol>
+      <p>From the command line:</p>
+<pre><code>&amp; "C:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\IDE\VSIXInstaller.exe" GitFlow.VSExtension.vsix</code></pre>
+      <div class="callout">
+        <strong>Updating</strong>
+        <p>Same procedure with the new <code>.vsix</code>. To uninstall: <span class="menu-path">Extensions &gt; Manage Extensions</span>, then <em>Uninstall</em>.</p>
+      </div>
+
+      <!-- ===================================================== -->
+      <h2 id="window">2. The GitFlow window</h2>
+      <p>Open it from <span class="menu-path">Extensions &gt; GitFlow &gt; GitFlow Window</span> (or <span class="menu-path">View &gt; Other Windows</span>). It opens as a tab next to <em>Git Changes</em> and refreshes on its own: when a file is saved, when the branch changes, when another solution is opened.</p>
+
+      <div class="mock-row">
+        <div class="vs-window" aria-label="Preview of the GitFlow window">
+          <div class="vs-title"><span>GitFlow</span><span>▾ ✕</span></div>
+          <div class="vs-body">
+            <div class="head"><span class="repo">MyProject</span><span><span class="vs-btn">Settings</span> <span class="vs-btn">Refresh</span></span></div>
+            <div class="vs-grid">
+              <span class="k">Branch</span><b>feature/login</b>
+              <span class="k">Type</span><span>Feature</span>
+              <span class="k">State</span><span>Uncommitted changes</span>
+              <span class="k">Remote</span><span>1 commit(s) ahead, 0 behind</span>
+            </div>
+            <div class="vs-section">Commit</div>
+            <div class="vs-muted">Changes (2)</div>
+            <div class="vs-file"><b>M</b>src/App/Program.cs</div>
+            <div class="vs-file"><b>A</b>src/App/Login.cs</div>
+            <div class="vs-italic">All changes will be committed (new files included).</div>
+            <div class="vs-textarea">Update 2 files in src/App
+
+Added (1):
+- src/App/Login.cs
+Modified (1):
+- src/App/Program.cs (+12 -3)</div>
+            <div class="vs-row"><span class="grow"></span><span class="vs-btn">Regenerate message</span><span class="vs-btn">Commit</span></div>
+            <div class="vs-section">Start a branch</div>
+            <div class="vs-row"><span class="vs-input" style="min-width:60px">Feature ▾</span><span class="vs-muted">feature/</span><span class="vs-input grow">&nbsp;</span><span class="vs-btn">Start</span></div>
+            <div class="vs-section">Branches in progress</div>
+            <div class="vs-muted">Features</div>
+            <div class="vs-row" style="padding-left:8px"><span class="grow">login<br><span class="vs-italic" style="font-size:11px">current</span></span><span class="vs-btn">Push</span><span class="vs-btn">Finish…</span></div>
+            <div class="vs-muted">Releases</div>
+            <div class="vs-muted">Hotfixes</div>
+          </div>
+        </div>
+        <div class="mock-text">
+          <h3 style="margin-top:0">What the window shows</h3>
+          <ul>
+            <li><strong>Repository state</strong>: current branch and its type, uncommitted changes or merge in progress, commits ahead of or behind origin.</li>
+            <li><strong>Commit</strong>: changed files and a suggested message (<a href="#commit">details</a>).</li>
+            <li><strong>Start a branch</strong>: type, prefix, name. For a release or a hotfix, the next version is pre-filled.</li>
+            <li><strong>Branches in progress</strong>, grouped by type, with <em>Push</em> and <em>Finish…</em> on each row: you don't need to be on a branch to finish it.</li>
+            <li>The <em>current</em> and <em>already merged</em> badges (a branch merged by hand into all its targets).</li>
+            <li>On a <span class="branch release">release/</span> branch, the reminder "bug fixes, docs and release tasks only".</li>
+            <li>The <em>Pull requests</em> section appears if you use <a href="pull-requests.html">Pull Request mode</a>.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ===================================================== -->
+      <h2 id="init">3. Initializing a repository</h2>
+      <p>On a repository that has never used GitFlow, the window offers <em>Initialize GitFlow…</em>. The settings screen opens, pre-filled:</p>
+      <ul>
+        <li>with the existing git-flow configuration if the repository already has one (it is kept as is);</li>
+        <li>otherwise with your "All my repositories" settings;</li>
+        <li>otherwise with the standard values: <code>master</code>, <code>develop</code>, <code>feature/</code>, <code>release/</code>, <code>hotfix/</code>, empty tag prefix.</li>
+      </ul>
+      <p>When you confirm, the <span class="branch develop">develop</span> branch is created from <span class="branch master">master</span> if it doesn't exist (or from <code>origin/develop</code> if it exists on the server), and the configuration is written to the repository (standard <code>gitflow.*</code> keys, compatible with other git-flow tools).</p>
+      <div class="callout warn">
+        <strong>The repository needs at least one commit</strong>
+        <p>On an empty repository, make a first commit on <code>master</code> first.</p>
+      </div>
+
+      <!-- ===================================================== -->
+      <h2 id="feature">4. A feature</h2>
+      <p>A feature starts from <span class="branch develop">develop</span> and is merged back into it. It never touches <span class="branch master">master</span>.</p>
+
+      <h3>Start</h3>
+      <ol class="steps">
+        <li>In <em>Start a branch</em>, choose <em>Feature</em> and type a name, for example <code>login</code> or <code>ABC-123-login</code>.</li>
+        <li><em>Start</em>: the <span class="branch feature">feature/login</span> branch is created from develop and checked out.</li>
+      </ol>
+      <p>Possible refusals, with an explicit message: uncommitted changes, name invalid for git, branch already exists (locally or on origin), merge in progress.</p>
+
+      <h3>Push (optional)</h3>
+      <p><em>Push</em> sends the branch to origin (<code>git push -u origin feature/login</code>) to share it or back it up. Only commits are pushed: commit first.</p>
+
+      <h3>Finish</h3>
+      <div class="mock-row">
+        <div class="vs-window vs-dialog" aria-label="Preview of the Finish dialog">
+          <div class="vs-title"><span>Finish feature/login</span><span>✕</span></div>
+          <div class="vs-body">
+            <div>Finish "feature/login"?<br><br>• merge --no-ff into develop<br>• delete the local branch</div>
+            <div class="vs-section">Mode</div>
+            <div><span class="vs-radio">Local merge</span>&nbsp;&nbsp;&nbsp;<span class="vs-radio off">Pull Request</span></div>
+            <div style="margin-top:8px"><span class="vs-check off">Push the branches (and the tag) to origin at the end</span></div>
+            <div><span class="vs-check off">Also delete the branch on origin</span></div>
+            <div class="vs-footer"><span class="vs-btn primary">OK</span><span class="vs-btn">Cancel</span></div>
+          </div>
+        </div>
+        <div class="mock-text">
+          <p><em>Finish…</em> opens this dialog. With <strong>local merge</strong> (the default mode):</p>
+          <ol>
+            <li><code>--no-ff</code> merge of the feature into develop, so the branch stays visible in the history;</li>
+            <li>deletion of the local branch with <code>git branch -d</code>, which git refuses if it is not merged;</li>
+            <li>optionally: push of develop to origin, deletion of the branch on origin;</li>
+            <li>back to develop.</li>
+          </ol>
+          <p>Both checkboxes can be pre-checked in the <a href="#settings">settings</a>.</p>
+        </div>
+      </div>
+
+      <!-- ===================================================== -->
+      <h2 id="commit">5. Committing</h2>
+      <p>The <em>Commit</em> section of the window lists the changed files (<code>A</code> added, <code>M</code> modified, <code>D</code> deleted, <code>R</code> renamed) and suggests a message built <strong>from git only</strong>, with no AI, always the same for the same changes.</p>
+<pre><code>Update 2 files
+
+Added (1):
+- src/Login.cs
+Modified (1):
+- README.md (+2 -1)
+
+Refs: ABC-12        <span class="c">← tickets found in the branch name (ABC-123, #42)</span></code></pre>
+      <ul>
+        <li><strong>What gets committed</strong>: if some files are already staged (<code>git add</code>), only those; otherwise everything, new files included, like "Commit All".</li>
+        <li><strong>The message stays editable</strong>: once you edit it, it is no longer replaced. <em>Regenerate message</em> brings back the suggestion.</li>
+        <li><strong>Rewrite the first line</strong> for large commits: the generator knows <em>which</em> files changed, not <em>why</em>.</li>
+        <li>Files appear <strong>once saved</strong> (<kbd>Ctrl</kbd>+<kbd>S</kbd>): git doesn't see changes that are still only in the editor.</li>
+      </ul>
+      <div class="callout warn">
+        <strong>Refused commits</strong>
+        <p>On <code>master</code> (no direct commits to production: start a feature or a hotfix) and during a conflicted merge (committing would conclude the merge instead of the Finish).</p>
+      </div>
+
+      <!-- ===================================================== -->
+      <h2 id="release">6. A release</h2>
+      <p>When enough features are in develop, a release prepares them for production. On the release branch: <strong>bug fixes, documentation and release tasks only</strong>, no new features.</p>
+      <ol class="steps">
+        <li><em>Start a branch</em> &gt; <em>Release</em>: the next version is suggested by incrementing the <em>minor</em> of the latest tag on master (<code>1.4.1</code> → <code>1.5.0</code>). Editable.</li>
+        <li>If develop has nothing new since the last release, a warning is shown: the release would be identical to the previous one. You can continue anyway.</li>
+        <li>Make your final adjustments (version number, changelog…) and commit.</li>
+        <li><em>Finish…</em>: the tag message is suggested (<code>Release 1.5.0</code>) and can be edited.</li>
+      </ol>
+      <p>Finishing a release, in this order:</p>
+      <ol>
+        <li><code>--no-ff</code> merge into <span class="branch master">master</span>;</li>
+        <li><strong>annotated tag</strong> <code>1.5.0</code> on master (or <code>v1.5.0</code> with the <code>v</code> prefix);</li>
+        <li><code>--no-ff</code> merge into <span class="branch develop">develop</span>;</li>
+        <li>deletion of the branch, back to develop.</li>
+      </ol>
+      <div class="callout ok">
+        <strong>Tip</strong>
+        <p>Check "Push" to send master, develop and the tag in one go.</p>
+      </div>
+
+      <!-- ===================================================== -->
+      <h2 id="hotfix">7. A hotfix</h2>
+      <p>To fix production, the hotfix is the <strong>only</strong> branch that starts directly from <span class="branch master">master</span>.</p>
+      <ol class="steps">
+        <li><em>Start a branch</em> &gt; <em>Hotfix</em>: suggested version = <em>patch</em> of the latest tag + 1 (<code>1.5.0</code> → <code>1.5.1</code>).</li>
+        <li>Fix, commit.</li>
+        <li><em>Finish…</em>: merge into master + tag, then merge into develop.</li>
+      </ol>
+      <div class="callout">
+        <strong>Hotfix during a release</strong>
+        <p>If a <span class="branch release">release/</span> branch is in progress, the hotfix is merged into master and then <strong>into the release</strong> instead of develop: the fix reaches develop when the release is finished.</p>
+      </div>
+      <p>Only one release and one hotfix can be in progress at a time.</p>
+
+      <!-- ===================================================== -->
+      <h2 id="conflicts">8. Conflicts and resuming</h2>
+      <p>If a merge of the Finish hits a conflict, the extension <strong>stops immediately and deletes nothing</strong>. The message lists the conflicted files, and the repository stays in the merge state.</p>
+      <ol class="steps">
+        <li>Resolve the conflicts (Visual Studio merge editor or by hand) and save.</li>
+        <li>Mark the files as resolved: <em>Stage</em> in Git Changes, or <code>git add &lt;file&gt;</code>.</li>
+        <li><strong>Don't commit yourself</strong>: click <em>Resume finish…</em> in the window (or run <em>Finish…</em> again).</li>
+      </ol>
+      <p>The Finish concludes the merge, skips the steps already done (merge into master, tag) and completes the rest.</p>
+      <div class="callout warn">
+        <strong>Visual Studio already concluded the merge?</strong>
+        <p>The branch shows the <em>already merged</em> badge. <em>Finish…</em> on its row creates the tag if it is missing, then deletes the branch.</p>
+        <p>To cancel everything instead: <code>git merge --abort</code>.</p>
+      </div>
+
+      <!-- ===================================================== -->
+      <h2 id="settings">9. Settings</h2>
+      <p><em>Settings</em> button of the window, or <span class="menu-path">Extensions &gt; GitFlow &gt; GitFlow Settings…</span></p>
+      <div class="mock-row">
+        <div class="vs-window vs-dialog" aria-label="Preview of the settings">
+          <div class="vs-title"><span>GitFlow Settings</span><span>✕</span></div>
+          <div class="vs-body">
+            <div class="vs-section" style="margin-top:0">Scope</div>
+            <div><span class="vs-radio">This repository</span>&nbsp;&nbsp;<span class="vs-radio off">All my repositories</span></div>
+            <div class="vs-section">Permanent branches</div>
+            <div class="vs-row"><span style="width:110px">Production</span><span class="vs-input grow">master ▾</span></div>
+            <div class="vs-row"><span style="width:110px">Development</span><span class="vs-input grow">develop ▾</span></div>
+            <div class="vs-section">Prefixes</div>
+            <div class="vs-row"><span style="width:110px">Feature</span><span class="vs-input grow">feature/</span></div>
+            <div class="vs-row"><span style="width:110px">Release</span><span class="vs-input grow">release/</span></div>
+            <div class="vs-row"><span style="width:110px">Hotfix</span><span class="vs-input grow">hotfix/</span></div>
+            <div class="vs-row"><span style="width:110px">Tag prefix</span><span class="vs-input grow">&nbsp;</span></div>
+            <div class="vs-section">Finish defaults</div>
+            <div>Mode&nbsp;&nbsp;<span class="vs-radio">Local merge</span>&nbsp;&nbsp;<span class="vs-radio off">Pull Request</span></div>
+            <div><span class="vs-check off">Push the branches (and the tag)…</span></div>
+            <div><span class="vs-check off">Also delete the branch on origin</span></div>
+            <div><span class="vs-check off">Pull Request: Complete (git fetch --prune)</span></div>
+            <div class="vs-footer"><span class="vs-btn">Reset to defaults</span><span class="grow"></span><span class="vs-btn primary">OK</span></div>
+          </div>
+        </div>
+        <div class="mock-text">
+          <ul>
+            <li><strong>Scope</strong>: <em>This repository</em> (local git config) or <em>All my repositories</em> (global git config, defaults for new repositories).</li>
+            <li><strong>Only naming is configurable</strong>, not the behavior of the flow.</li>
+            <li><strong>Tag prefix</strong>: empty by default (tags <code>1.4.0</code>), or <code>v</code> (tags <code>v1.4.0</code>).</li>
+            <li><strong>Live validation</strong>: empty or duplicate prefix, production = development. Names refused by git are reported when saving, and nothing is written.</li>
+            <li>Changing a prefix <strong>does not rename</strong> existing branches: a warning lists them before saving.</li>
+          </ul>
+          <p>All keys are described in the <a href="reference.html#keys">reference</a>.</p>
+        </div>
+      </div>
+
+      <!-- ===================================================== -->
+      <h2 id="menu">10. Menu commands</h2>
+      <p>Everything is also available from <span class="menu-path">Extensions &gt; GitFlow</span>, on the open solution:</p>
+      <table>
+        <thead><tr><th>Command</th><th>Effect</th></tr></thead>
+        <tbody>
+          <tr><td>GitFlow Window</td><td>Opens the window described above.</td></tr>
+          <tr><td>Start Feature / Release / Hotfix…</td><td>Asks for the name (version pre-filled for release/hotfix) and creates the branch.</td></tr>
+          <tr><td>Finish Current Branch…</td><td>Finishes the current branch, or resumes a Finish stopped on a conflict.</td></tr>
+          <tr><td>Push Current Branch</td><td><code>git push -u origin &lt;branch&gt;</code>.</td></tr>
+          <tr><td>GitFlow Settings…</td><td>Settings screen (or initialization screen if the repository is not initialized).</td></tr>
+          <tr><td>Initialize GitFlow…</td><td>Initialization screen.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="next-prev">
+        <a class="btn" href="index.html">← Home</a>
+        <a class="btn primary" href="pull-requests.html">Pull Request mode →</a>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="inner">
+      <span>GitFlow for Visual Studio — model: <a href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow">Atlassian Gitflow Workflow</a></span>
+      <a href="reference.html#troubleshooting">Having a problem?</a>
+    </div>
+  </footer>
+</body>
+</html>

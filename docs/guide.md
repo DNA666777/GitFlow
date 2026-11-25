@@ -1,15 +1,15 @@
 # Guide d'utilisation
 
-[Accueil](README.md) · **Guide** · [Mode Pull Request](pull-requests.md) · [Référence et dépannage](reference.md)
+[Accueil](README.md) · **Guide** · [Mode Pull Request](pull-requests.md) · [Référence et dépannage](reference.md) · [English](en/guide.md)
 
-Tout ce qu'il faut pour travailler en Gitflow depuis Visual Studio : installer, initialiser, puis faire vivre features, releases et hotfixes.
+Installation, initialisation, puis le travail au quotidien : features, releases et hotfixes.
 
 **Sommaire**
 
 1. [Installation](#1-installation)
 2. [La fenêtre GitFlow](#2-la-fenêtre-gitflow)
 3. [Initialiser un dépôt](#3-initialiser-un-dépôt)
-4. [Une feature de A à Z](#4-une-feature-de-a-à-z)
+4. [Une feature](#4-une-feature)
 5. [Commiter](#5-commiter)
 6. [Une release](#6-une-release)
 7. [Un hotfix](#7-un-hotfix)
@@ -35,7 +35,7 @@ L'équivalent en ligne de commande :
 
 ## 2. La fenêtre GitFlow
 
-Ouvrez-la par **Extensions > GitFlow > Fenêtre GitFlow**, ou par **Affichage > Autres fenêtres**. Elle s'ancre en onglet à côté de *Git Changes*. Elle se met à jour toute seule : à l'enregistrement d'un fichier, au changement de branche, à l'ouverture d'une autre solution.
+Ouvrez-la par **Extensions > GitFlow > Fenêtre GitFlow**, ou par **Affichage > Autres fenêtres**. Elle s'ouvre en onglet à côté de *Git Changes*. Elle se met à jour toute seule : à l'enregistrement d'un fichier, au changement de branche, à l'ouverture d'une autre solution.
 
 ```text
 ┌─ GitFlow ─────────────────────────────────────────┐
@@ -43,7 +43,7 @@ Ouvrez-la par **Extensions > GitFlow > Fenêtre GitFlow**, ou par **Affichage > 
 │ Branche   feature/login                            │
 │ Type      Feature                                  │
 │ État      Modifications non commitées              │
-│ Distant   1 commit(s) à pousser, 0 à récupérer     │
+│ Remote    1 commit(s) en avance, 0 en retard       │
 │                                                    │
 │ Commit                                             │
 │ Modifications (2)                                  │
@@ -60,7 +60,7 @@ Ouvrez-la par **Extensions > GitFlow > Fenêtre GitFlow**, ou par **Affichage > 
 │                                                    │
 │ Branches en cours                                  │
 │ Features                                           │
-│   login (courante)            [Pousser][Terminer…] │
+│   login (actuelle)            [Pousser][Terminer…] │
 │ Releases                                           │
 │ Hotfixes                                           │
 └────────────────────────────────────────────────────┘
@@ -68,12 +68,12 @@ Ouvrez-la par **Extensions > GitFlow > Fenêtre GitFlow**, ou par **Affichage > 
 
 Ce que montre la fenêtre :
 
-- **L'état du dépôt** : branche courante et son type, arbre propre, modifié ou en cours de merge, commits à pousser ou à récupérer.
+- **L'état du dépôt** : branche actuelle et son type, modifications non commitées ou merge en cours, commits en avance ou en retard sur origin.
 - **Commit** : les fichiers modifiés et un message proposé ([détails](#5-commiter)).
 - **Démarrer une branche** : type, préfixe et nom. Pour une release ou un hotfix, la version suivante est pré-remplie.
 - **Branches en cours**, groupées par type, avec *Pousser* et *Terminer…* sur chaque ligne. Pas besoin d'être sur une branche pour la terminer.
 - **Badges** :
-  - *courante* : la branche sur laquelle vous êtes ;
+  - *actuelle* : la branche sur laquelle vous êtes ;
   - *déjà mergée* : une branche déjà mergée à la main dans toutes ses cibles.
 - Sur une branche `release/`, le rappel « corrections, docs et tâches de release uniquement ».
 - La section *Pull requests* apparaît si vous utilisez le [mode Pull Request](pull-requests.md).
@@ -92,7 +92,7 @@ Sur un dépôt qui n'a jamais utilisé GitFlow, la fenêtre propose *Initialiser
 
 > ⚠️ **Le dépôt doit avoir au moins un commit.** Sur un dépôt vide, faites d'abord un premier commit sur `master`.
 
-## 4. Une feature de A à Z
+## 4. Une feature
 
 Une feature part de `develop` et y revient. Elle ne touche jamais `master`.
 
@@ -101,8 +101,8 @@ Une feature part de `develop` et y revient. Elle ne touche jamais `master`.
 1. Dans *Démarrer une branche*, choisissez *Feature* et tapez un nom, par exemple `login` ou `ABC-123-login`.
 2. *Démarrer* : la branche `feature/login` est créée depuis develop, et vous êtes placé dessus.
 
-L'extension refuse de démarrer, avec un message en français, dans ces cas :
-- arbre de travail sale ;
+L'extension refuse de démarrer, avec un message explicite, dans ces cas :
+- modifications non commitées ;
 - nom invalide pour git ;
 - branche déjà existante, en local ou sur origin ;
 - merge en cours.
@@ -154,13 +154,13 @@ Réf. : ABC-12
 
 La dernière ligne reprend les tickets trouvés dans le nom de branche (`ABC-123`, `#42`).
 
-- **Ce qui est commité** : si des fichiers sont déjà indexés (`git add`), seulement eux. Sinon tout, nouveaux fichiers compris, comme « Commit All ».
-- **Le message est à vous** : dès que vous le modifiez, il n'est plus remplacé. *Régénérer le message* remet la proposition.
+- **Ce qui est commité** : si des fichiers sont déjà stagés (`git add`), seulement eux. Sinon tout, nouveaux fichiers compris, comme « Commit All ».
+- **Le message reste modifiable** : dès que vous le modifiez, il n'est plus remplacé. *Régénérer le message* remet la proposition.
 - **Réécrivez la première ligne** pour les gros commits : le générateur sait *quels* fichiers ont changé, pas *pourquoi*.
 - **Enregistrez vos fichiers** (<kbd>Ctrl</kbd>+<kbd>S</kbd>) pour qu'ils apparaissent : git ne voit pas une modification encore dans l'éditeur.
 
 > ⚠️ **Commits refusés** :
-> - sur `master` : on ne commite jamais directement en production, démarrez une feature ou un hotfix ;
+> - sur `master` : pas de commit direct en production, démarrez une feature ou un hotfix ;
 > - pendant un merge en conflit : commiter terminerait le merge à la place du Finish.
 
 ## 6. Une release
@@ -183,7 +183,7 @@ Le Finish d'une release fait, dans l'ordre :
 
 ## 7. Un hotfix
 
-Un problème en production ? Le hotfix est la **seule** branche qui part directement de `master`.
+Pour corriger la production, le hotfix est la **seule** branche qui part directement de `master`.
 
 1. *Démarrer une branche* > *Hotfix* : la version proposée est celle du dernier tag avec le *patch* + 1 (`1.5.0` → `1.5.1`).
 2. Corrigez, commitez.
@@ -198,12 +198,12 @@ Il ne peut y avoir qu'une release et qu'un hotfix en cours à la fois.
 Si un merge du Finish rencontre un conflit, l'extension **s'arrête immédiatement et ne supprime rien**. Le message liste les fichiers en conflit, et le dépôt reste dans l'état de merge.
 
 1. Résolvez les conflits, avec l'éditeur de fusion de Visual Studio ou à la main, et enregistrez.
-2. Marquez les fichiers comme résolus : *Indexer* dans Git Changes, ou `git add <fichier>`.
+2. Marquez les fichiers comme résolus : *Indexer* (Stage) dans Git Changes, ou `git add <fichier>`.
 3. **Ne commitez pas vous-même** : cliquez sur *Reprendre le finish…* dans la fenêtre, ou relancez *Terminer…*.
 
 Le Finish conclut le merge, saute les étapes déjà faites (merge dans master, tag) et termine le reste.
 
-> **Le merge a déjà été conclu par Visual Studio ?** Pas de problème : la branche apparaît avec le badge *déjà mergée*. *Terminer…* sur sa ligne pose le tag s'il manque, puis supprime la branche.
+> **Le merge a déjà été conclu par Visual Studio ?** La branche apparaît avec le badge *déjà mergée*. *Terminer…* sur sa ligne crée le tag s'il manque, puis supprime la branche.
 > Pour tout annuler à la place : `git merge --abort`.
 
 ## 9. Paramètres
@@ -223,7 +223,7 @@ Ouvrez-les par le bouton *Paramètres* de la fenêtre, ou par **Extensions > Git
 │   Mode  (•) Merge local  ( ) Pull Request           │
 │   [ ] Pousser les branches mergées (et le tag)      │
 │   [ ] Supprimer aussi la branche sur origin         │
-│   [ ] Pull Request : Clore… (git fetch --prune)     │
+│   [ ] Pull Request : Finaliser (git fetch --prune)      │
 │ [Réinitialiser aux valeurs par défaut]        [OK]  │
 └─────────────────────────────────────────────────────┘
 ```
@@ -244,8 +244,8 @@ Tout est aussi accessible par **Extensions > GitFlow**, sur la solution ouverte 
 |---|---|
 | Fenêtre GitFlow | Ouvre la fenêtre décrite plus haut. |
 | Démarrer une feature / une release / un hotfix… | Demande le nom (version pré-remplie pour une release ou un hotfix) et crée la branche. |
-| Terminer la branche courante… | Finish de la branche courante, ou reprise d'un Finish arrêté sur un conflit. |
-| Pousser la branche courante | `git push -u origin <branche>`. |
+| Terminer la branche actuelle… | Finish de la branche actuelle, ou reprise d'un Finish arrêté sur un conflit. |
+| Pousser la branche actuelle | `git push -u origin <branche>`. |
 | Paramètres GitFlow… | Écran des paramètres, ou d'initialisation si le dépôt ne l'est pas. |
 | Initialiser GitFlow… | Écran d'initialisation. |
 

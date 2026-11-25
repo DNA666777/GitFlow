@@ -1,142 +1,145 @@
-# GitFlow pour Visual Studio
+# GitFlow for Visual Studio
 
-Extension Visual Studio pour appliquer le **Gitflow standard** sans quitter l'IDE. Elle démarre et termine les branches `feature/`, `release/` et `hotfix/` en un ou deux clics, en respectant strictement le [Gitflow Workflow d'Atlassian](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
+🌐 **English** · [Français](README.fr.md)
 
-> 🌐 **Site du tutoriel** : https://dna666777.github.io/GitFlow/
+Visual Studio extension to apply the **standard Gitflow** without leaving the IDE. It starts and finishes `feature/`, `release/` and `hotfix/` branches, strictly following the [Atlassian Gitflow Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
+
+> 🌐 **Tutorial website**: https://dna666777.github.io/GitFlow/en/
 >
-> 📖 **Tutoriel en Markdown** : [Accueil](docs/README.md) · [Guide](docs/guide.md) · [Mode Pull Request](docs/pull-requests.md) · [Référence et dépannage](docs/reference.md)
+> 📖 **Markdown tutorial**: [Home](docs/en/README.md) · [Guide](docs/en/guide.md) · [Pull Request mode](docs/en/pull-requests.md) · [Reference and troubleshooting](docs/en/reference.md)
 >
-> ⬇️ **Télécharger l'extension** : [dernière release](https://github.com/DNA666777/GitFlow/releases/latest) (fichier `.vsix`)
+> ⬇️ **Download the extension**: [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=DNA666777.gitflow) or [latest release](https://github.com/DNA666777/GitFlow/releases/latest) (`.vsix` file)
 
-## Fonctionnalités
+## Features
 
-- **Le flow complet** :
-  - **Init** : crée `develop` et écrit la config git-flow standard (`gitflow.*`).
-  - **Start** : la version suivante est proposée pour une release ou un hotfix.
-  - **Finish** : merges `--no-ff`, tag annoté pour une release ou un hotfix. Un hotfix lancé pendant une release est mergé dans cette release.
-  - **Push** : pousse la branche sur `origin`.
-- **Fenêtre GitFlow** ancrée à côté de *Git Changes* :
-  - état du dépôt et branches en cours, avec leurs boutons Pousser et Terminer ;
-  - rappel « corrections, docs et tâches de release uniquement » sur une branche de release.
-- **Commit intégré** : liste des modifications et message de commit **généré depuis git** (fichiers, lignes ajoutées/supprimées, tickets du nom de branche), modifiable.
-- **Mode Pull Request (option)**, pour les dépôts où `master` et `develop` sont protégées, sur **GitHub** et **Azure DevOps** :
-  - message de PR généré ;
-  - suivi des PR dans la fenêtre ;
-  - tag posé sur le commit de merge ;
-  - clôture de la branche.
-- **Paramètres** : nommage (branches, préfixes, préfixe de tag), options par défaut du Finish, portée *ce dépôt* ou *tous mes dépôts*.
-- **Fiabilité avant tout** :
-  - arbre de travail sale refusé ;
-  - arrêt propre sur conflit, avec reprise du Finish ;
-  - jamais de `push --force`, de `reset --hard`, ni de suppression d'une branche non mergée ;
-  - chaque commande git est journalisée dans *Sortie > GitFlow*.
-- **Anglais et français** : l'extension suit la langue de Visual Studio (français pour un VS en français, anglais sinon). Les messages de commit et de PR générés suivent la même langue.
-- **Autonome** : seulement Visual Studio et Git for Windows. Pas de git-flow, ni `gh`, ni `az` : le mode PR réutilise les identifiants que git connaît déjà (Git Credential Manager), sans en stocker aucun.
+- **The flow**:
+  - **Init**: creates `develop` and writes the standard git-flow config (`gitflow.*`).
+  - **Start**: the next version is suggested for a release or a hotfix.
+  - **Finish**: `--no-ff` merges, annotated tag for a release or a hotfix. A hotfix started during a release is merged into that release.
+  - **Push**: pushes the branch to `origin`.
+- **GitFlow window**, as a tab next to *Git Changes*:
+  - repository state and branches in progress, with their Push and Finish buttons;
+  - "bug fixes, docs and release tasks only" reminder on a release branch.
+- **Commit**: list of changes and a commit message **generated from git** (files, lines added/deleted, tickets from the branch name), editable.
+- **Pull Request mode (option)**, for repositories where `master` and `develop` are protected, on **GitHub** and **Azure DevOps**:
+  - generated PR message;
+  - PR tracking in the window;
+  - tag created on the merge commit;
+  - branch completion.
+- **Settings**: naming (branches, prefixes, tag prefix), Finish defaults, scope *this repository* or *all my repositories*.
+- **Safety**:
+  - Start and Finish refused when there are uncommitted changes (no automatic stash);
+  - stops on conflicts, and the Finish can resume;
+  - never `push --force`, `reset --hard`, or deletion of an unmerged branch;
+  - every git command is logged in *Output > GitFlow*.
+- **English and French**: the extension follows the Visual Studio language (French for a French VS, English otherwise). Generated commit and PR messages use the same language.
+- **Dependencies**: only Visual Studio and Git for Windows. No git-flow, no `gh`, no `az`: PR mode reuses the credentials git already knows (Git Credential Manager), and stores none.
 
-## Prérequis
+## Requirements
 
 | | |
 |---|---|
-| Visual Studio | 2022 **17.14+** ou 2026 |
-| Git | Git for Windows (installé avec Visual Studio), `git` dans le PATH |
-| Mode Pull Request | remote `origin` sur GitHub ou Azure DevOps, identifiants git déjà configurés |
+| Visual Studio | 2022 **17.14+** or 2026 |
+| Git | Git for Windows (installed with Visual Studio), `git` on the PATH |
+| Pull Request mode | `origin` remote on GitHub or Azure DevOps, git credentials already set up |
 
 ## Installation
 
-1. **Fermez Visual Studio.**
-2. Installez `GitFlow.VSExtension.vsix` : double-clic, ou en ligne de commande :
+1. **Close Visual Studio.**
+2. Install `GitFlow.VSExtension.vsix`: double-click it, or from the command line:
    ```powershell
-   & "<dossier VS>\Common7\IDE\VSIXInstaller.exe" GitFlow.VSExtension.vsix
+   & "<VS folder>\Common7\IDE\VSIXInstaller.exe" GitFlow.VSExtension.vsix
    ```
-3. Relancez Visual Studio : le menu **Extensions > GitFlow** apparaît.
+3. Restart Visual Studio: the **Extensions > GitFlow** menu appears.
 
-Pour obtenir le `.vsix`, voir [Compiler](#compiler) ci-dessous.
+To build the `.vsix` yourself, see [Building](#building) below.
 
-## Démarrage rapide
+## Quick start
 
-1. Ouvrez une solution placée dans un dépôt Git, puis **Extensions > GitFlow > Fenêtre GitFlow**.
-2. **Initialiser GitFlow…** et validez les noms proposés (`master`, `develop`, `feature/`, `release/`, `hotfix/`).
-3. **Démarrer une branche** : *Feature*, nom `login`, puis *Démarrer*.
-4. Travaillez, puis **Commiter** depuis la section Commit.
-5. **Terminer…** sur la ligne de la branche, en *Merge local* ou en *Pull Request*.
+1. Open a solution located in a Git repository, then **Extensions > GitFlow > GitFlow Window**.
+2. **Initialize GitFlow…** and confirm the suggested names (`master`, `develop`, `feature/`, `release/`, `hotfix/`).
+3. **Start a branch**: *Feature*, name `login`, then *Start*.
+4. Work, then **Commit** from the Commit section.
+5. **Finish…** on the branch row, with *Local merge* or *Pull Request*.
 
-Le reste est dans le [guide](docs/guide.md).
+The rest is in the [guide](docs/en/guide.md).
 
-## Le modèle appliqué
+## The model
 
-| Type | Préfixe | Part de | Se termine dans | Tag |
+| Type | Prefix | Starts from | Finishes into | Tag |
 |---|---|---|---|---|
-| feature | `feature/` | develop | develop | non |
-| release | `release/` | develop | master **puis** develop | oui |
-| hotfix | `hotfix/` | master | master **puis** develop (ou la release en cours) | oui |
+| feature | `feature/` | develop | develop | no |
+| release | `release/` | develop | master **then** develop | yes |
+| hotfix | `hotfix/` | master | master **then** develop (or the release in progress) | yes |
 
-Seul le nommage est configurable. Le comportement du flow ne l'est pas, et il n'existe aucun autre type de branche.
+Only naming is configurable. The behavior of the flow is not, and there is no other branch type.
 
-## Compiler
+## Building
 
 ```powershell
-# Build complet : produit aussi le .vsix (MSBuild de Visual Studio non requis)
+# Full build: also produces the .vsix (Visual Studio MSBuild not required)
 dotnet build GitFlowVS.sln -c Debug
 #   → src/GitFlow.VSExtension/bin/Debug/net8.0-windows8.0/GitFlow.VSExtension.vsix
 
 # Tests
-dotnet test tests/GitFlow.Core.Tests               # unitaires (git simulé)
-dotnet test tests/GitFlow.Core.IntegrationTests    # vrais dépôts git dans %TEMP% (quelques minutes)
+dotnet test tests/GitFlow.Core.Tests               # unit tests (simulated git)
+dotnet test tests/GitFlow.Core.IntegrationTests    # real git repositories in %TEMP% (a few minutes)
 ```
 
-Après un changement de `<Version>` dans `GitFlow.VSExtension.csproj`, rebuild avec `--no-incremental` : sinon le `.vsix` garde l'ancienne version.
+After changing `<Version>` in `GitFlow.VSExtension.csproj`, rebuild with `--no-incremental`: otherwise the `.vsix` keeps the old version.
 
 ### Architecture
 
 ```
 GitFlowVS.sln
 ├── src/
-│   ├── GitFlow.Core/            # Toute la logique, en .NET pur, sans référence à Visual Studio
-│   │   ├── Git/                 # IGitRunner (seule porte vers git), GitCliRunner, GitClient
-│   │   ├── Flow/                # FlowService, LocalMergeStrategy, CommitService, générateur de message
-│   │   ├── Config/              # Config gitflow.* et options gitflowvs.*
-│   │   ├── PullRequests/        # Mode PR : GitHub, Azure DevOps, identifiants via git
-│   │   └── Model/               # FlowResult, RepoState, BranchType…
-│   └── GitFlow.VSExtension/     # Couche VS fine (VisualStudio.Extensibility, out-of-process, Remote UI)
+│   ├── GitFlow.Core/            # All the logic, plain .NET, no reference to Visual Studio
+│   │   ├── Git/                 # IGitRunner (the only gateway to git), GitCliRunner, GitClient
+│   │   ├── Flow/                # FlowService, LocalMergeStrategy, CommitService, message generator
+│   │   ├── Config/              # gitflow.* config and gitflowvs.* options
+│   │   ├── PullRequests/        # PR mode: GitHub, Azure DevOps, credentials through git
+│   │   ├── Model/               # FlowResult, RepoState, BranchType…
+│   │   └── Resources/           # Texts: Strings.resx (English), Strings.fr.resx (French)
+│   └── GitFlow.VSExtension/     # Thin VS layer (VisualStudio.Extensibility, out-of-process, Remote UI)
 ├── tests/
-│   ├── GitFlow.Core.Tests/              # Tests unitaires
-│   └── GitFlow.Core.IntegrationTests/   # Tests sur de vrais dépôts git temporaires
-└── docs/                        # Tutoriel (Markdown + petit site statique)
+│   ├── GitFlow.Core.Tests/              # Unit tests
+│   └── GitFlow.Core.IntegrationTests/   # Tests on real temporary git repositories
+└── docs/                        # Tutorial (Markdown + small static site): French, en/ for English
 ```
 
-- **Stack** :
-  - .NET 8, C# ;
-  - SDK `Microsoft.VisualStudio.Extensibility` 17.14 (extension out-of-process) ;
-  - `git` en ligne de commande, pour respecter la config de l'utilisateur : identifiants, hooks, signatures GPG, LFS ;
-  - xUnit + Shouldly pour les tests.
-- **Règle d'or** : toute la logique est dans `GitFlow.Core`. L'extension VS ne fait qu'afficher, recueillir les choix de l'utilisateur et appeler le Core. Un bug reproductible sans VS doit l'être par un test du Core.
+- **Stack**:
+  - .NET 8, C#;
+  - `Microsoft.VisualStudio.Extensibility` SDK 17.14 (out-of-process extension);
+  - command-line `git`, to respect the user's config: credentials, hooks, GPG signatures, LFS;
+  - xUnit + Shouldly for tests.
+- **Golden rule**: all the logic is in `GitFlow.Core`. The VS extension only displays, collects the user's choices and calls the Core. A bug that can be reproduced without VS must be reproduced by a Core test.
 
-## Publier une version
+## Releasing a version
 
-La publication est automatique (GitHub Actions) et suit le flow :
+Publishing is automated (GitHub Actions) and follows the flow:
 
-1. **Démarrer une release** avec l'extension (version proposée, par exemple `1.4.0`).
-2. **Terminer** la release avec « Pousser » coché, ou en mode Pull Request puis *Poser le tag*. Le tag `1.4.0` arrive sur GitHub.
-3. Le workflow [`release.yml`](.github/workflows/release.yml) se déclenche sur ce tag :
-   - build Release, **à la version du tag** ;
-   - tests unitaires et d'intégration ;
-   - vérification de la version du paquet ;
-   - création de la **GitHub Release** avec `GitFlow.VSExtension-1.4.0.vsix` attaché et des notes générées à partir des commits.
+1. **Start a release** with the extension (suggested version, for example `1.4.0`).
+2. **Finish** the release with "Push" checked, or in Pull Request mode then *Create tag*. The `1.4.0` tag reaches GitHub.
+3. The [`release.yml`](.github/workflows/release.yml) workflow runs on this tag:
+   - Release build, **at the tag version**;
+   - unit and integration tests;
+   - package version check;
+   - **GitHub Release** with `GitFlow.VSExtension-1.4.0.vsix` attached and notes generated from the commits.
 
-Pour (re)publier un tag existant : onglet *Actions* > *Release* > *Run workflow*, puis indiquer le tag.
+To (re)publish an existing tag: *Actions* tab > *Release* > *Run workflow*, then enter the tag.
 
-**Visual Studio Marketplace** : si le secret `VS_MARKETPLACE_PAT` est configuré dans le dépôt, la release est aussi publiée sur le Marketplace (fiche décrite par [`marketplace/publishManifest.json`](marketplace/publishManifest.json) et [`marketplace/overview.md`](marketplace/overview.md)). Sans ce secret, l'étape est simplement sautée.
+**Visual Studio Marketplace**: if the `VS_MARKETPLACE_PAT` secret is set in the repository, the release is also published to the Marketplace (listing described by [`marketplace/publishManifest.json`](marketplace/publishManifest.json) and [`marketplace/overview.md`](marketplace/overview.md)). Without this secret, the step is skipped.
 
-Le workflow [`ci.yml`](.github/workflows/ci.yml) compile et teste chaque push sur `develop` ou `master` et chaque pull request. Le `.vsix` de chaque build reste disponible 7 jours en artefact.
+The [`ci.yml`](.github/workflows/ci.yml) workflow builds and tests every push to `develop` or `master` and every pull request. The `.vsix` of each build is kept for 7 days as an artifact.
 
-## Licence
+## License
 
 [MIT](LICENSE) — © 2026 DNA666777.
 
 ## Documentation
 
-Le tutoriel est dans [`docs/`](docs/README.md), en deux formats au contenu identique :
+The tutorial is in [`docs/en/`](docs/en/README.md) in English and in [`docs/`](docs/README.md) in French, each in two formats with the same content:
 
-- **Markdown**, lisible directement sur GitHub : [accueil](docs/README.md), [guide](docs/guide.md), [mode Pull Request](docs/pull-requests.md), [référence](docs/reference.md).
-- **Petit site web statique**, sans build ni dépendance, publié sur **https://dna666777.github.io/GitFlow/** par GitHub Pages
-  (branche `master`, dossier `/docs` : le site est mis à jour à chaque release). En local, ouvrez `docs/index.html` dans un navigateur.
+- **Markdown**, readable directly on GitHub: [home](docs/en/README.md), [guide](docs/en/guide.md), [Pull Request mode](docs/en/pull-requests.md), [reference](docs/en/reference.md).
+- **Small static website**, no build and no dependency, published at **https://dna666777.github.io/GitFlow/en/** by GitHub Pages
+  (`master` branch, `/docs` folder: the site is updated at each release). Locally, open `docs/en/index.html` in a browser.

@@ -1,6 +1,6 @@
 # Le mode Pull Request
 
-[Accueil](README.md) · [Guide](guide.md) · **Mode Pull Request** · [Référence et dépannage](reference.md)
+[Accueil](README.md) · [Guide](guide.md) · **Mode Pull Request** · [Référence et dépannage](reference.md) · [English](en/pull-requests.md)
 
 Le mode Pull Request est une option du Finish, pour les dépôts où `master` et `develop` sont protégées. Au lieu de merger en local, l'extension pousse la branche et ouvre les pull requests. La revue et le merge restent faits par des humains.
 
@@ -12,7 +12,7 @@ Le mode Pull Request est une option du Finish, pour les dépôts où `master` et
 4. [Le message généré](#le-message-généré)
 5. [Suivre les PR](#suivre-les-pr)
 6. [Release et hotfix : le tag](#release-et-hotfix--le-tag)
-7. [Clore la branche](#clore-la-branche)
+7. [Finaliser la branche](#finaliser-la-branche)
 8. [GitHub et Azure DevOps](#github-et-azure-devops)
 
 ---
@@ -41,12 +41,12 @@ Le choix se fait **à chaque Finish**, dans la boîte *Terminer*. Pour pré-sél
 
 ## Une feature par PR
 
-1. Démarrez et développez la feature comme d'habitude ([guide](guide.md#4-une-feature-de-a-à-z)).
-2. *Terminer…* : choisissez **Pull Request**. Les options de push et de suppression distante disparaissent : elles ne servent pas en mode PR.
+1. Démarrez et développez la feature comme d'habitude ([guide](guide.md#4-une-feature)).
+2. *Terminer…* : choisissez **Pull Request**. Les options de push et de suppression sur origin disparaissent : elles ne servent pas en mode PR.
 3. L'écran suivant montre le **titre et la description générés** pour chaque PR. Vous pouvez les modifier.
 4. OK : l'extension pousse la branche puis crée la PR `feature/x` → `develop`. S'il en existe déjà une ouverte, elle est réutilisée, et vos nouveaux commits y arrivent. Rien n'est mergé en local.
-5. Faites relire, puis **mergez la PR sur la plateforme**. De préférence, utilisez un merge sans fast-forward (voir [squash](#clore-la-branche)).
-6. Dans la fenêtre GitFlow : *Actualiser les PR*, puis *Clore la branche*.
+5. Faites relire, puis **mergez la PR sur la plateforme**. De préférence, utilisez un merge sans fast-forward (voir [squash](#finaliser-la-branche)).
+6. Dans la fenêtre GitFlow : *Actualiser les PR*, puis *Finaliser la branche*.
 
 ## Le message généré
 
@@ -66,7 +66,7 @@ Il est construit uniquement depuis git : il est déterministe, sans IA. Le titre
 ABC-12, #42
 ```
 
-Pour une release ou un hotfix, une section *Version* rappelle le tag qui sera posé après le merge.
+Pour une release ou un hotfix, une section *Version* rappelle le tag qui sera créé après le merge.
 
 ### Personnaliser
 
@@ -83,7 +83,7 @@ Pull requests                          [Actualiser les PR]
 release/1.5.0
    #12 → master    mergée                         [Ouvrir]
    #13 → develop   ouverte                        [Ouvrir]
-                                     [Poser le tag 1.5.0]
+                                     [Créer le tag 1.5.0]
 ```
 
 - Chaque PR a sa ligne, avec son état (*ouverte*, *mergée*, *fermée sans merge*) et un bouton *Ouvrir* vers le navigateur.
@@ -94,31 +94,31 @@ release/1.5.0
 
 Une release ouvre **deux PR** : vers `master` et vers `develop`. Un hotfix aussi : vers master, puis vers develop (ou vers la release en cours).
 
-Le tag ne peut être posé qu'**une fois la PR vers master mergée**, sur son commit de merge :
+Le tag ne peut être créé qu'**une fois la PR vers master mergée**, sur son commit de merge :
 
 1. Mergez la PR vers master sur la plateforme.
-2. *Actualiser les PR* : le bouton *Poser le tag 1.5.0* apparaît.
+2. *Actualiser les PR* : le bouton *Créer le tag 1.5.0* apparaît.
 3. L'extension :
-   - récupère master ;
+   - fait un fetch de master ;
    - vérifie que le commit de merge est bien sur `origin/master` ;
-   - pose le tag annoté, avec le message saisi au Finish ;
+   - crée le tag annoté, avec le message saisi au Finish ;
    - pousse le tag.
 
-*Clore la branche* pose aussi le tag s'il manque : un seul clic suffit si les deux PR sont déjà mergées.
+*Finaliser la branche* crée aussi le tag s'il manque, si les deux PR sont déjà mergées.
 
-## Clore la branche
+## Finaliser la branche
 
-Quand **toutes** les PR d'une branche sont mergées, *Clore la branche* :
+Quand **toutes** les PR d'une branche sont mergées, *Finaliser la branche* :
 
-1. pose le tag s'il s'agit d'une release ou d'un hotfix et qu'il manque ;
-2. récupère le serveur : `git fetch`, ou `git fetch --prune` si l'option est cochée dans les paramètres ;
+1. crée le tag s'il s'agit d'une release ou d'un hotfix et qu'il manque ;
+2. fait un `git fetch`, ou `git fetch --prune` si l'option est cochée dans les paramètres ;
 3. met à jour vos `develop` et `master` locales, en fast-forward uniquement ;
 4. supprime la branche locale avec `git branch -d`, et oublie ses PR ;
 5. vous laisse sur develop, ou sur la release en cours.
 
 > ⚠️ **Merge par « squash » ou « rebase »** : les commits de votre branche ne sont alors pas dans develop. L'extension le détecte et **ne supprime pas** la branche. Supprimez-la vous-même si vous êtes sûr. Pour éviter ça, choisissez le merge classique : *Merge*, ou *Merge (no fast-forward)*.
 
-> 💡 **Branches distantes** : Clore ne supprime pas la branche sur le serveur. Pour ça :
+> 💡 **Branches sur le serveur** : Finaliser ne supprime pas la branche sur le serveur. Pour ça :
 > - sur Azure DevOps, cochez *Delete branch after merging* ;
 > - sur GitHub, activez *Automatically delete head branches*.
 >
