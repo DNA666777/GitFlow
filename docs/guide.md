@@ -60,7 +60,7 @@ Ouvrez-la par **Extensions > GitFlow > Fenêtre GitFlow**, ou par **Affichage > 
 │                                                    │
 │ Branches en cours                                  │
 │ Features                                           │
-│   login (courante)            [Publier][Terminer…] │
+│   login (courante)            [Pousser][Terminer…] │
 │ Releases                                           │
 │ Hotfixes                                           │
 └────────────────────────────────────────────────────┘
@@ -71,7 +71,7 @@ Ce que montre la fenêtre :
 - **L'état du dépôt** : branche courante et son type, arbre propre, modifié ou en cours de merge, commits à pousser ou à récupérer.
 - **Commit** : les fichiers modifiés et un message proposé ([détails](#5-commiter)).
 - **Démarrer une branche** : type, préfixe et nom. Pour une release ou un hotfix, la version suivante est pré-remplie.
-- **Branches en cours**, groupées par type, avec *Publier* et *Terminer…* sur chaque ligne. Pas besoin d'être sur une branche pour la terminer.
+- **Branches en cours**, groupées par type, avec *Pousser* et *Terminer…* sur chaque ligne. Pas besoin d'être sur une branche pour la terminer.
 - **Badges** :
   - *courante* : la branche sur laquelle vous êtes ;
   - *déjà mergée* : une branche déjà mergée à la main dans toutes ses cibles.
@@ -107,9 +107,9 @@ L'extension refuse de démarrer, avec un message en français, dans ces cas :
 - branche déjà existante, en local ou sur origin ;
 - merge en cours.
 
-### Publier (optionnel)
+### Pousser (optionnel)
 
-*Publier* pousse la branche sur origin (`git push -u origin feature/login`), pour la partager ou la sauvegarder. Seuls les commits partent : pensez à commiter avant.
+*Pousser* envoie la branche sur origin (`git push -u origin feature/login`), pour la partager ou la sauvegarder. Seuls les commits partent : pensez à commiter avant.
 
 ### Terminer
 
@@ -245,7 +245,7 @@ Tout est aussi accessible par **Extensions > GitFlow**, sur la solution ouverte 
 | Fenêtre GitFlow | Ouvre la fenêtre décrite plus haut. |
 | Démarrer une feature / une release / un hotfix… | Demande le nom (version pré-remplie pour une release ou un hotfix) et crée la branche. |
 | Terminer la branche courante… | Finish de la branche courante, ou reprise d'un Finish arrêté sur un conflit. |
-| Publier la branche courante | `git push -u origin <branche>`. |
+| Pousser la branche courante | `git push -u origin <branche>`. |
 | Paramètres GitFlow… | Écran des paramètres, ou d'initialisation si le dépôt ne l'est pas. |
 | Initialiser GitFlow… | Écran d'initialisation. |
 

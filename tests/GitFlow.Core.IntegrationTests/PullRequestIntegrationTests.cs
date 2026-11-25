@@ -15,6 +15,9 @@ public class PullRequestIntegrationTests
 {
     private const string GitHubUrl = "https://github.com/test/repo.git";
 
+    // Generated texts are asserted in French: fixed language, whatever the machine's (CI runs in English).
+    public PullRequestIntegrationTests() => Resources.FlowMessages.Culture = new System.Globalization.CultureInfo("fr-FR");
+
     private sealed class Setup : IAsyncDisposable
     {
         public required TestRepository Repo { get; init; }

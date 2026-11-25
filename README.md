@@ -14,9 +14,9 @@ Extension Visual Studio pour appliquer le **Gitflow standard** sans quitter l'ID
   - **Init** : crée `develop` et écrit la config git-flow standard (`gitflow.*`).
   - **Start** : la version suivante est proposée pour une release ou un hotfix.
   - **Finish** : merges `--no-ff`, tag annoté pour une release ou un hotfix. Un hotfix lancé pendant une release est mergé dans cette release.
-  - **Publish** : pousse la branche sur `origin`.
+  - **Push** : pousse la branche sur `origin`.
 - **Fenêtre GitFlow** ancrée à côté de *Git Changes* :
-  - état du dépôt et branches en cours, avec leurs boutons Publier et Terminer ;
+  - état du dépôt et branches en cours, avec leurs boutons Pousser et Terminer ;
   - rappel « corrections, docs et tâches de release uniquement » sur une branche de release.
 - **Commit intégré** : liste des modifications et message de commit **généré depuis git** (fichiers, lignes ajoutées/supprimées, tickets du nom de branche), modifiable.
 - **Mode Pull Request (option)**, pour les dépôts où `master` et `develop` sont protégées, sur **GitHub** et **Azure DevOps** :
@@ -30,6 +30,7 @@ Extension Visual Studio pour appliquer le **Gitflow standard** sans quitter l'ID
   - arrêt propre sur conflit, avec reprise du Finish ;
   - jamais de `push --force`, de `reset --hard`, ni de suppression d'une branche non mergée ;
   - chaque commande git est journalisée dans *Sortie > GitFlow*.
+- **Anglais et français** : l'extension suit la langue de Visual Studio (français pour un VS en français, anglais sinon). Les messages de commit et de PR générés suivent la même langue.
 - **Autonome** : seulement Visual Studio et Git for Windows. Pas de git-flow, ni `gh`, ni `az` : le mode PR réutilise les identifiants que git connaît déjà (Git Credential Manager), sans en stocker aucun.
 
 ## Prérequis

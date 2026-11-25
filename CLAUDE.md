@@ -190,7 +190,16 @@ Flow en mode PR :
 
 ## Conventions de code
 
-- Code, identifiants et commentaires de code en **anglais** ; textes affichés à l'utilisateur en **français** (centralisés dans un fichier de ressources pour permettre une traduction future).
+- Code, identifiants et commentaires de code en **anglais**.
+- Textes affichés et textes générés (messages de commit, descriptions de PR) : **anglais par défaut** (`Strings.resx`),
+  **traduction française** (`Strings.fr.resx`), dans `GitFlow.Core/Resources` et `GitFlow.VSExtension/Resources` (décision du 2026-11-25,
+  version 1.7.0). La langue suit `CurrentUICulture` (langue de VS) : `fr*` → français, toute autre langue → anglais.
+  **Toute nouvelle clé va dans les deux fichiers** (test `French_translation_has_every_key_of_the_english_resources`).
+  Libellés de menu : `.vsextension/string-resources.json` (anglais) et `.vsextension/fr/string-resources.json` (prise en compte par VS
+  non documentée, à vérifier). Les noms de branches, titres de PR (`Feature: x`, `Release 1.7.0`) et messages de tag restent en anglais.
+- Tests qui changent `FlowMessages.Culture` (statique) : dans la collection xUnit `MessagesCulture.Collection` ; les tests d'intégration
+  fixent `fr-FR` (assertions en français, indépendantes de la langue de la machine).
+- Libellé « Publish » de l'interface : **Pousser** / **Push** (décision du 2026-11-25) ; l'opération Publish du modèle reste `git push -u origin <branche>`.
 - `async`/`await` partout pour l'I/O, `CancellationToken` propagé.
 - `IGitRunner` est la seule porte vers git : `Task<GitResult> RunAsync(string workingDir, IReadOnlyList<string> args, CancellationToken ct)`.
   Toujours passer les arguments en liste (pas de concaténation de chaînes → pas d'injection via un nom de branche).

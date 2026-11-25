@@ -16,8 +16,8 @@ internal sealed class ExtensionEntrypoint : Extension
             version: this.ExtensionAssemblyVersion,
             publisherName: "DNA666777",
             displayName: "GitFlow",
-            description: "Gitflow standard (feature, release, hotfix) sans quitter Visual Studio : démarrer, terminer, publier en un clic, "
-                + "merge local ou Pull Request (GitHub, Azure DevOps), message de commit généré, tags de version.")
+            description: "Standard Gitflow (feature, release, hotfix) without leaving Visual Studio: start, finish and push in one click, "
+                + "local merge or Pull Request (GitHub, Azure DevOps), generated commit messages, version tags. English and French.")
         {
             Preview = false,
             Icon = "Resources\\icon.png",
