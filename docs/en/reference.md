@@ -122,6 +122,18 @@ The `origin` remote is neither GitHub nor Azure DevOps (a local folder, GitLab, 
 
 The message from GitHub or Azure DevOps is shown as is: insufficient rights, PR already exists, missing target branch… After fixing it, run *Finish…* again: an already open PR is reused.
 
+### "The branch has no commit in common with origin/master"
+
+The repository was created on the server with a first commit (often a README), and the local history was pushed beside it: the two `master` branches share no ancestor, and a pull request could not be merged. Nothing is pushed. Join the two histories once, then run *Finish…* again:
+
+```powershell
+git switch master
+git merge origin/master --allow-unrelated-histories
+git push
+```
+
+The merge often stops on a README conflict: keep the version you want, `git add`, then `git commit`.
+
 ### Complete refuses: branch not contained in develop
 
 The PR was merged with *squash* or *rebase*: the branch commits are not in develop, so nothing is deleted. If the content was delivered, delete the branch yourself: `git branch -D feature/x`.

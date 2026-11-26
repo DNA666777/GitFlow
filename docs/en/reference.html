@@ -121,6 +121,12 @@ OK</code></pre>
       <p>The <code>origin</code> remote is neither GitHub nor Azure DevOps (a local folder, GitLab, Bitbucket…): use local merge. Check the URL with <code>git remote -v</code>. For a company Azure DevOps server, check the matching option in the settings (<a href="pull-requests.html#server">details</a>).</p>
       <h3>"The platform rejected the request"</h3>
       <p>The message from GitHub or Azure DevOps is shown as is: insufficient rights, PR already exists, missing target branch… After fixing it, run <em>Finish…</em> again: an already open PR is reused.</p>
+      <h3>"The branch has no commit in common with origin/master"</h3>
+      <p>The repository was created on the server with a first commit (often a README), and the local history was pushed beside it: the two <code>master</code> branches share no ancestor, and a pull request could not be merged. Nothing is pushed. Join the two histories once, then run <em>Finish…</em> again:</p>
+<pre><code>git switch master
+git merge origin/master --allow-unrelated-histories
+git push</code></pre>
+      <p>The merge often stops on a README conflict: keep the version you want, <code>git add</code>, then <code>git commit</code>.</p>
       <h3>Complete refuses: branch not contained in develop</h3>
       <p>The PR was merged with <em>squash</em> or <em>rebase</em>: the branch commits are not in develop. Nothing is deleted. If the content was delivered, delete the branch yourself: <code>git branch -D feature/x</code>.</p>
 

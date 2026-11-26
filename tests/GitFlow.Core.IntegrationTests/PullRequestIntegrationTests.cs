@@ -96,6 +96,59 @@ public class PullRequestIntegrationTests
     }
 
     [Fact]
+    public async Task Drafts_do_not_fail_without_a_merge_base()
+    {
+        // "git diff develop...feature/x" is fatal when the two histories share no commit (seen on a company server).
+        await using var s = await CreateAsync();
+        await s.Repo.GitAsync("switch", "--orphan", "feature/unrelated");
+        await s.Repo.CommitFileAsync("only.txt", "x\n", "Ajoute only");
+        var config = (await s.Repo.Flow.ConfigStore.ReadAsync(s.Repo.WorkDir, ConfigScope.Local))!;
+
+        var draft = (await s.PullRequests.PrepareAsync(s.Repo.WorkDir, config.TryParseFlowBranch("feature/unrelated")!, ["develop"], null)).ShouldHaveSingleItem();
+
+        draft.Title.ShouldBe("Feature: unrelated");
+        draft.Description.ShouldContain("- Ajoute only");
+    }
+
+    [Fact]
+    public async Task Release_is_refused_before_any_push_when_origin_master_is_unrelated()
+    {
+        // Repository created on the server with a README, local history pushed beside it: origin/master shares no commit.
+        await using var s = await CreateAsync();
+        await s.Repo.GitAsync("switch", "--orphan", "server-readme");
+        await s.Repo.CommitFileAsync("README.md", "# Server\n", "Initial commit");
+        await s.Repo.GitAsync("push", "--force", "origin", "server-readme:master");
+        await s.Repo.GitAsync("switch", "develop");
+        await s.Repo.GitAsync("branch", "-D", "server-readme");
+        await s.Repo.GitAsync("fetch", "origin");
+        await s.Flow.StartAsync(s.Repo.WorkDir, BranchType.Release, "2.0.0");
+        await s.Repo.CommitFileAsync("version.txt", "2.0.0\n", "Version 2.0.0");
+
+        var finish = await FinishWithPullRequestsAsync(s, "release/2.0.0");
+
+        finish.Error.ShouldBe(FlowError.NoCommonHistory);
+        finish.Detail.ShouldBe("master");
+        GitFlow.Core.Resources.FlowMessages.Describe(finish).ShouldContain("git merge origin/master --allow-unrelated-histories");
+        (await s.Repo.OriginBranchesAsync()).ShouldNotContain("release/2.0.0", "nothing is pushed");
+        s.Platform.Created.ShouldBe(0);
+
+        // The advice of the message is enough: join the histories of master once, then finish again.
+        await s.Repo.GitAsync("switch", "master");
+        // Both histories have a README.md: the usual add/add conflict, resolved by keeping the local file.
+        await s.Repo.TryGitAsync("merge", "origin/master", "--allow-unrelated-histories", "-m", "Join server history");
+        await s.Repo.GitAsync("checkout", "--ours", "--", ".");
+        await s.Repo.GitAsync("add", "-A");
+        await s.Repo.GitAsync("commit", "--no-edit");
+        await s.Repo.GitAsync("push", "origin", "master");
+        await s.Repo.GitAsync("switch", "release/2.0.0");
+
+        var retry = await FinishWithPullRequestsAsync(s, "release/2.0.0");
+
+        retry.IsSuccess.ShouldBeTrue(retry.Detail);
+        retry.PullRequests.Select(p => p.Target).ShouldBe(["master", "develop"]);
+    }
+
+    [Fact]
     public async Task Feature_through_a_pull_request()
     {
         await using var s = await CreateAsync();

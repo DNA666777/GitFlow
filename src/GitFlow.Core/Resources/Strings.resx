@@ -95,4 +95,5 @@
   <data name="Pr_Tickets" xml:space="preserve"><value>Tickets</value></data>
 
   <data name="Info_ReleaseReminder" xml:space="preserve"><value>Release in progress: bug fixes, docs and release tasks only.</value></data>
+  <data name="Error_NoCommonHistory" xml:space="preserve"><value>The branch has no commit in common with "origin/{0}" (unrelated histories, for example a repository created on the server with a README). A pull request could not be merged. Join the two histories of {0} once: git switch {0}, git merge origin/{0} --allow-unrelated-histories (resolve the conflicts if any, often on the README), git push. Then finish again.</value></data>
 </root>
