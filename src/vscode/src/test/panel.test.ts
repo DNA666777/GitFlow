@@ -19,7 +19,7 @@ const silentUi: Ui = {
 };
 
 async function setup(): Promise<{ gitflow: GitFlowApi; workspace: string; git: (...args: string[]) => string }> {
-  const gitflow = await vscode.extensions.getExtension<GitFlowApi>('DNA666777.gitflow-vscode')!.activate();
+  const gitflow = await vscode.extensions.getExtension<GitFlowApi>('DNA666777.gitflow-for-vscode')!.activate();
   gitflow.flow.ui = silentUi;
   const workspace = vscode.workspace.workspaceFolders![0].uri.fsPath;
   const git = (...args: string[]) => execFileSync('git', args, { cwd: workspace, encoding: 'utf8' }).trim();

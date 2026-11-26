@@ -8,7 +8,7 @@ Extension pour **Visual Studio** et **Visual Studio Code**, pour appliquer le **
 >
 > 📖 **Tutoriel en Markdown** : [Accueil](docs/README.md) · [Guide](docs/guide.md) · [Mode Pull Request](docs/pull-requests.md) · [Référence et dépannage](docs/reference.md) · [VS Code](docs/vscode.md)
 >
-> ⬇️ **Télécharger** : Visual Studio — [Marketplace](https://marketplace.visualstudio.com/items?itemName=DNA666777.gitflow) · VS Code — [Marketplace](https://marketplace.visualstudio.com/items?itemName=DNA666777.gitflow-vscode) · les deux — [dernière release](https://github.com/DNA666777/GitFlow/releases/latest) (fichiers `.vsix`)
+> ⬇️ **Télécharger** : Visual Studio — [Marketplace](https://marketplace.visualstudio.com/items?itemName=DNA666777.gitflow) · VS Code — [Marketplace](https://marketplace.visualstudio.com/items?itemName=DNA666777.gitflow-for-vscode) · les deux — [dernière release](https://github.com/DNA666777/GitFlow/releases/latest) (fichiers `.vsix`)
 
 ## Fonctionnalités
 

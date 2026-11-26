@@ -197,8 +197,9 @@ Flow en mode PR :
 
 Objectif : le même GitFlow dans **Visual Studio Code** (et ses forks : VSCodium, Cursor…), avec exactement le même comportement
 que dans Visual Studio. Décision du 2026-11-26 : **même dépôt**, `GitFlow.Core` réutilisé tel quel (pas de réécriture en TypeScript).
-Identifiant de l'extension VS Code : **`DNA666777.gitflow-vscode`** (nom affiché « GitFlow ») — `DNA666777.gitflow` est déjà pris par
-l'extension Visual Studio sur le Marketplace (noms uniques par éditeur). **Ne jamais le changer** une fois publié.
+Identifiant de l'extension VS Code : **`DNA666777.gitflow-for-vscode`** (nom affiché « GitFlow ») — `DNA666777.gitflow` est déjà pris par
+l'extension Visual Studio, et `gitflow-vscode` par un autre éditeur (le nom doit être unique sur tout le Marketplace VS Code :
+refusé à la release 1.9.0, d'où le hotfix 1.9.1). **Ne jamais le changer** une fois publié.
 
 ### Architecture
 ```
@@ -330,8 +331,8 @@ dotnet test tests/GitFlow.Server.Tests          # serveur JSON-RPC de l'extensio
 # Extension VS Code (src/vscode, Node.js 20+) — npm install une fois
 cd src/vscode
 npm test            # publie le serveur dans server/, compile, lance les tests dans un VS Code de test (téléchargé dans .vscode-test/)
-npm run package     # → src/vscode/gitflow-vscode-<version>.vsix (serveur .NET inclus, ~1,6 Mo)
-#   Installation manuelle : code --install-extension src/vscode/gitflow-vscode-<version>.vsix
+npm run package     # → src/vscode/gitflow-for-vscode-<version>.vsix (serveur .NET inclus, ~1,6 Mo)
+#   Installation manuelle : code --install-extension src/vscode/gitflow-for-vscode-<version>.vsix
 #   Réinstaller la MÊME version échoue tant que VS Code est ouvert (fichiers du serveur verrouillés) : augmenter "version"
 #   dans package.json (le serveur est publié avec cette version, cf. build-server.mjs), ou fermer VS Code.
 #   Les tests utilisent le dotnet du PATH (gitflow.dotnetPath dans les réglages de l'instance de test, cf. .vscode-test.mjs).
@@ -374,9 +375,9 @@ SDK .NET figé par `global.json` (10.0.x, `rollForward: latestFeature`) ; les pr
   `marketplace/overview.md` (page de présentation). Le Marketplace refuse de republier une version déjà publiée.
   Alternative future : `-oidc` (trusted publishing) au lieu d'un jeton.
 - **Extension VS Code** (étape 7 de la phase 3) : `release.yml` fixe la version du tag dans `src/vscode/package.json`
-  (`npm version`, non commité), lance `npm test`, produit `gitflow-vscode-<version>.vsix`, l'attache à la GitHub Release
+  (`npm version`, non commité), lance `npm test`, produit `gitflow-for-vscode-<version>.vsix`, l'attache à la GitHub Release
   avec le paquet VS, puis — après la publication Visual Studio, si `VS_MARKETPLACE_PAT` existe — `vsce verify-pat DNA666777`
-  et `vsce publish --skip-duplicate` (même éditeur, fiche `DNA666777.gitflow-vscode`). vsce exige le scope
+  et `vsce publish --skip-duplicate` (même éditeur, fiche `DNA666777.gitflow-for-vscode`). vsce exige le scope
   **Marketplace > Manage** sur le jeton (VsixPublisher se contente de *Publish*) : si `verify-pat` échoue, régénérer le jeton
   avec ce scope. La `version` du `package.json` committée ne sert qu'aux installations locales.
 Note : `dotnet sln add` du SDK 11 échoue sur cette solution (« Solution folder 'src' already contains… ») —
