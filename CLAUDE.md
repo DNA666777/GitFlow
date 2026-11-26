@@ -193,6 +193,61 @@ Flow en mode PR :
 
 ---
 
+## Phase 3 — Extension VS Code (choix validés le 2026-11-26)
+
+Objectif : le même GitFlow dans **Visual Studio Code** (et ses forks : VSCodium, Cursor…), avec exactement le même comportement
+que dans Visual Studio. Décision du 2026-11-26 : **même dépôt**, `GitFlow.Core` réutilisé tel quel (pas de réécriture en TypeScript).
+
+### Architecture
+```
+src/GitFlow.Core/          # inchangé, partagé (règle d'or : toute la logique ici)
+src/GitFlow.Server/        # NOUVEAU — console .NET 8 : expose le Core en JSON-RPC sur stdin/stdout
+src/GitFlow.VSExtension/   # Visual Studio (inchangé)
+src/vscode/                # NOUVEAU — extension VS Code en TypeScript : affichage, saisie, appels au serveur
+tests/GitFlow.Server.Tests/  # NOUVEAU — chaque méthode JSON-RPC testée sur un vrai dépôt temporaire
+```
+- `GitFlow.Server` est une couche fine (comme `GitFlow.VSExtension`) : une méthode JSON-RPC par opération du Core
+  (`getState`, `init`, `start`, `prepareFinish`, `finish`, `publish`, `commit`, `getSettings`, `saveSettings`, `pullRequests.*`).
+  Les `FlowResult` sont renvoyés tels quels (statut, erreur typée, message déjà traduit) ; aucune logique métier côté TypeScript.
+- Le journal git (`IGitCommandLog`) est envoyé en notification JSON-RPC et affiché dans un Output Channel « GitFlow » de VS Code.
+- Langue : l'extension transmet `vscode.env.language` au démarrage du serveur → `FlowMessages.Culture` (même règle `fr*` → français).
+  Textes propres à VS Code : `package.nls.json` / `package.nls.fr.json` et `l10n/bundle.l10n.fr.json`.
+
+### Choix validés (2026-11-26)
+1. **Runtime .NET** — retenu : extension **framework-dependent**, runtime .NET 8 obtenu à la demande par l'extension Microsoft
+   *.NET Install Tool* (`ms-dotnettools.vscode-dotnet-runtime`, commande `dotnet.acquire`, déclarée en `extensionDependencies`),
+   comme le fait l'extension C#. Paquet léger (~1 Mo) et un seul `.vsix` pour tous les OS.
+   (Écarté : un `.vsix` par plateforme avec le serveur self-contained, ~30-70 Mo chacun.)
+2. **Dépendances nouvelles** (approuvées) :
+   - .NET : `StreamJsonRpc` (Microsoft) dans `GitFlow.Server` ;
+   - npm : `vscode-jsonrpc`, `@types/vscode`, `typescript`, `esbuild` (bundle), `@vscode/vsce` (paquet), `@vscode/test-cli` + `@vscode/test-electron` (tests).
+3. **Périmètre de la première version** — retenu :
+   - Vue « GitFlow » dans le panneau *Source Control* (TreeView) : branche courante + type, branches en cours groupées par type,
+     actions en ligne (Push, Finish), section Pull requests (états, Créer le tag, Finaliser) ;
+   - Commandes dans la palette : *GitFlow: Initialize / Start Feature / Start Release / Start Hotfix / Finish Current Branch / Push Current Branch / Settings* ;
+   - Finish : choix Merge local / Pull Request, options et message du tag via `QuickPick` / `InputBox` ;
+     relecture des messages de PR dans un éditeur Markdown temporaire, validé par un bouton ;
+   - Paramètres : `QuickPick` en plusieurs étapes, ou une webview simple (même validation que dans VS, faite par le Core) ;
+   - **Hors périmètre v1** : la section Commit (VS Code a déjà la sienne ; le message généré pourrait être proposé plus tard
+     via l'API `git` de VS Code).
+4. **Publication** — retenu : même version que l'extension VS (un tag → les deux), **Marketplace VS Code seulement** pour l'instant,
+   avec le même éditeur `DNA666777` (`vsce publish`, secret `VS_MARKETPLACE_PAT` existant si son scope le permet).
+   Le `.vsix` VS Code est aussi attaché à la GitHub Release. **Open VSX** (VSCodium, Cursor…) : étape ultérieure (secret `OVSX_PAT` à créer).
+
+### Points d'attention
+- Multi-plateforme : le Core lance `git` et n'a pas de code Windows, sauf l'authentification Windows intégrée (Azure DevOps Server),
+  qui dépend de la configuration Kerberos hors Windows — à documenter comme limite.
+- Le serveur garde les mêmes règles de sécurité : rien n'est stocké, aucun secret dans le journal.
+- Tests : `GitFlow.Server.Tests` (xUnit, protocole JSON-RPC de bout en bout) + quelques tests d'intégration de l'extension VS Code
+  (activation, commandes enregistrées) lancés par `@vscode/test-cli`. Le Core reste couvert par ses tests actuels.
+
+### Étapes (une fois validé)
+(1) `GitFlow.Server` + tests, (2) squelette de l'extension VS Code (activation, runtime, connexion, Output Channel),
+(3) commandes Start/Finish/Push en merge local, (4) vue Source Control, (5) paramètres, (6) mode Pull Request,
+(7) traduction, doc FR/EN, CI et publication sur le Marketplace VS Code, (8) plus tard : Open VSX.
+
+---
+
 ## Conventions de code
 
 - Code, identifiants et commentaires de code en **anglais**.
@@ -288,6 +343,7 @@ Mettre à jour cette section si les commandes réelles diffèrent.
 - Avancer par étapes livrables :
   - **Phase 1 (base)** : (1) `GitFlow.Core` + tests, (2) commandes de menu minimales, (3) tool window, (4) paramètres de nommage et options.
   - **Phase 2** : Finish par Pull Request + génération automatique du message de PR (voir section dédiée). Ne pas commencer avant validation de la phase 1 par l'utilisateur.
+  - **Phase 3** : extension VS Code (voir section dédiée ; choix validés le 2026-11-26), par les étapes listées dans cette section.
 - Après chaque modification : build + tests. Corriger jusqu'à ce que tout passe avant de passer à la suite.
 - Le test manuel dans l'instance expérimentale de VS est fait par l'utilisateur : à la fin d'une étape touchant l'UI, indiquer précisément quoi vérifier.
 - En cas de doute sur une API VisualStudio.Extensibility, consulter la doc officielle Microsoft et les samples du repo `microsoft/VSExtensibility` plutôt que deviner.
