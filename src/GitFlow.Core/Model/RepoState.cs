@@ -41,6 +41,12 @@ public sealed record RepoState
     /// </summary>
     public IReadOnlyCollection<string> MergedFlowBranches { get; init; } = [];
 
+    /// <summary>
+    /// Full names of the features/hotfixes that have no commit of their own yet (same commit as their base branch,
+    /// e.g. just started): not reported as merged, a Finish would have nothing to merge.
+    /// </summary>
+    public IReadOnlyCollection<string> FlowBranchesWithoutCommit { get; init; } = [];
+
     /// <summary>On a release branch: show the reminder "fixes, docs and release tasks only".</summary>
     public bool ShowReleaseReminder => CurrentFlowBranch?.Type == BranchType.Release;
 }

@@ -156,26 +156,21 @@ internal sealed class FlowUi(VisualStudioExtensibility extensibility, GitFlowSes
     /// </summary>
     public Task<FlowResult?> FinishAsync(string repository, string? branchName, bool showSuccess, CancellationToken ct) => ExclusiveAsync(async () =>
     {
-        var state = await Flow.GetStateAsync(repository, ct);
-        if (state?.Config is not { } config)
+        // Same preparation as in VS Code (Core): refused before any question when not possible (e.g. uncommitted changes).
+        var (context, error) = await session.Planner.PrepareAsync(repository, branchName, ct);
+        if (context is null)
         {
-            await ErrorAsync(FlowMessages.Describe(FlowResult.Fail(FlowError.NotInitialized)), ct);
+            await ErrorAsync(FlowMessages.Describe(error!), ct);
             return null;
         }
 
-        var branch = branchName is not null ? config.TryParseFlowBranch(branchName) : state.PendingFinish ?? state.CurrentFlowBranch;
-        if (branch is null)
-        {
-            await ErrorAsync(FlowMessages.Describe(FlowResult.Fail(FlowError.NotAFlowBranch, branchName ?? state.CurrentBranch ?? "HEAD")), ct);
-            return null;
-        }
-
-        var resume = state.PendingFinish?.FullName == branch.FullName;
-        var alreadyMerged = state.MergedFlowBranches.Contains(branch.FullName);
-        var targets = await Flow.GetMergeTargetsAsync(repository, config, branch, ct);
+        var config = (await Flow.ConfigStore.ReadAsync(repository, ConfigScope.Local, ct))!;
+        var branch = context.Branch;
+        var targets = context.Targets;
+        var remote = context.Remote;
 
         string summary;
-        if (resume)
+        if (context.IsResume)
         {
             summary = Strings.Format(Strings.FinishConfirmResume, branch.FullName);
         }
@@ -185,30 +180,29 @@ internal sealed class FlowUi(VisualStudioExtensibility extensibility, GitFlowSes
         }
         else
         {
-            summary = Strings.Format(Strings.FinishConfirmVersioned, branch.FullName, targets[0], config.GetTagName(branch.Name), targets[^1]);
+            summary = Strings.Format(Strings.FinishConfirmVersioned, branch.FullName, targets[0], context.TagName, targets[^1]);
         }
 
-        if (alreadyMerged && !resume)
+        if (context.IsWithoutCommit)
+        {
+            summary += Environment.NewLine + Environment.NewLine + Strings.FinishWithoutCommit;
+        }
+        else if (context.IsAlreadyMerged && !context.IsResume)
         {
             summary += Environment.NewLine + Environment.NewLine + Strings.FinishAlreadyMerged;
         }
 
-        var defaults = await session.Settings.ReadFinishDefaultsAsync(repository, ConfigScope.Local, ct);
-        var remote = await session.PullRequests.GetRemoteAsync(repository, ct);
-        var pullRequestUnavailable = resume || alreadyMerged
-            ? Strings.FinishPullRequestNotNow
-            : remote is null ? FlowMessages.Describe(FlowResult.Fail(FlowError.PullRequestNotSupported)) : null;
         var dialog = new FinishDialogViewModel(
             summary,
-            showTagMessage: branch.Type != BranchType.Feature && !resume && !alreadyMerged,
-            tagLabel: Strings.Format(Strings.FinishAskTagMessage, config.GetTagName(branch.Name)),
-            tagMessage: FlowService.GetDefaultTagMessage(branch.Type, branch.Name),
-            hasRemote: state.HasRemote,
-            pullRequestUnavailable)
+            showTagMessage: context.AsksTagMessage,
+            tagLabel: Strings.Format(Strings.FinishAskTagMessage, context.TagName ?? string.Empty),
+            tagMessage: context.DefaultTagMessage,
+            hasRemote: context.HasRemote,
+            context.PullRequestAvailable ? null : context.PullRequestUnavailableMessage)
         {
-            PushAfterFinish = state.HasRemote && defaults.PushAfterFinish,
-            DeleteRemoteBranch = state.HasRemote && defaults.DeleteRemoteBranch,
-            UsePullRequest = defaults.UsePullRequest,
+            PushAfterFinish = context.Defaults.PushAfterFinish,
+            DeleteRemoteBranch = context.Defaults.DeleteRemoteBranch,
+            UsePullRequest = context.Defaults.UsePullRequest,
         };
 
         using (var control = new FinishDialogControl(dialog))
@@ -230,8 +224,8 @@ internal sealed class FlowUi(VisualStudioExtensibility extensibility, GitFlowSes
         {
             BranchName = branch.FullName,
             TagMessage = tagMessage,
-            PushAfterFinish = state.HasRemote && dialog.PushAfterFinish,
-            DeleteRemoteBranch = state.HasRemote && dialog.DeleteRemoteBranch,
+            PushAfterFinish = context.HasRemote && dialog.PushAfterFinish,
+            DeleteRemoteBranch = context.HasRemote && dialog.DeleteRemoteBranch,
         };
 
         var result = await RunAsync(Strings.Format(Strings.ProgressFinish, branch.FullName), c => Flow.FinishAsync(repository, options, c), ct);

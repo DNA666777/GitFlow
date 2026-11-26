@@ -77,6 +77,10 @@ internal static class Strings
     public static string PendingFinish => Get(nameof(PendingFinish));
     public static string BadgeCurrent => Get(nameof(BadgeCurrent));
     public static string BadgeMerged => Get(nameof(BadgeMerged));
+
+    public static string BadgeNoCommit => Get(nameof(BadgeNoCommit));
+
+    public static string FinishWithoutCommit => Get(nameof(FinishWithoutCommit));
     public static string StatusWorking => Get(nameof(StatusWorking));
     public static string FinishMode => Get(nameof(FinishMode));
     public static string FinishModeLocal => Get(nameof(FinishModeLocal));

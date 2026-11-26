@@ -1,6 +1,6 @@
 # User guide
 
-[Home](README.md) · **Guide** · [Pull Request mode](pull-requests.md) · [Reference and troubleshooting](reference.md) · [Français](../guide.md)
+[Home](README.md) · **Guide** · [Pull Request mode](pull-requests.md) · [Reference and troubleshooting](reference.md) · [VS Code](vscode.md) · [Français](../guide.md)
 
 Installation, initialization, then day-to-day work: features, releases and hotfixes.
 

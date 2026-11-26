@@ -62,10 +62,21 @@ public sealed class FlowService
         var mergeHead = await git.GetMergeHeadAsync(ct).ConfigureAwait(false);
 
         var merged = new List<string>();
+        var withoutCommit = new List<string>();
         if (config is not null)
         {
             foreach (var branch in flowBranches)
             {
+                // Feature/hotfix just started: same commit as its base branch. Not "already merged", nothing to merge yet.
+                // (A release without commit of its own is a normal release: it brings develop into master.)
+                var tip = branch.Type == BranchType.Release ? null : await git.ResolveCommitAsync("refs/heads/" + branch.FullName, ct).ConfigureAwait(false);
+                var baseTip = tip is null ? null : await git.ResolveCommitAsync("refs/heads/" + config.GetBaseBranch(branch.Type), ct).ConfigureAwait(false);
+                if (tip is not null && tip == baseTip)
+                {
+                    withoutCommit.Add(branch.FullName);
+                    continue;
+                }
+
                 var targets = await GetMergeTargetsAsync(git, config, branch, ct).ConfigureAwait(false);
                 var mergedEverywhere = true;
                 foreach (var target in targets)
@@ -110,6 +121,7 @@ public sealed class FlowService
             Behind = behind,
             FlowBranches = flowBranches,
             MergedFlowBranches = merged,
+            FlowBranchesWithoutCommit = withoutCommit,
         };
     }
 

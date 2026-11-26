@@ -1,0 +1,178 @@
+{
+  "name": "gitflow-vscode",
+  "displayName": "GitFlow",
+  "description": "%description%",
+  "version": "1.8.5",
+  "publisher": "DNA666777",
+  "license": "MIT",
+  "icon": "resources/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DNA666777/GitFlow.git"
+  },
+  "homepage": "https://dna666777.github.io/GitFlow/en/",
+  "bugs": {
+    "url": "https://github.com/DNA666777/GitFlow/issues"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "SCM Providers"
+  ],
+  "keywords": [
+    "git",
+    "gitflow",
+    "git-flow",
+    "branching",
+    "release"
+  ],
+  "l10n": "./l10n",
+  "extensionDependencies": [
+    "ms-dotnettools.vscode-dotnet-runtime"
+  ],
+  "activationEvents": [
+    "workspaceContains:.git"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "gitflow.init",
+        "title": "%command.init%",
+        "category": "GitFlow"
+      },
+      {
+        "command": "gitflow.start",
+        "title": "%command.start%",
+        "category": "GitFlow",
+        "icon": "$(add)"
+      },
+      {
+        "command": "gitflow.startFeature",
+        "title": "%command.startFeature%",
+        "category": "GitFlow"
+      },
+      {
+        "command": "gitflow.startRelease",
+        "title": "%command.startRelease%",
+        "category": "GitFlow"
+      },
+      {
+        "command": "gitflow.startHotfix",
+        "title": "%command.startHotfix%",
+        "category": "GitFlow"
+      },
+      {
+        "command": "gitflow.finish",
+        "title": "%command.finish%",
+        "category": "GitFlow",
+        "icon": "$(check)"
+      },
+      {
+        "command": "gitflow.publish",
+        "title": "%command.publish%",
+        "category": "GitFlow",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "gitflow.settings",
+        "title": "%command.settings%",
+        "category": "GitFlow",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "gitflow.showOutput",
+        "title": "%command.showOutput%",
+        "category": "GitFlow"
+      },
+      {
+        "command": "gitflow.restartServer",
+        "title": "%command.restartServer%",
+        "category": "GitFlow"
+      },
+      {
+        "command": "gitflow.refresh",
+        "title": "%command.refresh%",
+        "category": "GitFlow",
+        "icon": "$(refresh)"
+      }
+    ],
+    "configuration": {
+      "title": "GitFlow",
+      "properties": {
+        "gitflow.dotnetPath": {
+          "type": "string",
+          "default": "",
+          "scope": "machine",
+          "markdownDescription": "%config.dotnetPath%"
+        }
+      }
+    },
+    "views": {
+      "scm": [
+        {
+          "type": "webview",
+          "id": "gitflow.branches",
+          "name": "GitFlow"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "gitflow.refresh",
+          "when": "view == gitflow.branches",
+          "group": "navigation@1"
+        },
+        {
+          "command": "gitflow.settings",
+          "when": "view == gitflow.branches && gitflow.state == ready",
+          "group": "navigation@2"
+        },
+        {
+          "command": "gitflow.startFeature",
+          "when": "view == gitflow.branches && gitflow.state == ready",
+          "group": "1_start@1"
+        },
+        {
+          "command": "gitflow.startRelease",
+          "when": "view == gitflow.branches && gitflow.state == ready",
+          "group": "1_start@2"
+        },
+        {
+          "command": "gitflow.startHotfix",
+          "when": "view == gitflow.branches && gitflow.state == ready",
+          "group": "1_start@3"
+        },
+        {
+          "command": "gitflow.showOutput",
+          "when": "view == gitflow.branches",
+          "group": "9_log"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build:server": "node build-server.mjs",
+    "compile": "tsc -p . --noEmit && node esbuild.mjs",
+    "compile-tests": "node -e \"require('fs').rmSync('out', { recursive: true, force: true })\" && tsc -p . --outDir out",
+    "build": "npm run build:server && npm run compile",
+    "pretest": "npm run build && npm run compile-tests",
+    "test": "vscode-test",
+    "package": "npm run build && node -e \"require('fs').copyFileSync('../../LICENSE', 'LICENSE')\" && vsce package --no-dependencies"
+  },
+  "dependencies": {
+    "vscode-jsonrpc": "^10.0.2"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^20.19.43",
+    "@types/vscode": "^1.90.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.1.0",
+    "@vscode/vsce": "^4.1.1",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  }
+}

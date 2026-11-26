@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GitFlow pour VS Code — GitFlow pour Visual Studio</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="alternate" hreflang="en" href="en/vscode.html">
+</head>
+<body>
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="index.html"><img class="brand-mark" src="assets/logo.svg" alt="">GitFlow pour Visual Studio</a>
+      <nav class="site-nav" aria-label="Navigation principale">
+        <a href="index.html">Accueil</a>
+        <a href="guide.html">Guide</a>
+        <a href="pull-requests.html">Pull Requests</a>
+        <a href="reference.html">Référence</a>
+        <a href="vscode.html" aria-current="page">VS Code</a>
+        <a href="en/vscode.html" lang="en" hreflang="en">English</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <nav class="toc" aria-label="Sommaire">
+      <strong>Sommaire</strong>
+      <ol>
+        <li><a href="#installation">Installation</a></li>
+        <li><a href="#le-panneau-gitflow">Le panneau GitFlow</a></li>
+        <li><a href="#les-commandes">Les commandes</a></li>
+        <li><a href="#parametres-et-initialisation">Paramètres et initialisation</a></li>
+        <li><a href="#terminer-une-branche">Terminer une branche</a></li>
+        <li><a href="#le-journal">Le journal</a></li>
+        <li><a href="#depannage">Dépannage</a></li>
+      </ol>
+    </nav>
+
+    <article>
+      <h1>GitFlow pour VS Code</h1>
+      <p class="intro">La même extension GitFlow, dans <strong>Visual Studio Code</strong> (Windows, Linux, macOS). Le moteur est le même que dans Visual Studio : mêmes règles, mêmes commandes git, mêmes messages. Seule l'interface s'adapte à VS Code.</p>
+      <h2 id="installation">1. Installation</h2>
+      <ul><li><strong>Depuis VS Code</strong> : vue <em>Extensions</em> (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd>), cherchez <strong>GitFlow</strong> (éditeur DNA666777), <em>Install</em>.</li><li><strong>Depuis un fichier</strong> : téléchargez <code>gitflow-vscode-&lt;version&gt;.vsix</code> sur la <a href="https://github.com/DNA666777/GitFlow/releases/latest">page des releases</a>, puis :<pre><code>code --install-extension gitflow-vscode-&lt;version&gt;.vsix</code></pre></li></ul>
+      <p>Prérequis :</p>
+      <ul><li>VS Code 1.90 ou plus ;</li><li><code>git</code> dans le PATH ;</li><li>le <strong>runtime .NET 8</strong>, fourni automatiquement : l'extension Microsoft <em>.NET Install Tool</em> s'installe avec GitFlow et télécharge .NET 8 une seule fois (quelques dizaines de Mo) dans le dossier de VS Code. Rien à installer à la main.</li></ul>
+      <h2 id="le-panneau-gitflow">2. Le panneau GitFlow</h2>
+      <p>Ouvrez <strong>Source Control</strong> (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd>) : la section <strong>GitFlow</strong> reprend la fenêtre GitFlow de Visual Studio, dans le même ordre.</p>
+      <pre><code>GitFlowSandbox                       [Log] [Settings]
+Branch   feature/login
+Type     Feature
+State    Uncommitted changes
+Remote   1 commit(s) ahead, 0 behind
+
+Commit
+Changes (2)
+ M  src/App/Program.cs
+ A  src/App/Login.cs
+ ┌───────────────────────────────────────────────┐
+ │ Update 2 files in src/App                     │
+ └───────────────────────────────────────────────┘
+              [Regenerate message] [Commit]
+
+Start a branch
+[Feature ▾] feature/ [____________] [Start]
+
+Branches in progress
+Features
+  login  (current)                 [Push] [Finish…]</code></pre>
+      <ul><li><strong>État du dépôt</strong> : branche actuelle et son type, modifications, avance ou retard sur origin.</li><li><strong>Commit</strong> : les fichiers modifiés et un message généré depuis git (comme dans Visual Studio). Le message reste à vous dès que vous le modifiez ; <em>Regenerate message</em> remet la proposition ; <kbd>Ctrl</kbd>+<kbd>Entrée</kbd> commite.</li><li><strong>Démarrer une branche</strong> : type, préfixe, nom ; la version suivante est pré-remplie pour une release ou un hotfix.</li><li><strong>Branches en cours</strong> avec <em>Push</em> et <em>Finish…</em> sur chaque ligne. Badges : <em>current</em>, <em>already merged</em>, <em>no commit yet</em>.</li><li><strong>Pull requests</strong>, quand des PR sont suivies : état, <em>Open</em>, <em>Create tag</em>, <em>Complete branch</em>.</li></ul>
+      <p>Le panneau se met à jour tout seul (commit, changement de branche, enregistrement d'un fichier…), seulement quand il est visible. Le bouton ↻ du titre force l'actualisation.</p>
+      <h2 id="les-commandes">3. Les commandes</h2>
+      <p>Palette de commandes (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd>), catégorie <strong>GitFlow</strong> :</p>
+      <table><thead><tr><th>Commande</th><th>Effet</th></tr></thead><tbody><tr><td>GitFlow: Initialize GitFlow...</td><td>Écran d'initialisation (voir plus bas).</td></tr><tr><td>GitFlow: Start Feature... / Start Release... / Start Hotfix...</td><td>Demande le nom (version pré-remplie pour release/hotfix) et crée la branche.</td></tr><tr><td>GitFlow: Finish Current Branch...</td><td>Termine la branche actuelle, ou reprend un Finish arrêté sur un conflit.</td></tr><tr><td>GitFlow: Push Current Branch</td><td><code>git push -u origin &lt;branche&gt;</code>.</td></tr><tr><td>GitFlow: GitFlow Settings...</td><td>Écran des paramètres.</td></tr><tr><td>GitFlow: Show Log / Restart Server</td><td>Journal ; redémarrage du moteur.</td></tr></tbody></table>
+      <p>Les libellés suivent la langue de VS Code (anglais ou français).</p>
+      <h2 id="parametres-et-initialisation">4. Paramètres et initialisation</h2>
+      <p><em>Settings</em> dans le panneau (ou la roue dentée du titre) ouvre l'onglet <strong>GitFlow Settings</strong>, avec les mêmes champs que dans Visual Studio :</p>
+      <ul><li>portée : <em>ce dépôt</em> ou <em>tous mes dépôts</em> ;</li><li>branches de production et de développement, préfixes, préfixe de tag ;</li><li>options par défaut du Finish : mode Merge local ou Pull Request, push, suppression sur origin, <code>fetch --prune</code>, serveur Azure DevOps d'entreprise.</li></ul>
+      <p>Les erreurs (préfixe vide ou en double, production = développement, nom refusé par git) s'affichent pendant la saisie et bloquent l'enregistrement.</p>
+      <p>Sur un dépôt pas encore initialisé, le même écran s'appelle <strong>Initialize GitFlow</strong> : vérifiez les noms, puis <em>Initialize</em> crée <code>develop</code> si besoin et écrit la configuration.</p>
+      <h2 id="terminer-une-branche">5. Terminer une branche</h2>
+      <p><em>Finish…</em> enchaîne :</p>
+      <ol class="steps"><li>une confirmation qui résume ce qui va se passer (refus immédiat s'il y a des modifications non commitées) ;</li><li>le <strong>mode</strong> : <em>Local merge</em> ou <em>Pull Request</em> (si <code>origin</code> est sur GitHub ou Azure DevOps) ;</li><li>en merge local, les options : push vers origin, suppression de la branche sur origin ;</li><li>pour une release ou un hotfix, le message du tag.</li></ol>
+      <p>En <strong>Pull Request</strong>, un onglet affiche le titre et la description générés pour chaque PR, modifiables, puis <em>Create the pull requests</em> pousse la branche et crée les PR. Le suivi se fait dans la section <em>Pull requests</em> du panneau, exactement comme dans Visual Studio : voir <a href="pull-requests.html">le mode Pull Request</a>.</p>
+      <h2 id="le-journal">6. Le journal</h2>
+      <p><strong>GitFlow: Show Log</strong> (ou <em>Log</em> dans le panneau) ouvre le canal <strong>GitFlow</strong> de la vue <em>Output</em> : chaque opération et ses commandes git, avec le code retour.</p>
+      <p>Les lectures faites pour actualiser le panneau sont aussi journalisées, au niveau <em>Trace</em>, masqué par défaut. Pour les voir : <em>Output: Set Log Level...</em> &gt; <em>Trace</em>, sur le canal GitFlow.</p>
+      <h2 id="depannage">7. Dépannage</h2>
+      <p><strong>« The .NET 8 runtime could not be obtained »</strong> : regardez la sortie <em>.NET Install Tool</em> (proxy, réseau…). Vous pouvez aussi indiquer un <code>dotnet</code> existant dans le paramètre utilisateur <code>gitflow.dotnetPath</code> (Fichier &gt; Préférences &gt; Paramètres, puis cherchez « gitflow »).</p>
+      <p><strong>Le panneau affiche « GitFlow could not start »</strong> : <em>Log</em> pour le détail, puis <strong>GitFlow: Restart Server</strong>.</p>
+      <p><strong>Azure DevOps Server d'entreprise sous Linux ou macOS</strong> : sans identifiant git, l'authentification Windows intégrée dépend de la configuration Kerberos de la machine. Utilisez plutôt un jeton personnel enregistré par le Git Credential Manager.</p>
+
+      <div class="next-prev">
+        <a class="btn" href="reference.html">← Référence et dépannage</a>
+        <a class="btn primary" href="index.html">Accueil</a>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="inner">
+      <span>GitFlow pour Visual Studio — modèle : <a href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow">Atlassian Gitflow Workflow</a></span>
+      <a href="index.html">Accueil</a>
+    </div>
+  </footer>
+</body>
+</html>

@@ -8,6 +8,11 @@ namespace GitFlow.Core.PullRequests;
 /// <summary>A pull request opened by the extension for a work branch, with its live state when it could be read.</summary>
 public sealed record TrackedPullRequest(string Source, string Target, int Id, PullRequestInfo? Info, string? Error);
 
+/// <summary>The pull requests of one work branch and the actions that apply.</summary>
+/// <param name="Version">Version of a release/hotfix (null for a feature).</param>
+/// <param name="PullRequests">In target order (production first for a release/hotfix).</param>
+public sealed record PullRequestGroup(string Source, string? Version, IReadOnlyList<TrackedPullRequest> PullRequests, bool CanTag, bool CanComplete);
+
 /// <summary>
 /// Optional Pull Request mode: prepares the messages, pushes the branch and opens one PR per merge target,
 /// follows them, tags the merge commit once the PR to production is merged, and cleans up when all are merged.
@@ -172,6 +177,33 @@ public sealed class PullRequestService
         }
 
         return FlowResult.Ok(source) with { PullRequests = opened };
+    }
+
+    /// <summary>
+    /// Tracked pull requests grouped by work branch, with the actions that apply:
+    /// a release/hotfix can be tagged as soon as its PR to production (first target) is merged,
+    /// and a branch can be completed once all its PRs are merged ("Complete branch" also tags if needed).
+    /// </summary>
+    public async Task<IReadOnlyList<PullRequestGroup>> GetGroupsAsync(string repositoryPath, bool refresh, CancellationToken ct = default)
+    {
+        var tracked = await GetTrackedAsync(repositoryPath, refresh, ct).ConfigureAwait(false);
+        var config = await _configStore.ReadAsync(repositoryPath, ConfigScope.Local, ct).ConfigureAwait(false);
+        var groups = new List<PullRequestGroup>();
+        foreach (var group in tracked.GroupBy(t => t.Source, StringComparer.Ordinal))
+        {
+            var items = group.ToArray();
+            var branch = config?.TryParseFlowBranch(group.Key);
+            var version = branch is { Type: not BranchType.Feature } ? branch.Name : null;
+            var tagged = await IsTaggedAsync(repositoryPath, group.Key, ct).ConfigureAwait(false);
+            groups.Add(new PullRequestGroup(
+                group.Key,
+                version,
+                items,
+                CanTag: version is not null && !tagged && items[0].Info?.State == PullRequestState.Merged,
+                CanComplete: items.All(i => i.Info?.State == PullRequestState.Merged)));
+        }
+
+        return groups;
     }
 
     /// <summary>Pull requests opened by the extension; with <paramref name="refresh"/>, their state is read on the platform.</summary>

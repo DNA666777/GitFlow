@@ -193,6 +193,92 @@ Flow en mode PR :
 
 ---
 
+## Phase 3 — Extension VS Code (choix validés le 2026-11-26)
+
+Objectif : le même GitFlow dans **Visual Studio Code** (et ses forks : VSCodium, Cursor…), avec exactement le même comportement
+que dans Visual Studio. Décision du 2026-11-26 : **même dépôt**, `GitFlow.Core` réutilisé tel quel (pas de réécriture en TypeScript).
+Identifiant de l'extension VS Code : **`DNA666777.gitflow-vscode`** (nom affiché « GitFlow ») — `DNA666777.gitflow` est déjà pris par
+l'extension Visual Studio sur le Marketplace (noms uniques par éditeur). **Ne jamais le changer** une fois publié.
+
+### Architecture
+```
+src/GitFlow.Core/          # inchangé, partagé (règle d'or : toute la logique ici)
+src/GitFlow.Server/        # NOUVEAU — console .NET 8 : expose le Core en JSON-RPC sur stdin/stdout
+src/GitFlow.VSExtension/   # Visual Studio (inchangé)
+src/vscode/                # NOUVEAU — extension VS Code en TypeScript : affichage, saisie, appels au serveur
+tests/GitFlow.Server.Tests/  # NOUVEAU — chaque méthode JSON-RPC testée sur un vrai dépôt temporaire
+```
+- `GitFlow.Server` est une couche fine (comme `GitFlow.VSExtension`) : une méthode JSON-RPC par opération du Core
+  (`getState`, `init`, `start`, `prepareFinish`, `finish`, `publish`, `commit`, `getSettings`, `saveSettings`, `pullRequests.*`).
+  Les `FlowResult` sont renvoyés tels quels (statut, erreur typée, message déjà traduit) ; aucune logique métier côté TypeScript.
+- Le journal git (`IGitCommandLog`) est envoyé en notification JSON-RPC et affiché dans un Output Channel « GitFlow » de VS Code.
+- Langue : l'extension transmet `vscode.env.language` au démarrage du serveur → `FlowMessages.Culture` (même règle `fr*` → français).
+  Textes propres à VS Code : `package.nls.json` / `package.nls.fr.json` et `l10n/bundle.l10n.fr.json`.
+
+### Choix validés (2026-11-26)
+1. **Runtime .NET** — retenu : extension **framework-dependent**, runtime .NET 8 obtenu à la demande par l'extension Microsoft
+   *.NET Install Tool* (`ms-dotnettools.vscode-dotnet-runtime`, commande `dotnet.acquire`, déclarée en `extensionDependencies`),
+   comme le fait l'extension C#. Paquet léger (~1 Mo) et un seul `.vsix` pour tous les OS.
+   (Écarté : un `.vsix` par plateforme avec le serveur self-contained, ~30-70 Mo chacun.)
+2. **Dépendances nouvelles** (approuvées) :
+   - .NET : `StreamJsonRpc` (Microsoft) dans `GitFlow.Server` ;
+   - npm : `vscode-jsonrpc`, `@types/vscode`, `typescript`, `esbuild` (bundle), `@vscode/vsce` (paquet), `@vscode/test-cli` + `@vscode/test-electron` (tests).
+3. **Périmètre de la première version** — retenu :
+   - Vue « GitFlow » dans le panneau *Source Control* (TreeView) : branche courante + type, branches en cours groupées par type,
+     actions en ligne (Push, Finish), section Pull requests (états, Créer le tag, Finaliser) ;
+   - Commandes dans la palette : *GitFlow: Initialize / Start Feature / Start Release / Start Hotfix / Finish Current Branch / Push Current Branch / Settings* ;
+   - Finish : choix Merge local / Pull Request, options et message du tag via `QuickPick` / `InputBox` ;
+     relecture des messages de PR dans un éditeur Markdown temporaire, validé par un bouton ;
+   - Paramètres : `QuickPick` en plusieurs étapes, ou une webview simple (même validation que dans VS, faite par le Core) ;
+   - ~~Hors périmètre v1 : la section Commit~~ — **changé le 2026-11-26** : l'interface doit être **la même que la tool window
+     de Visual Studio**, section Commit comprise (liste des modifications + message généré par le Core + bouton Commiter).
+     Réalisée en **webview** (vue de type `webview` dans le panneau Source Control) qui remplace la TreeView de l'étape 4 :
+     même ordre de sections, mêmes libellés, mêmes règles d'affichage que `GitFlowToolWindow` ; couleurs et polices du thème
+     VS Code (variables CSS `--vscode-*`). La webview ne contient aucune logique : elle envoie des messages à l'extension,
+     qui appelle le serveur.
+4. **Publication** — retenu : même version que l'extension VS (un tag → les deux), **Marketplace VS Code seulement** pour l'instant,
+   avec le même éditeur `DNA666777` (`vsce publish`, secret `VS_MARKETPLACE_PAT` existant si son scope le permet).
+   Le `.vsix` VS Code est aussi attaché à la GitHub Release. **Open VSX** (VSCodium, Cursor…) : étape ultérieure (secret `OVSX_PAT` à créer).
+
+### Points d'attention
+- Multi-plateforme : le Core lance `git` et n'a pas de code Windows, sauf l'authentification Windows intégrée (Azure DevOps Server),
+  qui dépend de la configuration Kerberos hors Windows — à documenter comme limite.
+- Le serveur garde les mêmes règles de sécurité : rien n'est stocké, aucun secret dans le journal.
+- Tests : `GitFlow.Server.Tests` (xUnit, protocole JSON-RPC de bout en bout) + quelques tests d'intégration de l'extension VS Code
+  (activation, commandes enregistrées) lancés par `@vscode/test-cli`. Le Core reste couvert par ses tests actuels.
+
+### Protocole de `GitFlow.Server` (étape 1, faite le 2026-11-26)
+- JSON-RPC 2.0 sur stdin/stdout, en-têtes `Content-Length` (cadrage de `vscode-jsonrpc`), JSON camelCase, enums en chaînes camelCase
+  (`RpcHost.JsonOptions`). stdout ne porte que le protocole ; diagnostics sur stderr ; fermer stdin arrête le serveur.
+- Méthodes (paramètres nommés) : `initialize(culture)`, `findRepository(path)`, `getState(repository)`, `getSettings(repository, scope)`,
+  `getLocalBranches`, `getSettingsWarnings(repository, proposed)`, `saveSettings(repository, settings, scope)`, `init(repository, settings)`,
+  `suggestVersion(repository, type)`, `countUnreleasedCommits`, `start(repository, type, name)`, `prepareFinish(repository, branch?)`,
+  `finish(repository, branch, tagMessage?, pushAfterFinish, deleteRemoteBranch)`, `preparePullRequests(repository, branch)`,
+  `finishWithPullRequests(repository, branch, tagMessage?, drafts)`, `publish(repository, branch?)`, `getPullRequests(repository, refresh)`,
+  `tagPullRequest(repository, branch)`, `completePullRequests(repository, branch)`. Notification serveur → client : `log(line)`.
+- Les échecs attendus reviennent en `ResultDto` (`success`, `error`, `message` déjà traduit, `warnings`, `conflictedFiles`, `pullRequests`),
+  jamais en erreur JSON-RPC. Les opérations s'exécutent une à la fois.
+- Logique partagée avec VS déplacée dans le Core : `FinishPlanner` (contexte du Finish) et `PullRequestService.GetGroupsAsync`
+  (actions Créer le tag / Finaliser). `FlowUi` de l'extension VS pourra s'appuyer dessus plus tard.
+
+### Étapes (une fois validé)
+(1) `GitFlow.Server` + tests (fait), (2) squelette de l'extension VS Code (activation, runtime, connexion, Output Channel) (fait),
+(3) commandes Init/Start/Finish/Push en merge local (fait ; `ui.ts` = interface remplaçable par des réponses scriptées dans les tests), (4) vue « GitFlow » du panneau Source Control (fait ; rafraîchie par l'API de l'extension git de VS Code), (4b) **journal et rafraîchissement** : canal « GitFlow » en `LogOutputChannel` (opérations et leurs commandes git au niveau
+Info, lectures de rafraîchissement au niveau Trace — toujours journalisées, masquées par défaut), rafraîchissement seulement
+si la vue est visible et regroupé (~1 s), fichiers de `.git` ignorés pour trouver le dépôt (fait ; niveau envoyé par le serveur
+dans la notification `log` : `trace` pour les lectures d'affichage, `info` pour les opérations),
+(4c) **interface identique à Visual Studio** : webview « GitFlow » (état, Commit, Démarrer une branche, Branches en cours,
+Pull requests) remplaçant la TreeView ; serveur : méthodes `getCommitPreview` / `commit` (CommitService du Core) (fait ;
+`panel.ts` construit le modèle — données du serveur + textes traduits —, `media/panel.js` ne fait qu'afficher et renvoyer les clics),
+(5) paramètres (fait ; écran « GitFlow Settings » en onglet, qui sert aussi d'Init comme dans VS ; badge « no commit yet »
+et Finish refusé avant les questions s'il y a des modifications non commitées, via `FinishPlanner` désormais utilisé aussi par VS),
+(6) mode Pull Request (fait ; choix Merge local / Pull Request à chaque Finish, relecture des messages dans un onglet,
+état des PR relu au plus une fois par minute ; test de bout en bout contre un faux Azure DevOps Server local — `pullrequest.test.ts`),
+(7) traduction, doc FR/EN, CI et publication sur le Marketplace VS Code (fait ; page `docs/vscode.md` + site, README),
+(8) plus tard : Open VSX.
+
+---
+
 ## Conventions de code
 
 - Code, identifiants et commentaires de code en **anglais**.
@@ -239,6 +325,17 @@ dotnet build GitFlowVS.sln -c Debug
 # Tests (intégration : plusieurs minutes, vrais dépôts git dans %TEMP%\gitflow-tests)
 dotnet test tests/GitFlow.Core.Tests
 dotnet test tests/GitFlow.Core.IntegrationTests
+dotnet test tests/GitFlow.Server.Tests          # serveur JSON-RPC de l'extension VS Code (vrais dépôts + vrai processus)
+
+# Extension VS Code (src/vscode, Node.js 20+) — npm install une fois
+cd src/vscode
+npm test            # publie le serveur dans server/, compile, lance les tests dans un VS Code de test (téléchargé dans .vscode-test/)
+npm run package     # → src/vscode/gitflow-vscode-<version>.vsix (serveur .NET inclus, ~1,6 Mo)
+#   Installation manuelle : code --install-extension src/vscode/gitflow-vscode-<version>.vsix
+#   Réinstaller la MÊME version échoue tant que VS Code est ouvert (fichiers du serveur verrouillés) : augmenter "version"
+#   dans package.json (le serveur est publié avec cette version, cf. build-server.mjs), ou fermer VS Code.
+#   Les tests utilisent le dotnet du PATH (gitflow.dotnetPath dans les réglages de l'instance de test, cf. .vscode-test.mjs).
+#   npm 11 bloque les scripts d'installation (esbuild, @vscode/vsce-sign) : inutiles ici, laissés bloqués.
 
 # Test manuel — le F5 ne charge PAS l'extension pour l'instant (à investiguer).
 # Contournement : incrémenter <Version> dans GitFlow.VSExtension.csproj, rebuild, puis installer le .vsix
@@ -276,6 +373,12 @@ SDK .NET figé par `global.json` (10.0.x, `rollForward: latestFeature`) ; les pr
   `marketplace/publishManifest.json` (éditeur `DNA666777`, fiche `DNA666777.gitflow`, catégorie *source control*) et
   `marketplace/overview.md` (page de présentation). Le Marketplace refuse de republier une version déjà publiée.
   Alternative future : `-oidc` (trusted publishing) au lieu d'un jeton.
+- **Extension VS Code** (étape 7 de la phase 3) : `release.yml` fixe la version du tag dans `src/vscode/package.json`
+  (`npm version`, non commité), lance `npm test`, produit `gitflow-vscode-<version>.vsix`, l'attache à la GitHub Release
+  avec le paquet VS, puis — après la publication Visual Studio, si `VS_MARKETPLACE_PAT` existe — `vsce verify-pat DNA666777`
+  et `vsce publish --skip-duplicate` (même éditeur, fiche `DNA666777.gitflow-vscode`). vsce exige le scope
+  **Marketplace > Manage** sur le jeton (VsixPublisher se contente de *Publish*) : si `verify-pat` échoue, régénérer le jeton
+  avec ce scope. La `version` du `package.json` committée ne sert qu'aux installations locales.
 Note : `dotnet sln add` du SDK 11 échoue sur cette solution (« Solution folder 'src' already contains… ») —
 ajouter les projets en éditant `GitFlowVS.sln` à la main.
 
@@ -288,6 +391,7 @@ Mettre à jour cette section si les commandes réelles diffèrent.
 - Avancer par étapes livrables :
   - **Phase 1 (base)** : (1) `GitFlow.Core` + tests, (2) commandes de menu minimales, (3) tool window, (4) paramètres de nommage et options.
   - **Phase 2** : Finish par Pull Request + génération automatique du message de PR (voir section dédiée). Ne pas commencer avant validation de la phase 1 par l'utilisateur.
+  - **Phase 3** : extension VS Code (voir section dédiée ; choix validés le 2026-11-26), par les étapes listées dans cette section.
 - Après chaque modification : build + tests. Corriger jusqu'à ce que tout passe avant de passer à la suite.
 - Le test manuel dans l'instance expérimentale de VS est fait par l'utilisateur : à la fin d'une étape touchant l'UI, indiquer précisément quoi vérifier.
 - En cas de doute sur une API VisualStudio.Extensibility, consulter la doc officielle Microsoft et les samples du repo `microsoft/VSExtensibility` plutôt que deviner.

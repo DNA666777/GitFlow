@@ -1,14 +1,14 @@
-# GitFlow pour Visual Studio
+# GitFlow pour Visual Studio et VS Code
 
 🌐 [English](README.md) · **Français**
 
-Extension Visual Studio pour appliquer le **Gitflow standard** sans quitter l'IDE. Elle démarre et termine les branches `feature/`, `release/` et `hotfix/`, en respectant strictement le [Gitflow Workflow d'Atlassian](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
+Extension pour **Visual Studio** et **Visual Studio Code**, pour appliquer le **Gitflow standard** sans quitter l'éditeur. Elle démarre et termine les branches `feature/`, `release/` et `hotfix/`, en respectant strictement le [Gitflow Workflow d'Atlassian](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
 
 > 🌐 **Site du tutoriel** : https://dna666777.github.io/GitFlow/
 >
-> 📖 **Tutoriel en Markdown** : [Accueil](docs/README.md) · [Guide](docs/guide.md) · [Mode Pull Request](docs/pull-requests.md) · [Référence et dépannage](docs/reference.md)
+> 📖 **Tutoriel en Markdown** : [Accueil](docs/README.md) · [Guide](docs/guide.md) · [Mode Pull Request](docs/pull-requests.md) · [Référence et dépannage](docs/reference.md) · [VS Code](docs/vscode.md)
 >
-> ⬇️ **Télécharger l'extension** : [dernière release](https://github.com/DNA666777/GitFlow/releases/latest) (fichier `.vsix`)
+> ⬇️ **Télécharger** : Visual Studio — [Marketplace](https://marketplace.visualstudio.com/items?itemName=DNA666777.gitflow) · VS Code — [Marketplace](https://marketplace.visualstudio.com/items?itemName=DNA666777.gitflow-vscode) · les deux — [dernière release](https://github.com/DNA666777/GitFlow/releases/latest) (fichiers `.vsix`)
 
 ## Fonctionnalités
 
@@ -34,6 +34,10 @@ Extension Visual Studio pour appliquer le **Gitflow standard** sans quitter l'ID
   - chaque commande git est journalisée dans *Sortie > GitFlow*.
 - **Anglais et français** : l'extension suit la langue de Visual Studio (français pour un VS en français, anglais sinon). Les messages de commit et de PR générés suivent la même langue.
 - **Dépendances** : seulement Visual Studio et Git for Windows. Pas de git-flow, ni `gh`, ni `az` : le mode PR réutilise les identifiants que git connaît déjà (Git Credential Manager), sans en stocker aucun.
+
+## VS Code
+
+La même extension existe pour **Visual Studio Code** (Windows, Linux, macOS), avec le même moteur : un panneau GitFlow dans la vue Source Control (mêmes sections que la fenêtre Visual Studio, Commit compris), les commandes dans la palette, l'écran de paramètres et le mode Pull Request. Le runtime .NET 8 est fourni automatiquement par l'extension *.NET Install Tool*. Voir [GitFlow pour VS Code](docs/vscode.md).
 
 ## Prérequis
 
