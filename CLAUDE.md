@@ -259,7 +259,7 @@ tests/GitFlow.Server.Tests/  # NOUVEAU — chaque méthode JSON-RPC testée sur 
 
 ### Étapes (une fois validé)
 (1) `GitFlow.Server` + tests (fait), (2) squelette de l'extension VS Code (activation, runtime, connexion, Output Channel) (fait),
-(3) commandes Start/Finish/Push en merge local, (4) vue Source Control, (5) paramètres, (6) mode Pull Request,
+(3) commandes Init/Start/Finish/Push en merge local (fait ; `ui.ts` = interface remplaçable par des réponses scriptées dans les tests), (4) vue Source Control, (5) paramètres, (6) mode Pull Request,
 (7) traduction, doc FR/EN, CI et publication sur le Marketplace VS Code, (8) plus tard : Open VSX.
 
 ---

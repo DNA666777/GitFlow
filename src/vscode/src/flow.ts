@@ -1,0 +1,237 @@
+import * as vscode from 'vscode';
+import { BranchType, FinishContext, PrepareFinishResponse, RepoState, Result, Settings } from './protocol';
+import { GitFlowServer } from './server';
+import { Ui } from './ui';
+
+const t = vscode.l10n.t;
+
+/**
+ * The flow commands (Init, Start, Finish, Push): prompts and messages only, every rule is in the server.
+ * Each command returns the result of the operation, or undefined when it was cancelled or could not start.
+ */
+export class FlowCommands {
+  private busy = false;
+
+  constructor(
+    private readonly server: GitFlowServer,
+    private readonly findRepository: () => Promise<string | undefined>,
+    private readonly output: vscode.OutputChannel,
+    public ui: Ui,
+    private readonly onChanged: () => void = () => undefined,
+  ) {}
+
+  /** Creates develop if needed and writes the git-flow configuration (existing keys, global defaults or standard names). */
+  init(): Promise<Result | undefined> {
+    return this.exclusive(async repository => {
+      const state = await this.state(repository);
+      if (state.isInitialized && state.naming) {
+        await this.ui.info(t('GitFlow is already initialized in this repository (production: {0}, development: {1}).', state.naming.masterBranch, state.naming.developBranch));
+        return undefined;
+      }
+
+      const settings = await this.server.request<Settings>('getSettings', { repository, scope: 'local' });
+      const n = settings.naming;
+      const detail = [
+        t('Production: {0}', n.masterBranch),
+        t('Development: {0}', n.developBranch),
+        t('Prefixes: {0}, {1}, {2}', n.featurePrefix, n.releasePrefix, n.hotfixPrefix),
+        t('Tag prefix: {0}', n.versionTagPrefix || t('(empty)')),
+      ].join('\n');
+      if (!await this.ui.confirm(t('Initialize GitFlow in this repository?'), detail, t('Initialize'))) {
+        return undefined;
+      }
+
+      const result = await this.run(t('GitFlow: initializing'), () => this.server.request<Result>('init', { repository, settings }));
+      await this.show(result, t('GitFlow is initialized. Development branch: {0}.', n.developBranch));
+      return result;
+    });
+  }
+
+  /** Starts a feature (name asked) or a release/hotfix (next version suggested). */
+  start(type: BranchType, name?: string): Promise<Result | undefined> {
+    return this.exclusive(async repository => {
+      const state = await this.state(repository);
+      const naming = state.naming;
+      if (!naming) {
+        await this.ui.error(t('GitFlow is not initialized in this repository. Run "GitFlow: Initialize GitFlow...".'));
+        return undefined;
+      }
+
+      // Reminder, not a block: a release with nothing new would be identical to the last version.
+      if (type === 'release'
+        && await this.server.request<number | null>('countUnreleasedCommits', { repository }) === 0
+        && !await this.ui.confirm(
+          t('{0} has no new commit since the last release: everything is already in {1}.', naming.developBranch, naming.masterBranch),
+          t('The release would be identical to the previous one.'),
+          t('Start anyway'))) {
+        return undefined;
+      }
+
+      const prefix = type === 'feature' ? naming.featurePrefix : type === 'release' ? naming.releasePrefix : naming.hotfixPrefix;
+      const base = type === 'hotfix' ? naming.masterBranch : naming.developBranch;
+      if (!name) {
+        const suggestion = await this.server.request<string>('suggestVersion', { repository, type });
+        const prompt = type === 'feature'
+          ? t('Feature name (branch {0}<name>, created from {1})', prefix, base)
+          : type === 'release'
+            ? t('Release version (branch {0}<version>, created from {1})', prefix, base)
+            : t('Hotfix version (branch {0}<version>, created from {1})', prefix, base);
+        name = await this.ui.input(prompt, suggestion, v => (v.trim() ? undefined : t('Enter a name.')));
+        if (!name) {
+          return undefined;
+        }
+      }
+
+      const branch = prefix + name.trim();
+      const result = await this.run(t('GitFlow: creating {0}', branch), () => this.server.request<Result>('start', { repository, type, name: name!.trim() }));
+      let success = t('Branch "{0}" created from "{1}" and checked out.', result.branchName ?? branch, base);
+      const reminder = type === 'release' ? (await this.state(repository)).releaseReminder : null;
+      if (reminder) {
+        success += ' ' + reminder;
+      }
+
+      await this.show(result, success);
+      return result;
+    });
+  }
+
+  /** Finishes a branch (none: the branch of a stopped merge, otherwise the current branch), with a local merge. */
+  finish(branch?: string): Promise<Result | undefined> {
+    return this.exclusive(async repository => {
+      const prepared = await this.server.request<PrepareFinishResponse>('prepareFinish', { repository, branch: branch ?? null });
+      if (!prepared.context) {
+        await this.show(prepared.error!, '');
+        return undefined;
+      }
+
+      const context = prepared.context;
+      const name = context.branch.fullName;
+      if (!await this.ui.confirm(this.summary(context), this.details(context), t('Finish'))) {
+        return undefined;
+      }
+
+      let push = false;
+      let deleteRemote = false;
+      if (context.hasRemote) {
+        const chosen = await this.ui.pickMany(t('Finish {0}: options', name), [
+          { id: 'push', label: t('Push the branches (and the tag) to origin at the end'), picked: context.defaults.pushAfterFinish },
+          { id: 'deleteRemote', label: t('Also delete the branch on origin'), picked: context.defaults.deleteRemoteBranch },
+        ]);
+        if (!chosen) {
+          return undefined;
+        }
+
+        push = chosen.includes('push');
+        deleteRemote = chosen.includes('deleteRemote');
+      }
+
+      let tagMessage: string | undefined;
+      if (context.asksTagMessage) {
+        tagMessage = await this.ui.input(t('Message of tag "{0}"', context.tagName ?? ''), context.defaultTagMessage);
+        if (tagMessage === undefined) {
+          return undefined;
+        }
+      }
+
+      const result = await this.run(t('GitFlow: finishing {0}', name), () => this.server.request<Result>('finish', {
+        repository,
+        branch: name,
+        tagMessage: tagMessage ?? null,
+        pushAfterFinish: push,
+        deleteRemoteBranch: deleteRemote,
+      }));
+      await this.show(result, result.tagName
+        ? t('"{0}" is finished and tagged "{1}". Current branch: {2}.', name, result.tagName, result.branchName ?? '')
+        : t('"{0}" is finished. Current branch: {1}.', name, result.branchName ?? ''));
+      return result;
+    });
+  }
+
+  /** git push -u origin <branch> (none: the current branch). */
+  publish(branch?: string): Promise<Result | undefined> {
+    return this.exclusive(async repository => {
+      const label = branch ?? (await this.state(repository)).currentBranch ?? 'HEAD';
+      const result = await this.run(t('GitFlow: pushing {0}', label), () => this.server.request<Result>('publish', { repository, branch: branch ?? null }));
+      await this.show(result, t('"{0}" is pushed to origin.', result.branchName ?? label));
+      return result;
+    });
+  }
+
+  private summary(context: FinishContext): string {
+    return context.isResume
+      ? t('Finishing "{0}" stopped on a conflict.', context.branch.fullName)
+      : t('Finish "{0}"?', context.branch.fullName);
+  }
+
+  private details(context: FinishContext): string {
+    if (context.isResume) {
+      return t('If the conflicts are resolved and the files added (git add), the finish continues where it stopped.');
+    }
+
+    const lines = context.branch.type === 'feature'
+      ? [t('• merge --no-ff into {0}', context.targets[0]), t('• delete the local branch')]
+      : [
+        t('• merge --no-ff into {0}', context.targets[0]),
+        t('• tag {0}', context.tagName ?? ''),
+        t('• merge --no-ff into {0}', context.targets[context.targets.length - 1]),
+        t('• delete the local branch'),
+      ];
+    if (context.isAlreadyMerged) {
+      lines.push('', t('This branch is already merged into all its targets: the finish will create the tag if missing, then delete the branch.'));
+    }
+
+    return lines.join('\n');
+  }
+
+  private state(repository: string): Promise<RepoState> {
+    return this.server.request<RepoState>('getState', { repository });
+  }
+
+  private async run(title: string, operation: () => Promise<Result>): Promise<Result> {
+    this.output.appendLine(`=== ${title} ===`);
+    const result = await this.ui.progress(title, operation);
+    this.output.appendLine(result.success ? 'OK' : result.message);
+    this.onChanged();
+    return result;
+  }
+
+  /** Success: a notification (with the warnings if any). Failure: the translated message, with the conflicted files. */
+  private async show(result: Result, success: string): Promise<void> {
+    if (result.success) {
+      const warnings = result.warnings.length > 0 ? `${t('Warning:')}\n${result.warnings.map(w => '• ' + w).join('\n')}` : undefined;
+      await this.ui.info(success, warnings);
+      return;
+    }
+
+    const files = result.conflictedFiles.length > 0
+      ? `${t('Conflicted files:')}\n${result.conflictedFiles.slice(0, 15).map(f => '• ' + f).join('\n')}${result.conflictedFiles.length > 15 ? '\n…' : ''}`
+      : undefined;
+    await this.ui.error(result.message, files);
+  }
+
+  /** One operation at a time; never silent on an unexpected error. */
+  private async exclusive(action: (repository: string) => Promise<Result | undefined>): Promise<Result | undefined> {
+    if (this.busy) {
+      await this.ui.info(t('A GitFlow operation is already running. Wait for it to finish.'));
+      return undefined;
+    }
+
+    this.busy = true;
+    try {
+      const repository = await this.findRepository();
+      if (!repository) {
+        await this.ui.error(t('No Git repository found for the open folder or file.'));
+        return undefined;
+      }
+
+      return await action(repository);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.output.appendLine(error instanceof Error && error.stack ? error.stack : message);
+      await this.ui.error(t('GitFlow: unexpected error. {0}', message));
+      return undefined;
+    } finally {
+      this.busy = false;
+    }
+  }
+}

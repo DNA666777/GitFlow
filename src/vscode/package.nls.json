@@ -3,5 +3,11 @@
   "command.showOutput": "Show Log",
   "command.showState": "Show Repository State",
   "command.restartServer": "Restart Server",
-  "config.dotnetPath": "Path of the `dotnet` executable used to run GitFlow. Empty (default): the .NET 8 runtime is provided by the **.NET Install Tool** extension."
+  "config.dotnetPath": "Path of the `dotnet` executable used to run GitFlow. Empty (default): the .NET 8 runtime is provided by the **.NET Install Tool** extension.",
+  "command.init": "Initialize GitFlow...",
+  "command.startFeature": "Start Feature...",
+  "command.startRelease": "Start Release...",
+  "command.startHotfix": "Start Hotfix...",
+  "command.finish": "Finish Current Branch...",
+  "command.publish": "Push Current Branch"
 }

@@ -38,10 +38,11 @@ suite('GitFlow extension', () => {
     const same = (p: string) => (process.platform === 'win32' ? fs.realpathSync(p).toLowerCase() : fs.realpathSync(p));
     assert.strictEqual(same(repository!), same(workspace));
 
+    // Independent of the order of the suites (the command tests initialize this repository).
     const state = await gitflow.server.request<RepoState | null>('getState', { repository });
     assert.ok(state);
-    assert.strictEqual(state.isInitialized, false);
-    assert.strictEqual(state.currentBranch, 'master');
+    assert.strictEqual(same(state.repositoryPath), same(workspace));
+    assert.ok(state.hasCommits);
   });
 
   test('restarts the server', async () => {

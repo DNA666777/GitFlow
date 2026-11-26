@@ -1,11 +1,14 @@
 import * as path from 'node:path';
 import * as vscode from 'vscode';
+import { FlowCommands } from './flow';
 import { RepoState } from './protocol';
 import { GitFlowServer } from './server';
+import { VsCodeUi } from './ui';
 
 /** Returned by activate(): used by the extension tests. */
 export interface GitFlowApi {
   server: GitFlowServer;
+  flow: FlowCommands;
   findRepository(): Promise<string | undefined>;
 }
 
@@ -14,12 +17,17 @@ export function activate(context: vscode.ExtensionContext): GitFlowApi {
   const server = new GitFlowServer(context.asAbsolutePath(path.join('server', 'GitFlow.Server.dll')), output);
   context.subscriptions.push(output, server);
 
-  const api: GitFlowApi = {
-    server,
-    findRepository: () => findRepository(server),
-  };
+  const find = () => findRepository(server);
+  const flow = new FlowCommands(server, find, output, new VsCodeUi());
+  const api: GitFlowApi = { server, flow, findRepository: find };
 
   context.subscriptions.push(
+    vscode.commands.registerCommand('gitflow.init', () => flow.init()),
+    vscode.commands.registerCommand('gitflow.startFeature', (name?: string) => flow.start('feature', typeof name === 'string' ? name : undefined)),
+    vscode.commands.registerCommand('gitflow.startRelease', (name?: string) => flow.start('release', typeof name === 'string' ? name : undefined)),
+    vscode.commands.registerCommand('gitflow.startHotfix', (name?: string) => flow.start('hotfix', typeof name === 'string' ? name : undefined)),
+    vscode.commands.registerCommand('gitflow.finish', (branch?: string) => flow.finish(typeof branch === 'string' ? branch : undefined)),
+    vscode.commands.registerCommand('gitflow.publish', (branch?: string) => flow.publish(typeof branch === 'string' ? branch : undefined)),
     vscode.commands.registerCommand('gitflow.showOutput', () => output.show(true)),
     vscode.commands.registerCommand('gitflow.restartServer', () => run(output, () => server.restart())),
     vscode.commands.registerCommand('gitflow.showState', () => run(output, async () => {

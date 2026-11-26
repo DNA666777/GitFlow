@@ -38,6 +38,36 @@
   "contributes": {
     "commands": [
       {
+        "command": "gitflow.init",
+        "title": "%command.init%",
+        "category": "GitFlow"
+      },
+      {
+        "command": "gitflow.startFeature",
+        "title": "%command.startFeature%",
+        "category": "GitFlow"
+      },
+      {
+        "command": "gitflow.startRelease",
+        "title": "%command.startRelease%",
+        "category": "GitFlow"
+      },
+      {
+        "command": "gitflow.startHotfix",
+        "title": "%command.startHotfix%",
+        "category": "GitFlow"
+      },
+      {
+        "command": "gitflow.finish",
+        "title": "%command.finish%",
+        "category": "GitFlow"
+      },
+      {
+        "command": "gitflow.publish",
+        "title": "%command.publish%",
+        "category": "GitFlow"
+      },
+      {
         "command": "gitflow.showOutput",
         "title": "%command.showOutput%",
         "category": "GitFlow"
