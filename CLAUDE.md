@@ -230,8 +230,12 @@ tests/GitFlow.Server.Tests/  # NOUVEAU — chaque méthode JSON-RPC testée sur 
    - Finish : choix Merge local / Pull Request, options et message du tag via `QuickPick` / `InputBox` ;
      relecture des messages de PR dans un éditeur Markdown temporaire, validé par un bouton ;
    - Paramètres : `QuickPick` en plusieurs étapes, ou une webview simple (même validation que dans VS, faite par le Core) ;
-   - **Hors périmètre v1** : la section Commit (VS Code a déjà la sienne ; le message généré pourrait être proposé plus tard
-     via l'API `git` de VS Code).
+   - ~~Hors périmètre v1 : la section Commit~~ — **changé le 2026-11-26** : l'interface doit être **la même que la tool window
+     de Visual Studio**, section Commit comprise (liste des modifications + message généré par le Core + bouton Commiter).
+     Réalisée en **webview** (vue de type `webview` dans le panneau Source Control) qui remplace la TreeView de l'étape 4 :
+     même ordre de sections, mêmes libellés, mêmes règles d'affichage que `GitFlowToolWindow` ; couleurs et polices du thème
+     VS Code (variables CSS `--vscode-*`). La webview ne contient aucune logique : elle envoie des messages à l'extension,
+     qui appelle le serveur.
 4. **Publication** — retenu : même version que l'extension VS (un tag → les deux), **Marketplace VS Code seulement** pour l'instant,
    avec le même éditeur `DNA666777` (`vsce publish`, secret `VS_MARKETPLACE_PAT` existant si son scope le permet).
    Le `.vsix` VS Code est aussi attaché à la GitHub Release. **Open VSX** (VSCodium, Cursor…) : étape ultérieure (secret `OVSX_PAT` à créer).
@@ -259,7 +263,13 @@ tests/GitFlow.Server.Tests/  # NOUVEAU — chaque méthode JSON-RPC testée sur 
 
 ### Étapes (une fois validé)
 (1) `GitFlow.Server` + tests (fait), (2) squelette de l'extension VS Code (activation, runtime, connexion, Output Channel) (fait),
-(3) commandes Init/Start/Finish/Push en merge local (fait ; `ui.ts` = interface remplaçable par des réponses scriptées dans les tests), (4) vue « GitFlow » du panneau Source Control (fait ; rafraîchie par l'API de l'extension git de VS Code), (5) paramètres, (6) mode Pull Request,
+(3) commandes Init/Start/Finish/Push en merge local (fait ; `ui.ts` = interface remplaçable par des réponses scriptées dans les tests), (4) vue « GitFlow » du panneau Source Control (fait ; rafraîchie par l'API de l'extension git de VS Code), (4b) **journal et rafraîchissement** : canal « GitFlow » en `LogOutputChannel` (opérations et leurs commandes git au niveau
+Info, lectures de rafraîchissement au niveau Trace — toujours journalisées, masquées par défaut), rafraîchissement seulement
+si la vue est visible et regroupé (~1 s), fichiers de `.git` ignorés pour trouver le dépôt (fait ; niveau envoyé par le serveur
+dans la notification `log` : `trace` pour les lectures d'affichage, `info` pour les opérations),
+(4c) **interface identique à Visual Studio** : webview « GitFlow » (état, Commit, Démarrer une branche, Branches en cours,
+Pull requests) remplaçant la TreeView ; serveur : méthodes `getCommitPreview` / `commit` (CommitService du Core),
+(5) paramètres, (6) mode Pull Request,
 (7) traduction, doc FR/EN, CI et publication sur le Marketplace VS Code, (8) plus tard : Open VSX.
 
 ---

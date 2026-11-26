@@ -159,4 +159,5 @@ public sealed record PullRequestDraftDto(string Source, string Target, string Ti
 public sealed record PreparePullRequestsResponse(IReadOnlyList<PullRequestDraftDto> Drafts, ResultDto? Error);
 
 /// <summary>A line of the git log (command, exit code, stderr), sent as the "log" notification.</summary>
-public sealed record LogNotification(string Line);
+/// <param name="Level">"info" for an operation asked by the user, "trace" for a read done for display.</param>
+public sealed record LogNotification(string Line, string Level);

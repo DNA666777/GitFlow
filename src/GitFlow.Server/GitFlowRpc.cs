@@ -46,27 +46,27 @@ public sealed class GitFlowRpc
     /// <summary>Root of the git repository containing <paramref name="path"/>, or null.</summary>
     [JsonRpcMethod("findRepository")]
     public Task<string?> FindRepositoryAsync(string path, CancellationToken ct) =>
-        RunAsync(() => _flow.FindRepositoryRootAsync(path, ct), ct);
+        ReadAsync(() => _flow.FindRepositoryRootAsync(path, ct), ct);
 
     [JsonRpcMethod("getState")]
     public Task<StateDto?> GetStateAsync(string repository, CancellationToken ct) =>
-        RunAsync(async () => await _flow.GetStateAsync(repository, ct).ConfigureAwait(false) is { } s ? StateDto.From(s) : null, ct);
+        ReadAsync(async () => await _flow.GetStateAsync(repository, ct).ConfigureAwait(false) is { } s ? StateDto.From(s) : null, ct);
 
     // ---------- Settings / Init ----------
 
     /// <summary>Settings of a scope; for an uninitialised repository, the Init defaults (existing git-flow keys, global, built-in).</summary>
     [JsonRpcMethod("getSettings")]
     public Task<SettingsDto> GetSettingsAsync(string repository, ConfigScope scope, CancellationToken ct) =>
-        RunAsync(async () => SettingsDto.From(await _settings.LoadAsync(repository, scope, ct).ConfigureAwait(false)), ct);
+        ReadAsync(async () => SettingsDto.From(await _settings.LoadAsync(repository, scope, ct).ConfigureAwait(false)), ct);
 
     [JsonRpcMethod("getLocalBranches")]
     public Task<IReadOnlyList<string>> GetLocalBranchesAsync(string repository, CancellationToken ct) =>
-        RunAsync(() => _settings.GetLocalBranchesAsync(repository, ct), ct);
+        ReadAsync(() => _settings.GetLocalBranchesAsync(repository, ct), ct);
 
     /// <summary>Non-blocking consequences of a naming change (translated), to confirm before saving.</summary>
     [JsonRpcMethod("getSettingsWarnings")]
     public Task<IReadOnlyList<string>> GetSettingsWarningsAsync(string repository, NamingDto proposed, CancellationToken ct) =>
-        RunAsync<IReadOnlyList<string>>(async () =>
+        ReadAsync<IReadOnlyList<string>>(async () =>
         {
             var current = await _settings.LoadAsync(repository, ConfigScope.Local, ct).ConfigureAwait(false);
             var warnings = await _settings.GetWarningsAsync(repository, current.Naming, proposed.ToConfig(), ct).ConfigureAwait(false);
@@ -96,12 +96,12 @@ public sealed class GitFlowRpc
     /// <summary>Suggested version of a release (minor + 1) or hotfix (patch + 1); empty for a feature.</summary>
     [JsonRpcMethod("suggestVersion")]
     public Task<string> SuggestVersionAsync(string repository, BranchType type, CancellationToken ct) =>
-        RunAsync(async () => type == BranchType.Feature ? string.Empty : await _flow.SuggestVersionAsync(repository, type, ct).ConfigureAwait(false), ct);
+        ReadAsync(async () => type == BranchType.Feature ? string.Empty : await _flow.SuggestVersionAsync(repository, type, ct).ConfigureAwait(false), ct);
 
     /// <summary>Commits on develop not yet released (0: a release would be identical to the last one).</summary>
     [JsonRpcMethod("countUnreleasedCommits")]
     public Task<int?> CountUnreleasedCommitsAsync(string repository, CancellationToken ct) =>
-        RunAsync(() => _flow.CountUnreleasedCommitsAsync(repository, ct), ct);
+        ReadAsync(() => _flow.CountUnreleasedCommitsAsync(repository, ct), ct);
 
     [JsonRpcMethod("start")]
     public Task<ResultDto> StartAsync(string repository, BranchType type, string name, CancellationToken ct) =>
@@ -180,7 +180,7 @@ public sealed class GitFlowRpc
     /// <param name="refresh">Read the states on the platform (network); otherwise only the tracked links.</param>
     [JsonRpcMethod("getPullRequests")]
     public Task<IReadOnlyList<PullRequestGroupDto>> GetPullRequestsAsync(string repository, bool refresh, CancellationToken ct) =>
-        RunAsync<IReadOnlyList<PullRequestGroupDto>>(async () =>
+        ReadAsync<IReadOnlyList<PullRequestGroupDto>>(async () =>
             (await _pullRequests.GetGroupsAsync(repository, refresh, ct).ConfigureAwait(false)).Select(PullRequestGroupDto.From).ToArray(), ct);
 
     /// <summary>Release/hotfix: tags the merge commit of the PR to production and pushes the tag.</summary>
@@ -209,15 +209,31 @@ public sealed class GitFlowRpc
         }
     }
 
-    private async Task<T> RunAsync<T>(Func<Task<T>> operation, CancellationToken ct)
+    /// <summary>
+    /// True while a read done for display runs (state of the view, settings, suggestions): the client logs its git
+    /// commands at the "trace" level, so that the operations stay readable. Every command is still logged.
+    /// </summary>
+    public static bool IsReading => Reading.Value;
+
+    private static readonly AsyncLocal<bool> Reading = new();
+
+    /// <summary>An operation asked by the user: its git commands are logged at the "info" level.</summary>
+    private Task<T> RunAsync<T>(Func<Task<T>> operation, CancellationToken ct) => ExecuteAsync(operation, reading: false, ct);
+
+    /// <summary>A read for display (see <see cref="IsReading"/>).</summary>
+    private Task<T> ReadAsync<T>(Func<Task<T>> operation, CancellationToken ct) => ExecuteAsync(operation, reading: true, ct);
+
+    private async Task<T> ExecuteAsync<T>(Func<Task<T>> operation, bool reading, CancellationToken ct)
     {
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            Reading.Value = reading;
             return await operation().ConfigureAwait(false);
         }
         finally
         {
+            Reading.Value = false;
             _gate.Release();
         }
     }

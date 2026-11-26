@@ -228,8 +228,30 @@ public class ServerProtocolTests
 
         await s.CallAsync<ResultDto>("start", new { repository = s.Repo.WorkDir, type = "feature", name = "logged" });
 
-        await WaitUntilAsync(() => s.Logs.Any(l => l.Contains("git switch -c feature/logged", StringComparison.Ordinal) || l.Contains("feature/logged", StringComparison.Ordinal)));
-        s.Logs.ShouldAllBe(l => l.StartsWith('['));
+        await WaitUntilAsync(() => s.Logs.Any(l => l.Line.Contains("git switch -c feature/logged", StringComparison.Ordinal)));
+        s.Logs.ShouldAllBe(l => l.Line.StartsWith('['));
+    }
+
+    [Fact]
+    public async Task Reads_for_display_are_logged_at_trace_level_operations_at_info()
+    {
+        await using var s = await ServerSession.CreateAsync();
+        while (s.Logs.TryDequeue(out _))
+        {
+        }
+
+        await s.CallAsync<StateDto?>("getState", new { repository = s.Repo.WorkDir });
+        await WaitUntilAsync(() => s.Logs.Any(l => l.Line.Contains("git status", StringComparison.Ordinal)));
+        var reads = s.Logs.ToArray();
+        while (s.Logs.TryDequeue(out _))
+        {
+        }
+
+        await s.CallAsync<ResultDto>("start", new { repository = s.Repo.WorkDir, type = "feature", name = "levels" });
+        await WaitUntilAsync(() => s.Logs.Any(l => l.Line.Contains("git switch -c feature/levels", StringComparison.Ordinal)));
+
+        reads.ShouldAllBe(l => l.Level == "trace");
+        s.Logs.ShouldAllBe(l => l.Level == "info");
     }
 
     [Fact]

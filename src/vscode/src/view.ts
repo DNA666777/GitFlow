@@ -4,6 +4,9 @@ import { GitFlowServer } from './server';
 
 const t = vscode.l10n.t;
 
+/** Quiet time before an automatic refresh. */
+export const REFRESH_DELAY_MS = 1000;
+
 /** What the "gitflow.state" context key says (drives the welcome texts of the view). */
 export type ViewState = 'loading' | 'noRepository' | 'notInitialized' | 'ready' | 'error';
 
@@ -32,6 +35,8 @@ export function branchOf(argument: unknown): string | undefined {
 export class GitFlowView implements vscode.TreeDataProvider<Node>, vscode.Disposable {
   private readonly changed = new vscode.EventEmitter<Node | undefined>();
   private refreshTimer: NodeJS.Timeout | undefined;
+  private visible = true;
+  private stale = false;
 
   readonly onDidChangeTreeData = this.changed.event;
 
@@ -41,20 +46,44 @@ export class GitFlowView implements vscode.TreeDataProvider<Node>, vscode.Dispos
   constructor(
     private readonly server: GitFlowServer,
     private readonly findRepository: () => Promise<string | undefined>,
-    private readonly output: vscode.OutputChannel,
+    private readonly output: vscode.LogOutputChannel,
   ) {}
 
-  /** Refreshes now, or after a short delay to coalesce bursts of events (saves, git changes). */
+  /** Follows the visibility of the view: no git command while it is hidden, one refresh when it shows again. */
+  attach(view: { visible: boolean; onDidChangeVisibility: vscode.Event<{ visible: boolean }> }): void {
+    this.visible = view.visible;
+    view.onDidChangeVisibility(e => {
+      this.visible = e.visible;
+      if (e.visible && this.stale) {
+        this.refresh();
+      }
+    });
+  }
+
+  /**
+   * Refreshes now (Refresh button), or once after a quiet second to coalesce bursts of events
+   * (an operation, the git extension, saves, the window getting the focus back). Hidden view: later.
+   */
   refresh(debounce = false): void {
     if (this.refreshTimer) {
       clearTimeout(this.refreshTimer);
       this.refreshTimer = undefined;
     }
 
-    if (debounce) {
-      this.refreshTimer = setTimeout(() => this.changed.fire(undefined), 400);
-    } else {
+    if (!this.visible) {
+      this.stale = true;
+      return;
+    }
+
+    const fire = () => {
+      this.refreshTimer = undefined;
+      this.stale = false;
       this.changed.fire(undefined);
+    };
+    if (debounce) {
+      this.refreshTimer = setTimeout(fire, REFRESH_DELAY_MS);
+    } else {
+      fire();
     }
   }
 
@@ -166,7 +195,7 @@ export class GitFlowView implements vscode.TreeDataProvider<Node>, vscode.Dispos
       return state;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      this.output.appendLine(message);
+      this.output.error(message);
       await this.setViewState('error');
       return null;
     }

@@ -61,7 +61,7 @@ public static class RpcHost
             }
 
             // Fire and forget: logging must never block nor fail an operation.
-            _ = rpc.NotifyWithParameterObjectAsync("log", new LogNotification(line)).ContinueWith(
+            _ = rpc.NotifyWithParameterObjectAsync("log", new LogNotification(line, GitFlowRpc.IsReading ? "trace" : "info")).ContinueWith(
                 t => _ = t.Exception, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.Default);
         }
     }

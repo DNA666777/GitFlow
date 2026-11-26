@@ -40,7 +40,7 @@ internal sealed class ServerSession : IAsyncDisposable
 
         var formatter = new SystemTextJsonFormatter { JsonSerializerOptions = RpcHost.JsonOptions };
         Client = new JsonRpc(new HeaderDelimitedMessageHandler(clientStream, clientStream, formatter));
-        Client.AddLocalRpcMethod("log", new Action<string>(line => Logs.Enqueue(line)));
+        Client.AddLocalRpcMethod("log", new Action<string, string>((line, level) => Logs.Enqueue((line, level))));
         Client.StartListening();
     }
 
@@ -50,7 +50,7 @@ internal sealed class ServerSession : IAsyncDisposable
 
     public JsonRpc Client { get; }
 
-    public ConcurrentQueue<string> Logs { get; } = new();
+    public ConcurrentQueue<(string Line, string Level)> Logs { get; } = new();
 
     /// <param name="initialized">Run "init" with the default naming.</param>
     /// <param name="pullRequests">origin "is" GitHub (rewritten to the local bare repository) with an in-memory platform.</param>

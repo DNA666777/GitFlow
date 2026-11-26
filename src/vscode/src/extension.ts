@@ -17,12 +17,14 @@ export interface GitFlowApi {
 }
 
 export function activate(context: vscode.ExtensionContext): GitFlowApi {
-  const output = vscode.window.createOutputChannel('GitFlow');
+  const output = vscode.window.createOutputChannel('GitFlow', { log: true });
   const server = new GitFlowServer(context.asAbsolutePath(path.join('server', 'GitFlow.Server.dll')), output);
   const find = () => findRepository(server);
   const view = new GitFlowView(server, find, output);
-  const flow = new FlowCommands(server, find, output, new VsCodeUi(), () => view.refresh());
-  context.subscriptions.push(output, server, view, vscode.window.createTreeView('gitflow.branches', { treeDataProvider: view }));
+  const flow = new FlowCommands(server, find, output, new VsCodeUi(), () => view.refresh(true));
+  const tree = vscode.window.createTreeView('gitflow.branches', { treeDataProvider: view });
+  view.attach(tree);
+  context.subscriptions.push(output, server, view, tree);
 
   context.subscriptions.push(
     vscode.commands.registerCommand('gitflow.init', () => flow.init()),
@@ -40,7 +42,7 @@ export function activate(context: vscode.ExtensionContext): GitFlowApi {
         view.refresh();
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        output.appendLine(message);
+        output.error(message);
         void vscode.window.showErrorMessage(t('GitFlow: unexpected error. {0}', message));
       }
     }),
@@ -105,11 +107,16 @@ function watchRepository(context: vscode.ExtensionContext, view: GitFlowView): v
   })();
 }
 
+/** True for a file inside a .git folder (e.g. the commit message being edited): not a working tree. */
+export function isInsideGitFolder(file: string): boolean {
+  return file.split(/[\\/]/).includes('.git');
+}
+
 /** Repository of the active file, otherwise of the first workspace folder. */
 async function findRepository(server: GitFlowServer): Promise<string | undefined> {
   const editor = vscode.window.activeTextEditor?.document.uri;
   const candidates = [
-    editor?.scheme === 'file' ? path.dirname(editor.fsPath) : undefined,
+    editor?.scheme === 'file' && !isInsideGitFolder(editor.fsPath) ? path.dirname(editor.fsPath) : undefined,
     ...(vscode.workspace.workspaceFolders ?? []).map(f => f.uri.fsPath),
   ].filter((p): p is string => !!p);
 

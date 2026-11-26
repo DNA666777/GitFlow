@@ -16,7 +16,7 @@ export class GitFlowServer implements vscode.Disposable {
 
   constructor(
     private readonly serverDll: string,
-    private readonly output: vscode.OutputChannel,
+    private readonly output: vscode.LogOutputChannel,
   ) {}
 
   /** Information returned by "initialize" (server version, language of the messages). */
@@ -55,24 +55,33 @@ export class GitFlowServer implements vscode.Disposable {
     this.process = child;
 
     child.stderr?.setEncoding('utf8');
-    child.stderr?.on('data', (text: string) => this.output.append(text));
-    child.on('error', (error) => this.output.appendLine(`GitFlow.Server: ${error.message}`));
+    child.stderr?.on('data', (text: string) => this.output.warn(text.trimEnd()));
+    child.on('error', (error) => this.output.error(`GitFlow.Server: ${error.message}`));
     child.on('exit', (code) => {
-      this.output.appendLine(vscode.l10n.t('GitFlow server stopped (code {0}).', String(code)));
+      this.output.warn(vscode.l10n.t('GitFlow server stopped (code {0}).', String(code)));
       if (this.process === child) {
         this.reset();
       }
     });
 
     const connection = createMessageConnection(new StreamMessageReader(child.stdout!), new StreamMessageWriter(child.stdin!));
-    connection.onNotification('log', (params: { line: string }) => this.output.appendLine(params.line));
-    connection.onError(([error]) => this.output.appendLine(`GitFlow.Server: ${error.message}`));
+    // Operations asked by the user at the Info level; reads done to refresh the display at the Trace level
+    // (still logged, hidden by default: "Output: Set Log Level" > Trace to see them).
+    connection.onNotification('log', (params: { line: string; level?: string }) => {
+      const line = params.line.replace(/^\[\d{2}:\d{2}:\d{2}\] /, ''); // the log channel adds its own time
+      if (params.level === 'trace') {
+        this.output.trace(line);
+      } else {
+        this.output.info(line);
+      }
+    });
+    connection.onError(([error]) => this.output.error(`GitFlow.Server: ${error.message}`));
     connection.listen();
     this.connection = connection;
 
     // The language of VS Code decides the language of the messages (fr* → French, otherwise English).
     this.info = await connection.sendRequest<ServerInfo>('initialize', { culture: vscode.env.language });
-    this.output.appendLine(`GitFlow.Server ${this.info.version} — ${dotnet} — UI culture: ${this.info.culture || 'invariant'}`);
+    this.output.info(`GitFlow.Server ${this.info.version} — ${dotnet} — UI culture: ${this.info.culture || 'invariant'}`);
     return connection;
   }
 
