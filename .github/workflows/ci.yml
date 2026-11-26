@@ -47,6 +47,26 @@ jobs:
       - name: Tests du serveur VS Code
         run: dotnet test tests/GitFlow.Server.Tests -c Release --no-build -nologo --logger trx --results-directory TestResults
 
+      # Extension VS Code (TypeScript) : tests dans une vraie instance VS Code, puis paquet .vsix.
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: src/vscode/package-lock.json
+
+      - name: Extension VS Code (dépendances)
+        working-directory: src/vscode
+        run: npm ci
+
+      - name: Tests de l'extension VS Code
+        working-directory: src/vscode
+        run: npm test
+
+      - name: Paquet .vsix VS Code
+        working-directory: src/vscode
+        run: npm run package
+
       - name: Résultats des tests
         if: failure()
         uses: actions/upload-artifact@v4
@@ -60,4 +80,11 @@ jobs:
         with:
           name: GitFlow.VSExtension-ci
           path: src/GitFlow.VSExtension/bin/Release/net8.0-windows8.0/GitFlow.VSExtension.vsix
+          retention-days: 7
+
+      - name: Paquet .vsix VS Code (artefact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitflow-vscode-ci
+          path: src/vscode/*.vsix
           retention-days: 7

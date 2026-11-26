@@ -197,6 +197,8 @@ Flow en mode PR :
 
 Objectif : le même GitFlow dans **Visual Studio Code** (et ses forks : VSCodium, Cursor…), avec exactement le même comportement
 que dans Visual Studio. Décision du 2026-11-26 : **même dépôt**, `GitFlow.Core` réutilisé tel quel (pas de réécriture en TypeScript).
+Identifiant de l'extension VS Code : **`DNA666777.gitflow-vscode`** (nom affiché « GitFlow ») — `DNA666777.gitflow` est déjà pris par
+l'extension Visual Studio sur le Marketplace (noms uniques par éditeur). **Ne jamais le changer** une fois publié.
 
 ### Architecture
 ```
@@ -256,7 +258,7 @@ tests/GitFlow.Server.Tests/  # NOUVEAU — chaque méthode JSON-RPC testée sur 
   (actions Créer le tag / Finaliser). `FlowUi` de l'extension VS pourra s'appuyer dessus plus tard.
 
 ### Étapes (une fois validé)
-(1) `GitFlow.Server` + tests (fait), (2) squelette de l'extension VS Code (activation, runtime, connexion, Output Channel),
+(1) `GitFlow.Server` + tests (fait), (2) squelette de l'extension VS Code (activation, runtime, connexion, Output Channel) (fait),
 (3) commandes Start/Finish/Push en merge local, (4) vue Source Control, (5) paramètres, (6) mode Pull Request,
 (7) traduction, doc FR/EN, CI et publication sur le Marketplace VS Code, (8) plus tard : Open VSX.
 
@@ -309,6 +311,14 @@ dotnet build GitFlowVS.sln -c Debug
 dotnet test tests/GitFlow.Core.Tests
 dotnet test tests/GitFlow.Core.IntegrationTests
 dotnet test tests/GitFlow.Server.Tests          # serveur JSON-RPC de l'extension VS Code (vrais dépôts + vrai processus)
+
+# Extension VS Code (src/vscode, Node.js 20+) — npm install une fois
+cd src/vscode
+npm test            # publie le serveur dans server/, compile, lance les tests dans un VS Code de test (téléchargé dans .vscode-test/)
+npm run package     # → src/vscode/gitflow-vscode-<version>.vsix (serveur .NET inclus, ~1,6 Mo)
+#   Installation manuelle : code --install-extension src/vscode/gitflow-vscode-<version>.vsix
+#   Les tests utilisent le dotnet du PATH (gitflow.dotnetPath dans les réglages de l'instance de test, cf. .vscode-test.mjs).
+#   npm 11 bloque les scripts d'installation (esbuild, @vscode/vsce-sign) : inutiles ici, laissés bloqués.
 
 # Test manuel — le F5 ne charge PAS l'extension pour l'instant (à investiguer).
 # Contournement : incrémenter <Version> dans GitFlow.VSExtension.csproj, rebuild, puis installer le .vsix

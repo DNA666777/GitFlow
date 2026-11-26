@@ -1,0 +1,90 @@
+{
+  "name": "gitflow-vscode",
+  "displayName": "GitFlow",
+  "description": "%description%",
+  "version": "1.8.1",
+  "publisher": "DNA666777",
+  "license": "MIT",
+  "icon": "resources/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DNA666777/GitFlow.git"
+  },
+  "homepage": "https://dna666777.github.io/GitFlow/en/",
+  "bugs": {
+    "url": "https://github.com/DNA666777/GitFlow/issues"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "SCM Providers"
+  ],
+  "keywords": [
+    "git",
+    "gitflow",
+    "git-flow",
+    "branching",
+    "release"
+  ],
+  "l10n": "./l10n",
+  "extensionDependencies": [
+    "ms-dotnettools.vscode-dotnet-runtime"
+  ],
+  "activationEvents": [
+    "workspaceContains:.git"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "gitflow.showOutput",
+        "title": "%command.showOutput%",
+        "category": "GitFlow"
+      },
+      {
+        "command": "gitflow.showState",
+        "title": "%command.showState%",
+        "category": "GitFlow"
+      },
+      {
+        "command": "gitflow.restartServer",
+        "title": "%command.restartServer%",
+        "category": "GitFlow"
+      }
+    ],
+    "configuration": {
+      "title": "GitFlow",
+      "properties": {
+        "gitflow.dotnetPath": {
+          "type": "string",
+          "default": "",
+          "scope": "machine",
+          "markdownDescription": "%config.dotnetPath%"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build:server": "dotnet publish ../GitFlow.Server/GitFlow.Server.csproj -c Release -o server --nologo",
+    "compile": "tsc -p . --noEmit && node esbuild.mjs",
+    "compile-tests": "tsc -p . --outDir out",
+    "build": "npm run build:server && npm run compile",
+    "pretest": "npm run build && npm run compile-tests",
+    "test": "vscode-test",
+    "package": "npm run build && node -e \"require('fs').copyFileSync('../../LICENSE', 'LICENSE')\" && vsce package --no-dependencies"
+  },
+  "dependencies": {
+    "vscode-jsonrpc": "^10.0.2"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^20.19.43",
+    "@types/vscode": "^1.90.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.1.0",
+    "@vscode/vsce": "^4.1.1",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  }
+}

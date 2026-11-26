@@ -12,6 +12,9 @@
     <!-- Runs on the .NET 8 runtime provided by the VS Code ".NET Install Tool" (framework-dependent, any OS). -->
     <RollForward>LatestMajor</RollForward>
     <InvariantGlobalization>false</InvariantGlobalization>
+    <!-- Launched by "dotnet GitFlow.Server.dll" on every OS: no native launcher, only the languages of GitFlow. -->
+    <UseAppHost>false</UseAppHost>
+    <SatelliteResourceLanguages>en;fr</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <ItemGroup>
