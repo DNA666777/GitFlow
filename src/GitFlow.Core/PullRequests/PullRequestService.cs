@@ -74,20 +74,59 @@ public sealed class PullRequestService
             var targetRef = await git.ResolveCommitAsync($"refs/remotes/{Remote}/{target}", ct).ConfigureAwait(false) is not null
                 ? $"refs/remotes/{Remote}/{target}"
                 : "refs/heads/" + target;
-            var subjects = await git.RunCheckedAsync(ct, "log", "--no-merges", "--reverse", "--format=%s", $"{targetRef}..{source}").ConfigureAwait(false);
-            var messages = await git.RunCheckedAsync(ct, "log", "--no-merges", "--format=%B", $"{targetRef}..{source}").ConfigureAwait(false);
-            var stat = await git.RunCheckedAsync(ct, "diff", "--shortstat", $"{targetRef}...{source}").ConfigureAwait(false);
+            // The description is informative only: a git failure here (missing target, unrelated histories, shallow clone)
+            // leaves a section empty instead of blocking the Finish. Every command stays logged in the Output pane.
+            var subjects = await git.RunAsync(ct, "log", "--no-merges", "--reverse", "--format=%s", $"{targetRef}..{source}").ConfigureAwait(false);
+            var messages = await git.RunAsync(ct, "log", "--no-merges", "--format=%B", $"{targetRef}..{source}").ConfigureAwait(false);
             var context = new PullRequestContext(
                 branch,
                 target,
-                GitClient.Lines(subjects.StandardOutput),
-                messages.StandardOutput,
-                DiffSummary.Parse(stat.StandardOutput),
+                subjects.Success ? GitClient.Lines(subjects.StandardOutput) : [],
+                messages.Success ? messages.StandardOutput : string.Empty,
+                await DiffStatAsync(git, targetRef, source, ct).ConfigureAwait(false),
                 tagName);
             drafts.Add(PullRequestMessageGenerator.Build(context, template, pattern.Length == 0 ? null : pattern));
         }
 
         return drafts;
+    }
+
+    /// <summary>
+    /// Refuses a pull request whose branch shares no commit with the target on the server (unrelated histories, e.g. a
+    /// repository created on the server with a README and a local history pushed beside it): it could not be merged.
+    /// Checked before anything is pushed. A target unknown on origin is not checked (the platform will say so).
+    /// </summary>
+    public async Task<FlowResult> CheckHistoryAsync(string repositoryPath, FlowBranch branch, IReadOnlyList<string> targets, CancellationToken ct = default)
+    {
+        var git = new GitClient(_runner, repositoryPath);
+        foreach (var target in targets)
+        {
+            var remoteTarget = $"refs/remotes/{Remote}/{target}";
+            if (await git.ResolveCommitAsync(remoteTarget, ct).ConfigureAwait(false) is null)
+            {
+                continue;
+            }
+
+            var mergeBase = await git.RunAsync(ct, "merge-base", remoteTarget, "refs/heads/" + branch.FullName).ConfigureAwait(false);
+            if (!mergeBase.Success || mergeBase.StandardOutput.Trim().Length == 0)
+            {
+                return FlowResult.Fail(FlowError.NoCommonHistory, target, mergeBase);
+            }
+        }
+
+        return FlowResult.Ok();
+    }
+
+    /// <summary>
+    /// Changes the PR brings, like the platform shows them: from the merge base to the source. Without a merge base
+    /// (unrelated histories, shallow clone), "git diff target...source" fails: compare the two tips instead, or give up.
+    /// </summary>
+    private static async Task<DiffSummary> DiffStatAsync(GitClient git, string targetRef, string source, CancellationToken ct)
+    {
+        var mergeBase = await git.RunAsync(ct, "merge-base", targetRef, source).ConfigureAwait(false);
+        var from = mergeBase.Success && mergeBase.StandardOutput.Trim().Length > 0 ? mergeBase.StandardOutput.Trim() : targetRef;
+        var stat = await git.RunAsync(ct, "diff", "--shortstat", from, source).ConfigureAwait(false);
+        return stat.Success ? DiffSummary.Parse(stat.StandardOutput) : DiffSummary.Empty;
     }
 
     /// <summary>Pushes the branch and opens (or reuses the open) pull request for each draft.</summary>
@@ -98,6 +137,12 @@ public sealed class PullRequestService
         if (error is not null)
         {
             return error;
+        }
+
+        var history = await CheckHistoryAsync(plan.RepositoryPath, plan.Branch, drafts.Select(d => d.Target).ToArray(), ct).ConfigureAwait(false);
+        if (!history.IsSuccess)
+        {
+            return history;
         }
 
         var git = new GitClient(_runner, plan.RepositoryPath);

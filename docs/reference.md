@@ -122,6 +122,18 @@ Le remote `origin` n'est ni GitHub ni Azure DevOps (un dossier local, GitLab, Bi
 
 Le message de GitHub ou d'Azure DevOps est affiché tel quel : droits insuffisants, PR déjà existante, branche cible absente… Après correction, relancez *Terminer…* : une PR déjà ouverte est réutilisée.
 
+### « La branche n'a aucun commit en commun avec origin/master »
+
+Le dépôt a été créé sur le serveur avec un premier commit (souvent un README), et l'historique local a été poussé à côté : les deux `master` n'ont aucun ancêtre commun, et une pull request ne pourrait pas être mergée. Rien n'est poussé. Réunissez une fois les deux historiques, puis relancez *Terminer…* :
+
+```powershell
+git switch master
+git merge origin/master --allow-unrelated-histories
+git push
+```
+
+Le merge s'arrête souvent sur un conflit du README : gardez la version voulue, `git add`, puis `git commit`.
+
 ### Finaliser refuse : branche non contenue dans develop
 
 La PR a été mergée par *squash* ou *rebase* : les commits de la branche ne sont pas dans develop, donc rien n'est supprimé. Si le contenu est bien livré, supprimez la branche vous-même : `git branch -D feature/x`.

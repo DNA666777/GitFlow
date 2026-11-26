@@ -129,6 +129,12 @@ OK</code></pre>
       <h3>« La plateforme a refusé la demande »</h3>
       <p>Le message de GitHub ou d'Azure DevOps est affiché tel quel : droits insuffisants, PR déjà existante, branche cible absente… Après correction, relancez <em>Terminer…</em> : une PR ouverte existante est réutilisée.</p>
 
+      <h3>« La branche n'a aucun commit en commun avec origin/master »</h3>
+      <p>Le dépôt a été créé sur le serveur avec un premier commit (souvent un README), et l'historique local a été poussé à côté : les deux <code>master</code> n'ont aucun ancêtre commun, et une pull request ne pourrait pas être mergée. Rien n'est poussé. Réunissez une fois les deux historiques, puis relancez <em>Terminer…</em> :</p>
+<pre><code>git switch master
+git merge origin/master --allow-unrelated-histories
+git push</code></pre>
+      <p>Le merge s'arrête souvent sur un conflit du README : gardez la version voulue, <code>git add</code>, puis <code>git commit</code>.</p>
       <h3>Finaliser refuse : branche non contenue dans develop</h3>
       <p>La PR a été mergée par <em>squash</em> ou <em>rebase</em> : les commits de la branche ne sont pas dans develop. Rien n'est supprimé. Si le contenu est bien livré, supprimez la branche vous-même : <code>git branch -D feature/x</code>.</p>
 

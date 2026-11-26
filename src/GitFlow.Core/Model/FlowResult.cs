@@ -42,6 +42,7 @@ public enum FlowError
     PullRequestNotMerged,
     MergeCommitNotFound,
     BranchNotMergedOnRemote,
+    NoCommonHistory,
 }
 
 /// <summary>Non blocking problem after an otherwise successful operation (key "Warning_{name}").</summary>

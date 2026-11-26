@@ -246,6 +246,14 @@ internal sealed class FlowUi(VisualStudioExtensibility extensibility, GitFlowSes
     private async Task<FlowResult?> FinishWithPullRequestsAsync(
         string repository, GitFlowConfig config, FlowBranch branch, IReadOnlyList<string> targets, string? tagMessage, RemoteRepository remote, CancellationToken ct)
     {
+        // Unrelated histories: say it now, rather than after the user has reviewed the messages.
+        var history = await session.PullRequests.CheckHistoryAsync(repository, branch, targets, ct);
+        if (!history.IsSuccess)
+        {
+            await ShowResultAsync(history, string.Empty, showSuccess: false, ct);
+            return history;
+        }
+
         var tagName = branch.Type == BranchType.Feature ? null : config.GetTagName(branch.Name);
         var drafts = await session.PullRequests.PrepareAsync(repository, branch, targets, tagName, ct);
         var review = new PullRequestDraftsViewModel(Strings.Format(Strings.PullRequestDraftsIntro, remote.WebUrl), drafts);
