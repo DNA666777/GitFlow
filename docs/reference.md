@@ -66,6 +66,7 @@ Elles sont stockées dans la git config du dépôt (`--local`) ou de l'utilisate
 | `gitflowvs.finish.deleteremote` | `false` | Pré-coche « Supprimer aussi la branche sur origin » |
 | `gitflowvs.pr.prune` | `false` | *Finaliser la branche* utilise `git fetch --prune` |
 | `gitflowvs.pr.ticketpattern` | ABC-123 et #42 | Expression régulière des références de tickets dans les PR |
+| `gitflowvs.pr.platform` | `auto` | `azuredevops` : origin est un serveur Azure DevOps d'entreprise (URL non reconnue automatiquement) |
 
 Les PR suivies sont mémorisées dans la config locale, sous `gitflowvs-pr.<branche>.link`. Elles sont effacées quand la branche est finalisée.
 
@@ -115,7 +116,7 @@ La version suivante est calculée depuis le plus grand tag de version présent s
 
 ### « Mode Pull Request indisponible »
 
-Le remote `origin` n'est ni GitHub ni Azure DevOps (un dossier local, GitLab, Bitbucket…) : utilisez le merge local. Vérifiez l'URL avec `git remote -v`.
+Le remote `origin` n'est ni GitHub ni Azure DevOps (un dossier local, GitLab, Bitbucket…) : utilisez le merge local. Vérifiez l'URL avec `git remote -v`. Pour un serveur Azure DevOps d'entreprise, cochez l'option correspondante dans les paramètres ([détails](pull-requests.md#serveur-azure-devops-dentreprise)).
 
 ### « La plateforme a refusé la demande »
 
@@ -131,7 +132,7 @@ La PR a été mergée par *squash* ou *rebase* : les commits de la branche ne so
 |---|---|
 | Visual Studio | 2022 version 17.14 ou plus, 2026 (18.x). Éditions Community, Professional, Enterprise. |
 | Git | Git for Windows 2.28 ou plus (installé avec Visual Studio) |
-| Plateformes (mode PR) | GitHub (github.com), Azure DevOps (dev.azure.com, *.visualstudio.com) |
+| Plateformes (mode PR) | GitHub (github.com), Azure DevOps (dev.azure.com, *.visualstudio.com), Azure DevOps Server / TFS 2018 ou plus (à déclarer dans les paramètres) |
 | Langues | Anglais (par défaut) et français, selon la langue de Visual Studio. Les messages générés (commit, PR) suivent la même langue. |
 | Configuration | Compatible avec les clés `gitflow.*` de git-flow / git-flow-avh |
 

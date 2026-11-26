@@ -98,6 +98,9 @@
                   Style="{StaticResource {x:Static styles:VsResourceKeys.CheckBoxStyleKey}}" />
         <CheckBox Content="{Binding Labels.Prune}" IsChecked="{Binding PruneOnComplete}" Margin="0,6,0,0"
                   Style="{StaticResource {x:Static styles:VsResourceKeys.CheckBoxStyleKey}}" />
+        <CheckBox Content="{Binding Labels.AzureDevOpsServer}" IsChecked="{Binding AzureDevOpsServer}" Margin="0,6,0,0"
+                  Style="{StaticResource {x:Static styles:VsResourceKeys.CheckBoxStyleKey}}" />
+        <TextBlock Text="{Binding Labels.AzureDevOpsServerHint}" Style="{StaticResource Hint}" TextWrapping="Wrap" Margin="20,2,0,0" />
 
         <!-- Live validation -->
         <Border Visibility="{Binding HasValidationErrors, Converter={StaticResource BoolToVisibility}}"

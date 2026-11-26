@@ -233,6 +233,7 @@ Open them with the *Settings* button of the window, or from **Extensions > GitFl
 - **Tag prefix**: empty by default (tags `1.4.0`), or `v` (tags `v1.4.0`).
 - **Live validation**: empty or duplicate prefix, production identical to development. Names refused by git are reported when saving, and nothing is written.
 - Changing a prefix **does not rename** existing branches: a warning lists them before saving.
+- **Company Azure DevOps server**: if the origin URL is not recognised, check "origin is an Azure DevOps server" ([details](pull-requests.md#company-azure-devops-server)).
 
 All keys are described in the [reference](reference.md#configuration-keys).
 

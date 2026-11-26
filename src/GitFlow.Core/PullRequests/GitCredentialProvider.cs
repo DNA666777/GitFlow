@@ -5,11 +5,19 @@ namespace GitFlow.Core.PullRequests;
 /// <summary>A credential returned by git. <see cref="ToString"/> never shows the secret.</summary>
 public sealed class HostCredential(string username, string secret)
 {
+    /// <summary>
+    /// No secret from git: the request goes out with the Windows session's credentials (NTLM / Kerberos),
+    /// which is how git itself reaches most Azure DevOps Servers inside a company.
+    /// </summary>
+    public static HostCredential WindowsIntegrated { get; } = new(string.Empty, string.Empty);
+
     public string Username { get; } = username;
 
     public string Secret { get; } = secret;
 
-    public override string ToString() => $"{Username}:***";
+    public bool IsWindowsIntegrated => ReferenceEquals(this, WindowsIntegrated);
+
+    public override string ToString() => IsWindowsIntegrated ? "(Windows)" : $"{Username}:***";
 }
 
 /// <summary>
@@ -21,7 +29,7 @@ public sealed class GitCredentialProvider(IGitRunner runner)
 {
     public async Task<HostCredential?> GetAsync(string repositoryPath, RemoteRepository remote, CancellationToken ct = default)
     {
-        var request = $"protocol=https\nhost={remote.CredentialHost}\n";
+        var request = $"protocol={remote.CredentialProtocol}\nhost={remote.CredentialHost}\n";
         if (remote.CredentialPath is { } path)
         {
             request += $"path={path}\n";

@@ -49,7 +49,7 @@
   <data name="Error_DetachedHead" xml:space="preserve"><value>Vous êtes en HEAD détaché : faites un checkout d'une branche avant de commiter.</value></data>
 
   <!-- Pull Request mode (errors) -->
-  <data name="Error_PullRequestNotSupported" xml:space="preserve"><value>Mode Pull Request indisponible : le remote « origin » n'est ni GitHub ni Azure DevOps. Utilisez le merge local.</value></data>
+  <data name="Error_PullRequestNotSupported" xml:space="preserve"><value>Mode Pull Request indisponible : le remote « origin » n'est pas reconnu comme GitHub ou Azure DevOps. Pour un serveur Azure DevOps d'entreprise, cochez « origin est un serveur Azure DevOps » dans les paramètres GitFlow. Sinon, utilisez le merge local.</value></data>
   <data name="Error_NoCredentials" xml:space="preserve"><value>Aucun identifiant git pour « {0} ». Faites un push ou un fetch une fois (le Git Credential Manager vous connectera), puis réessayez.</value></data>
   <data name="Error_PullRequestApiFailed" xml:space="preserve"><value>La plateforme a refusé la demande : {0}</value></data>
   <data name="Error_PullRequestNotMerged" xml:space="preserve"><value>La pull request vers « {0} » n'est pas encore mergée.</value></data>

@@ -53,7 +53,9 @@ public sealed class GitFlowSettingsService(IGitRunner runner)
             ParseBool(values, GitFlowVsConfigKeys.FinishPush),
             ParseBool(values, GitFlowVsConfigKeys.FinishDeleteRemote),
             UsePullRequest: values.TryGetValue(GitFlowVsConfigKeys.FinishMode, out var mode) && mode.Trim().Equals("pullrequest", StringComparison.OrdinalIgnoreCase),
-            PruneOnComplete: ParseBool(values, GitFlowVsConfigKeys.PruneOnComplete));
+            PruneOnComplete: ParseBool(values, GitFlowVsConfigKeys.PruneOnComplete),
+            AzureDevOpsServer: values.TryGetValue(GitFlowVsConfigKeys.Platform, out var platform)
+                && platform.Trim().Equals(GitFlowVsConfigKeys.PlatformAzureDevOps, StringComparison.OrdinalIgnoreCase));
     }
 
     public async Task WriteFinishDefaultsAsync(string repositoryPath, FinishDefaults defaults, ConfigScope scope, CancellationToken ct = default)
@@ -64,6 +66,9 @@ public sealed class GitFlowSettingsService(IGitRunner runner)
         await git.RunCheckedAsync(ct, "config", flag, GitFlowVsConfigKeys.FinishDeleteRemote, defaults.DeleteRemoteBranch ? "true" : "false").ConfigureAwait(false);
         await git.RunCheckedAsync(ct, "config", flag, GitFlowVsConfigKeys.FinishMode, defaults.UsePullRequest ? "pullrequest" : "local").ConfigureAwait(false);
         await git.RunCheckedAsync(ct, "config", flag, GitFlowVsConfigKeys.PruneOnComplete, defaults.PruneOnComplete ? "true" : "false").ConfigureAwait(false);
+        await git.RunCheckedAsync(
+            ct, "config", flag, GitFlowVsConfigKeys.Platform,
+            defaults.AzureDevOpsServer ? GitFlowVsConfigKeys.PlatformAzureDevOps : GitFlowVsConfigKeys.PlatformAuto).ConfigureAwait(false);
     }
 
     /// <summary>

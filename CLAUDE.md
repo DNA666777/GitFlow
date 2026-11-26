@@ -151,6 +151,11 @@ Flow en mode PR :
 **Plateformes cibles (décision du 2026-11-24) : GitHub et Azure DevOps (Azure Repos)** — deux implémentations de `IPullRequestProvider`.
 - Détection d'après l'URL du remote `origin` : `github.com` → GitHub ; `dev.azure.com/{org}/{projet}/_git/{repo}` ou `{org}.visualstudio.com/…` → Azure DevOps.
   Remote non reconnu → mode PR indisponible, le Finish local reste utilisable.
+- **Azure DevOps Server d'entreprise (décision du 2026-11-26)** : URL non reconnaissables automatiquement → l'utilisateur coche
+  « origin est un serveur Azure DevOps » dans les paramètres (clé `gitflowvs.pr.platform` = `auto` | `azuredevops`, même portée que les autres options).
+  Toute URL `…/_git/{repo}` est alors acceptée : API appelée sur la partie avant `_git/` (en https si le remote est en ssh), `api-version=4.1` (TFS 2018+).
+  Authentification : identifiants git s'il y en a (PAT, Basic), sinon session Windows (NTLM/Kerberos, `HttpClient` dédié `UseDefaultCredentials`),
+  comme git lui-même sur ces serveurs.
 - API REST de chaque plateforme (GitHub REST API ; Azure DevOps `…/_apis/git/repositories/{repo}/pullrequests`).
 - **Authentification : via le Git Credential Manager** (`git credential fill` / `git credential approve|reject`, appelés par `IGitRunner`),
   c.-à-d. les identifiants que git utilise déjà pour push/fetch. **Pas de `gh` ni d'`az`**, aucun token stocké par l'extension

@@ -14,7 +14,7 @@ internal sealed class GitFlowSession : IDisposable
     {
         Output = output;
         var runner = new GitCliRunner(output);
-        PullRequests = new PullRequestService(runner, Http);
+        PullRequests = new PullRequestService(runner, Http, WindowsHttp);
         Flow = new FlowService(runner, pullRequestStrategy: new PullRequestStrategy(PullRequests));
         Commits = new CommitService(runner);
         Settings = new GitFlowSettingsService(runner);
@@ -22,6 +22,12 @@ internal sealed class GitFlowSession : IDisposable
 
     /// <summary>One HttpClient for the extension lifetime (GitHub / Azure DevOps REST APIs).</summary>
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(30) };
+
+    /// <summary>
+    /// Sends the Windows session's credentials (NTLM / Kerberos) when the server asks for them: only used for an
+    /// Azure DevOps Server for which git has no secret, like git itself inside a company network.
+    /// </summary>
+    private static readonly HttpClient WindowsHttp = new(new HttpClientHandler { UseDefaultCredentials = true }) { Timeout = TimeSpan.FromSeconds(30) };
 
     public PullRequestService PullRequests { get; }
 

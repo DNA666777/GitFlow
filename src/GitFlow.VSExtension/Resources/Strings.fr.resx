@@ -156,4 +156,6 @@ Si les conflits sont résolus et les fichiers ajoutés (git add), le finish repr
   <data name="StatusWorking" xml:space="preserve"><value>En cours…</value></data>
   <data name="StatusSucceeded" xml:space="preserve"><value>Terminé.</value></data>
   <data name="StatusSucceededWithWarnings" xml:space="preserve"><value>Terminé, avec des avertissements.</value></data>
+  <data name="SettingsAzureDevOpsServer" xml:space="preserve"><value>Pull Request : origin est un serveur Azure DevOps (URL d'entreprise)</value></data>
+  <data name="SettingsAzureDevOpsServerHint" xml:space="preserve"><value>Pour les URL non reconnues automatiquement, par exemple https://tfs.entreprise.com/tfs/Collection/Projet/_git/Repo. Sans identifiant git, votre compte Windows est utilisé.</value></data>
 </root>
