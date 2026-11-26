@@ -1,7 +1,6 @@
 {
   "description": "Standard Gitflow (feature, release, hotfix) without leaving VS Code: start, finish and push, local merge or Pull Request (GitHub, Azure DevOps), version tags. English and French.",
   "command.showOutput": "Show Log",
-  "command.showState": "Show Repository State",
   "command.restartServer": "Restart Server",
   "config.dotnetPath": "Path of the `dotnet` executable used to run GitFlow. Empty (default): the .NET 8 runtime is provided by the **.NET Install Tool** extension.",
   "command.init": "Initialize GitFlow...",
@@ -9,5 +8,11 @@
   "command.startRelease": "Start Release...",
   "command.startHotfix": "Start Hotfix...",
   "command.finish": "Finish Current Branch...",
-  "command.publish": "Push Current Branch"
+  "command.publish": "Push Current Branch",
+  "command.start": "Start a Branch...",
+  "command.refresh": "Refresh",
+  "welcome.loading": "Loading GitFlow…",
+  "welcome.noRepository": "No Git repository in the open folder.\n[Open Folder](command:vscode.openFolder)",
+  "welcome.notInitialized": "GitFlow is not initialized in this repository: it creates the develop branch and the standard git-flow configuration.\n[Initialize GitFlow](command:gitflow.init)",
+  "welcome.error": "GitFlow could not start. See the log for details.\n[Show Log](command:gitflow.showOutput)\n[Restart Server](command:gitflow.restartServer)"
 }

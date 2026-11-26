@@ -62,6 +62,17 @@ async function setup(): Promise<{ gitflow: GitFlowApi; ui: ScriptedUi; workspace
 suite('GitFlow commands (local merge)', () => {
   test('init creates develop after confirmation', async () => {
     const { gitflow, ui, git } = await setup();
+
+    // Independent of the order of the suites: back to a repository that was never initialized.
+    git('switch', 'master');
+    for (const args of [['branch', '-D', 'develop'], ['config', '--local', '--remove-section', 'gitflow.branch'], ['config', '--local', '--remove-section', 'gitflow.prefix']]) {
+      try {
+        git(...args);
+      } catch {
+        // nothing to remove
+      }
+    }
+
     ui.confirms = [true];
 
     const result = await gitflow.flow.init();

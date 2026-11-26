@@ -22,7 +22,7 @@ suite('GitFlow extension', () => {
   test('registers its commands', async () => {
     await api();
     const commands = await vscode.commands.getCommands(true);
-    for (const id of ['gitflow.showOutput', 'gitflow.showState', 'gitflow.restartServer']) {
+    for (const id of ['gitflow.showOutput', 'gitflow.restartServer', 'gitflow.init', 'gitflow.start', 'gitflow.startFeature', 'gitflow.finish', 'gitflow.publish', 'gitflow.refresh']) {
       assert.ok(commands.includes(id), id);
     }
   });
@@ -31,7 +31,8 @@ suite('GitFlow extension', () => {
     const gitflow = await api();
     await gitflow.server.start();
 
-    assert.ok(gitflow.server.info?.version, 'server version');
+    const packageVersion = (vscode.extensions.getExtension(EXTENSION_ID)!.packageJSON as { version: string }).version;
+    assert.strictEqual(gitflow.server.info?.version, packageVersion, 'the server is published with the version of the extension');
     const repository = await gitflow.findRepository();
     const workspace = vscode.workspace.workspaceFolders![0].uri.fsPath;
     // Windows: VS Code writes the drive letter in lower case (c:\), git in upper case (C:\).

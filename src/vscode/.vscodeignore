@@ -9,3 +9,4 @@ tsconfig.json
 **/*.pdb
 .gitignore
 .vscodeignore
+build-server.mjs

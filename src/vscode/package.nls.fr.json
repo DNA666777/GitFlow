@@ -1,7 +1,6 @@
 {
   "description": "Gitflow standard (feature, release, hotfix) sans quitter VS Code : démarrer, terminer et pousser, merge local ou Pull Request (GitHub, Azure DevOps), tags de version. Anglais et français.",
   "command.showOutput": "Afficher le journal",
-  "command.showState": "Afficher l'état du dépôt",
   "command.restartServer": "Redémarrer le serveur",
   "config.dotnetPath": "Chemin de l'exécutable `dotnet` utilisé pour faire tourner GitFlow. Vide (par défaut) : le runtime .NET 8 est fourni par l'extension **.NET Install Tool**.",
   "command.init": "Initialiser GitFlow...",
@@ -9,5 +8,11 @@
   "command.startRelease": "Démarrer une release...",
   "command.startHotfix": "Démarrer un hotfix...",
   "command.finish": "Terminer la branche actuelle...",
-  "command.publish": "Pousser la branche actuelle"
+  "command.publish": "Pousser la branche actuelle",
+  "command.start": "Démarrer une branche...",
+  "command.refresh": "Actualiser",
+  "welcome.loading": "Chargement de GitFlow…",
+  "welcome.noRepository": "Aucun dépôt Git dans le dossier ouvert.\n[Ouvrir un dossier](command:vscode.openFolder)",
+  "welcome.notInitialized": "GitFlow n'est pas initialisé dans ce dépôt : l'initialisation crée la branche develop et la configuration git-flow standard.\n[Initialiser GitFlow](command:gitflow.init)",
+  "welcome.error": "GitFlow n'a pas pu démarrer. Le détail est dans le journal.\n[Afficher le journal](command:gitflow.showOutput)\n[Redémarrer le serveur](command:gitflow.restartServer)"
 }
