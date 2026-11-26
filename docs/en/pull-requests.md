@@ -135,6 +135,15 @@ When **all** the PRs of a branch are merged, *Complete branch*:
 
 With an `ssh` remote, the extension still asks the Git Credential Manager for https credentials to call the API. Sign in once over https if needed.
 
+### Company Azure DevOps server
+
+The URLs of an Azure DevOps server installed in a company (Azure DevOps Server, formerly TFS) cannot be recognised automatically, for example `https://tfs.company.com/tfs/Collection/Project/_git/Repo`. In that case, check **"Pull Request: origin is an Azure DevOps server"** in the [settings](guide.md#9-settings).
+
+- The URL must contain `/_git/`: the API is called on the part before it (collection and project).
+- Authentication: the credentials git knows for this server (personal access token) if there are any, otherwise your Windows session, like git itself inside a company network.
+- REST API 4.1: works from TFS 2018 on.
+- With an ssh remote, the API is called over https on the same server.
+
 ---
 
 ← [Guide](guide.md) · [Reference and troubleshooting](reference.md) →

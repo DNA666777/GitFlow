@@ -158,4 +158,6 @@ If the conflicts are resolved and the files staged (git add), the finish will re
   <data name="StatusWorking" xml:space="preserve"><value>Working…</value></data>
   <data name="StatusSucceeded" xml:space="preserve"><value>Done.</value></data>
   <data name="StatusSucceededWithWarnings" xml:space="preserve"><value>Done, with warnings.</value></data>
+  <data name="SettingsAzureDevOpsServer" xml:space="preserve"><value>Pull Request: origin is an Azure DevOps server (company URL)</value></data>
+  <data name="SettingsAzureDevOpsServerHint" xml:space="preserve"><value>For URLs that are not recognised automatically, such as https://tfs.company.com/tfs/Collection/Project/_git/Repo. Without a git credential, your Windows account is used.</value></data>
 </root>

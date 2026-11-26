@@ -91,6 +91,7 @@
           <tr><td><code>gitflowvs.finish.deleteremote</code></td><td><code>false</code></td><td>Pré-coche « Supprimer aussi la branche sur origin »</td></tr>
           <tr><td><code>gitflowvs.pr.prune</code></td><td><code>false</code></td><td><em>Finaliser la branche</em> utilise <code>git fetch --prune</code></td></tr>
           <tr><td><code>gitflowvs.pr.ticketpattern</code></td><td>ABC-123 et #42</td><td>Expression régulière des références de tickets dans les PR</td></tr>
+          <tr><td><code>gitflowvs.pr.platform</code></td><td><code>auto</code></td><td><code>azuredevops</code> : origin est un serveur Azure DevOps d'entreprise (URL non reconnue automatiquement)</td></tr>
         </tbody>
       </table>
       <p>Les PR suivies sont mémorisées dans la config locale sous <code>gitflowvs-pr.&lt;branche&gt;.link</code>, et effacées quand la branche est finalisée.</p>
@@ -123,7 +124,7 @@ OK</code></pre>
       <p>La version suivante est calculée depuis le plus grand tag de version présent sur master. Tapez une autre version : un tag existant est refusé.</p>
 
       <h3>« Mode Pull Request indisponible »</h3>
-      <p>Le remote <code>origin</code> n'est ni GitHub ni Azure DevOps (un dossier local, GitLab, Bitbucket…) : utilisez le merge local. Vérifiez l'URL avec <code>git remote -v</code>.</p>
+      <p>Le remote <code>origin</code> n'est ni GitHub ni Azure DevOps (un dossier local, GitLab, Bitbucket…) : utilisez le merge local. Vérifiez l'URL avec <code>git remote -v</code>. Pour un serveur Azure DevOps d'entreprise, cochez l'option correspondante dans les paramètres (<a href="pull-requests.html#serveur">détails</a>).</p>
 
       <h3>« La plateforme a refusé la demande »</h3>
       <p>Le message de GitHub ou d'Azure DevOps est affiché tel quel : droits insuffisants, PR déjà existante, branche cible absente… Après correction, relancez <em>Terminer…</em> : une PR ouverte existante est réutilisée.</p>
@@ -136,7 +137,7 @@ OK</code></pre>
         <tbody>
           <tr><td>Visual Studio</td><td>2022 version 17.14 ou plus, 2026 (18.x). Éditions Community, Professional, Enterprise.</td></tr>
           <tr><td>Git</td><td>Git for Windows 2.28 ou plus (installé avec Visual Studio)</td></tr>
-          <tr><td>Plateformes (mode PR)</td><td>GitHub (github.com), Azure DevOps (dev.azure.com, *.visualstudio.com)</td></tr>
+          <tr><td>Plateformes (mode PR)</td><td>GitHub (github.com), Azure DevOps (dev.azure.com, *.visualstudio.com), Azure DevOps Server / TFS 2018 ou plus (à déclarer dans les paramètres)</td></tr>
           <tr><td>Langues</td><td>Anglais (par défaut) et français, selon la langue de Visual Studio. Les messages générés (commit, PR) suivent la même langue.</td></tr>
           <tr><td>Configuration</td><td>Compatible avec les clés <code>gitflow.*</code> de git-flow / git-flow-avh</td></tr>
         </tbody>

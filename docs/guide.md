@@ -233,6 +233,7 @@ Ouvrez-les par le bouton *Paramètres* de la fenêtre, ou par **Extensions > Git
 - **Préfixe de tag** : vide par défaut (tags `1.4.0`), ou `v` (tags `v1.4.0`).
 - **Validation en direct** : préfixe vide ou en double, production identique au développement. Les noms refusés par git sont signalés à l'enregistrement, et rien n'est écrit.
 - Changer un préfixe **ne renomme pas** les branches existantes : un avertissement les liste avant d'enregistrer.
+- **Serveur Azure DevOps d'entreprise** : si l'URL de origin n'est pas reconnue, cochez « origin est un serveur Azure DevOps » ([détails](pull-requests.md#serveur-azure-devops-dentreprise)).
 
 Toutes les clés sont décrites dans la [référence](reference.md#clés-de-configuration).
 

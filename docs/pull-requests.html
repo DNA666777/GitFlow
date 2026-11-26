@@ -153,6 +153,14 @@ ABC-12, #42</code></pre>
         </tbody>
       </table>
       <p>Avec un remote <code>ssh</code>, l'extension demande quand même des identifiants https au Git Credential Manager pour appeler l'API : connectez-vous une fois en https si besoin.</p>
+      <h3 id="serveur">Serveur Azure DevOps d'entreprise</h3>
+      <p>Les URL d'un serveur Azure DevOps installé dans l'entreprise (Azure DevOps Server, anciennement TFS) ne peuvent pas être reconnues automatiquement, par exemple <code>https://tfs.entreprise.com/tfs/Collection/Projet/_git/Repo</code>. Dans ce cas, cochez <strong>« Pull Request : origin est un serveur Azure DevOps »</strong> dans les <a href="guide.html#parametres">paramètres</a>.</p>
+      <ul>
+        <li>L'URL doit contenir <code>/_git/</code> : l'API est appelée sur la partie qui précède (collection et projet).</li>
+        <li>Authentification : les identifiants que git connaît pour ce serveur (jeton personnel) s'il y en a, sinon votre session Windows, comme git lui-même dans un réseau d'entreprise.</li>
+        <li>API REST 4.1 : compatible à partir de TFS 2018.</li>
+        <li>Avec un remote ssh, l'API est appelée en https sur le même serveur.</li>
+      </ul>
 
       <div class="next-prev">
         <a class="btn" href="guide.html">← Guide</a>

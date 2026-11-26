@@ -66,6 +66,7 @@ They are stored in the repository git config (`--local`) or the user git config 
 | `gitflowvs.finish.deleteremote` | `false` | Pre-checks "Also delete the branch on origin" |
 | `gitflowvs.pr.prune` | `false` | *Complete branch* uses `git fetch --prune` |
 | `gitflowvs.pr.ticketpattern` | ABC-123 and #42 | Regular expression for ticket references in PRs |
+| `gitflowvs.pr.platform` | `auto` | `azuredevops`: origin is a company Azure DevOps server (URL not recognised automatically) |
 
 Tracked PRs are stored in the local config, under `gitflowvs-pr.<branch>.link`. They are removed when the branch is completed.
 
@@ -115,7 +116,7 @@ The next version is computed from the highest version tag on master. Type anothe
 
 ### "Pull Request mode unavailable"
 
-The `origin` remote is neither GitHub nor Azure DevOps (a local folder, GitLab, Bitbucket…): use local merge. Check the URL with `git remote -v`.
+The `origin` remote is neither GitHub nor Azure DevOps (a local folder, GitLab, Bitbucket…): use local merge. Check the URL with `git remote -v`. For a company Azure DevOps server, check the matching option in the settings ([details](pull-requests.md#company-azure-devops-server)).
 
 ### "The platform rejected the request"
 
@@ -131,7 +132,7 @@ The PR was merged with *squash* or *rebase*: the branch commits are not in devel
 |---|---|
 | Visual Studio | 2022 version 17.14 or later, 2026 (18.x). Community, Professional, Enterprise editions. |
 | Git | Git for Windows 2.28 or later (installed with Visual Studio) |
-| Platforms (PR mode) | GitHub (github.com), Azure DevOps (dev.azure.com, *.visualstudio.com) |
+| Platforms (PR mode) | GitHub (github.com), Azure DevOps (dev.azure.com, *.visualstudio.com), Azure DevOps Server / TFS 2018 or later (declared in the settings) |
 | Languages | English (default) and French, following the Visual Studio language. Generated messages (commit, PR) use the same language. |
 | Configuration | Compatible with the `gitflow.*` keys of git-flow / git-flow-avh |
 

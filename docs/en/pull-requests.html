@@ -153,6 +153,14 @@ ABC-12, #42</code></pre>
         </tbody>
       </table>
       <p>With an <code>ssh</code> remote, the extension still asks the Git Credential Manager for https credentials to call the API: sign in once over https if needed.</p>
+      <h3 id="server">Company Azure DevOps server</h3>
+      <p>The URLs of an Azure DevOps server installed in a company (Azure DevOps Server, formerly TFS) cannot be recognised automatically, for example <code>https://tfs.company.com/tfs/Collection/Project/_git/Repo</code>. In that case, check <strong>"Pull Request: origin is an Azure DevOps server"</strong> in the <a href="guide.html#settings">settings</a>.</p>
+      <ul>
+        <li>The URL must contain <code>/_git/</code>: the API is called on the part before it (collection and project).</li>
+        <li>Authentication: the credentials git knows for this server (personal access token) if there are any, otherwise your Windows session, like git itself inside a company network.</li>
+        <li>REST API 4.1: works from TFS 2018 on.</li>
+        <li>With an ssh remote, the API is called over https on the same server.</li>
+      </ul>
 
       <div class="next-prev">
         <a class="btn" href="guide.html">← Guide</a>

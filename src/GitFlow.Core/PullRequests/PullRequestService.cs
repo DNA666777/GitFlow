@@ -22,7 +22,13 @@ public sealed class PullRequestService
     private readonly GitFlowConfigStore _configStore;
 
     public PullRequestService(IGitRunner runner, HttpClient http)
-        : this(runner, [new GitHubPullRequestProvider(http), new AzureDevOpsPullRequestProvider(http)])
+        : this(runner, http, null)
+    {
+    }
+
+    /// <param name="windowsHttp">Client sending the Windows credentials, for an Azure DevOps Server without a git secret.</param>
+    public PullRequestService(IGitRunner runner, HttpClient http, HttpClient? windowsHttp)
+        : this(runner, [new GitHubPullRequestProvider(http), new AzureDevOpsPullRequestProvider(http, windowsHttp)])
     {
     }
 
@@ -39,7 +45,15 @@ public sealed class PullRequestService
     {
         // The configured URL as written (url.*.insteadOf rewrites are not applied): it names the hosting platform.
         var result = await _runner.RunAsync(repositoryPath, ["config", "--get", $"remote.{Remote}.url"], ct).ConfigureAwait(false);
-        var remote = result.Success ? RemoteRepository.TryParse(result.StandardOutput.Trim()) : null;
+        if (!result.Success)
+        {
+            return null;
+        }
+
+        // Company servers have URLs that cannot be recognised: the user can declare origin as an Azure DevOps server.
+        var platform = await _runner.RunAsync(repositoryPath, ["config", "--get", GitFlowVsConfigKeys.Platform], ct).ConfigureAwait(false);
+        var declaredAzure = platform.Success && platform.StandardOutput.Trim().Equals(GitFlowVsConfigKeys.PlatformAzureDevOps, StringComparison.OrdinalIgnoreCase);
+        var remote = RemoteRepository.TryParse(result.StandardOutput.Trim(), declaredAzure);
         return remote is not null && _providers.ContainsKey(remote.Platform) ? remote : null;
     }
 
@@ -325,6 +339,13 @@ public sealed class PullRequestService
         }
 
         var credential = await _credentials.GetAsync(repositoryPath, remote, ct).ConfigureAwait(false);
+
+        // Azure DevOps Server: without a secret from git, git itself uses the Windows session (NTLM / Kerberos).
+        if (credential is null && remote.OnPremises)
+        {
+            credential = HostCredential.WindowsIntegrated;
+        }
+
         return credential is null
             ? (remote, null, null, FlowResult.Fail(FlowError.NoCredentials, remote.CredentialHost))
             : (remote, _providers[remote.Platform], credential, null);

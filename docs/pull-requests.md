@@ -135,6 +135,15 @@ Quand **toutes** les PR d'une branche sont mergées, *Finaliser la branche* :
 
 Avec un remote `ssh`, l'extension demande quand même des identifiants https au Git Credential Manager pour appeler l'API. Connectez-vous une fois en https si besoin.
 
+### Serveur Azure DevOps d'entreprise
+
+Les URL d'un serveur Azure DevOps installé dans l'entreprise (Azure DevOps Server, anciennement TFS) ne peuvent pas être reconnues automatiquement, par exemple `https://tfs.entreprise.com/tfs/Collection/Projet/_git/Repo`. Dans ce cas, cochez **« Pull Request : origin est un serveur Azure DevOps »** dans les [paramètres](guide.md#9-paramètres).
+
+- L'URL doit contenir `/_git/` : l'API est appelée sur la partie qui précède (collection et projet).
+- Authentification : les identifiants que git connaît pour ce serveur (jeton personnel) s'il y en a, sinon votre session Windows, comme git lui-même dans un réseau d'entreprise.
+- API REST 4.1 : compatible à partir de TFS 2018.
+- Avec un remote ssh, l'API est appelée en https sur le même serveur.
+
 ---
 
 ← [Guide](guide.md) · [Référence et dépannage](reference.md) →
