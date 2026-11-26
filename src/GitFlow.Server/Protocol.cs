@@ -158,6 +158,23 @@ public sealed record PullRequestDraftDto(string Source, string Target, string Ti
 /// <summary>Generated PR messages, or why the PRs cannot be opened (e.g. unrelated histories), checked before anything is pushed.</summary>
 public sealed record PreparePullRequestsResponse(IReadOnlyList<PullRequestDraftDto> Drafts, ResultDto? Error);
 
+public sealed record FileChangeDto(ChangeKind Kind, string Path, string? OldPath)
+{
+    public static FileChangeDto From(FileChange c) => new(c.Kind, c.Path, c.OldPath);
+}
+
+/// <summary>What a commit would contain now, with the message generated from git.</summary>
+/// <param name="BlockedMessage">Translated reason why committing is not possible now (master, merge in progress…), empty otherwise.</param>
+public sealed record CommitPreviewDto(CommitMode Mode, IReadOnlyList<FileChangeDto> Changes, string SuggestedMessage, bool IsBlocked, string BlockedMessage)
+{
+    public static CommitPreviewDto From(CommitPreview p) => new(
+        p.Mode,
+        p.Changes.Select(FileChangeDto.From).ToArray(),
+        p.SuggestedMessage,
+        p.BlockedBy != FlowError.None,
+        p.BlockedBy == FlowError.None ? string.Empty : FlowMessages.Describe(FlowResult.Fail(p.BlockedBy, p.BlockedDetail)));
+}
+
 /// <summary>A line of the git log (command, exit code, stderr), sent as the "log" notification.</summary>
 /// <param name="Level">"info" for an operation asked by the user, "trace" for a read done for display.</param>
 public sealed record LogNotification(string Line, string Level);

@@ -1,17 +1,17 @@
 import * as assert from 'node:assert';
 import * as vscode from 'vscode';
-import { isInsideGitFolder, type GitFlowApi } from '../extension';
-import { GitFlowView, REFRESH_DELAY_MS } from '../view';
+import { isInsideGitFolder } from '../extension';
+import { Refresher, REFRESH_DELAY_MS } from '../refresher';
 
 /** A view whose visibility the test controls. */
-function fakeTreeView(visible: boolean) {
-  const emitter = new vscode.EventEmitter<{ visible: boolean }>();
+function fakeView(visible: boolean) {
+  const emitter = new vscode.EventEmitter<void>();
   return {
     visible,
     onDidChangeVisibility: emitter.event,
     show(value: boolean) {
       this.visible = value;
-      emitter.fire({ visible: value });
+      emitter.fire();
     },
   };
 }
@@ -19,42 +19,47 @@ function fakeTreeView(visible: boolean) {
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 suite('Refresh and log (4b)', () => {
-  async function newView(): Promise<{ view: GitFlowView; refreshes: () => number }> {
-    const gitflow = await vscode.extensions.getExtension<GitFlowApi>('DNA666777.gitflow-vscode')!.activate();
-    const view = new GitFlowView(gitflow.server, gitflow.findRepository, vscode.window.createOutputChannel('GitFlow test', { log: true }));
-    let count = 0;
-    view.onDidChangeTreeData(() => count++);
-    return { view, refreshes: () => count };
-  }
-
   test('a burst of events gives a single refresh', async () => {
-    const { view, refreshes } = await newView();
-    view.attach(fakeTreeView(true));
+    let refreshes = 0;
+    const refresher = new Refresher(() => refreshes++);
+    refresher.attach(fakeView(true));
 
     for (let i = 0; i < 5; i++) {
-      view.refresh(true);
+      refresher.refresh(true);
       await wait(50);
     }
 
-    assert.strictEqual(refreshes(), 0, 'nothing before the quiet time');
+    assert.strictEqual(refreshes, 0, 'nothing before the quiet time');
     await wait(REFRESH_DELAY_MS + 200);
-    assert.strictEqual(refreshes(), 1);
-    view.dispose();
+    assert.strictEqual(refreshes, 1);
+    refresher.dispose();
+  });
+
+  test('the Refresh button is immediate', () => {
+    let refreshes = 0;
+    const refresher = new Refresher(() => refreshes++);
+    refresher.attach(fakeView(true));
+
+    refresher.refresh();
+
+    assert.strictEqual(refreshes, 1);
+    refresher.dispose();
   });
 
   test('a hidden view is refreshed once when it shows again', async () => {
-    const { view, refreshes } = await newView();
-    const tree = fakeTreeView(false);
-    view.attach(tree);
+    let refreshes = 0;
+    const refresher = new Refresher(() => refreshes++);
+    const view = fakeView(false);
+    refresher.attach(view);
 
-    view.refresh(true);
-    view.refresh();
+    refresher.refresh(true);
+    refresher.refresh();
     await wait(REFRESH_DELAY_MS + 200);
-    assert.strictEqual(refreshes(), 0, 'no git command while hidden');
+    assert.strictEqual(refreshes, 0, 'no git command while hidden');
 
-    tree.show(true);
-    assert.strictEqual(refreshes(), 1);
-    view.dispose();
+    view.show(true);
+    assert.strictEqual(refreshes, 1);
+    refresher.dispose();
   });
 
   test('files inside .git are not used to find the repository', () => {

@@ -17,7 +17,7 @@ export class FlowCommands {
     private readonly findRepository: () => Promise<string | undefined>,
     private readonly output: vscode.OutputChannel,
     public ui: Ui,
-    private readonly onChanged: () => void = () => undefined,
+    private readonly onChanged: (result: Result) => void = () => undefined,
   ) {}
 
   /** Creates develop if needed and writes the git-flow configuration (existing keys, global defaults or standard names). */
@@ -147,6 +147,39 @@ export class FlowCommands {
     });
   }
 
+  /**
+   * Commit from the GitFlow panel with the user's message (staged files only when something is staged).
+   * No message on success, like the GitFlow window of Visual Studio: the panel shows the new state.
+   */
+  commit(message: string): Promise<Result | undefined> {
+    return this.exclusive(async repository => {
+      const result = await this.run(t('GitFlow: committing'), () => this.server.request<Result>('commit', { repository, message }));
+      if (!result.success) {
+        await this.show(result, '');
+      }
+
+      return result;
+    });
+  }
+
+  /** Pull Request mode, release/hotfix: tags the merge commit of the PR to production and pushes the tag. */
+  tagPullRequest(branch: string): Promise<Result | undefined> {
+    return this.exclusive(async repository => {
+      const result = await this.run(t('GitFlow: tagging {0}', branch), () => this.server.request<Result>('tagPullRequest', { repository, branch }));
+      await this.show(result, t('Tag "{0}" created on the merge commit and pushed to origin.', result.tagName ?? ''));
+      return result;
+    });
+  }
+
+  /** Pull Request mode: all PRs merged, updates the local targets and deletes the local branch. */
+  completePullRequests(branch: string): Promise<Result | undefined> {
+    return this.exclusive(async repository => {
+      const result = await this.run(t('GitFlow: completing {0}', branch), () => this.server.request<Result>('completePullRequests', { repository, branch }));
+      await this.show(result, t('"{0}" is complete: its pull requests are merged and the local branch is deleted.', branch));
+      return result;
+    });
+  }
+
   /** git push -u origin <branch> (none: the current branch). */
   publish(branch?: string): Promise<Result | undefined> {
     return this.exclusive(async repository => {
@@ -191,7 +224,7 @@ export class FlowCommands {
     this.output.appendLine(`=== ${title} ===`);
     const result = await this.ui.progress(title, operation);
     this.output.appendLine(result.success ? 'OK' : result.message);
-    this.onChanged();
+    this.onChanged(result);
     return result;
   }
 

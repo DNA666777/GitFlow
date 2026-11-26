@@ -2,7 +2,7 @@
   "name": "gitflow-vscode",
   "displayName": "GitFlow",
   "description": "%description%",
-  "version": "1.8.2",
+  "version": "1.8.3",
   "publisher": "DNA666777",
   "license": "MIT",
   "icon": "resources/icon.png",
@@ -106,45 +106,18 @@
     "views": {
       "scm": [
         {
+          "type": "webview",
           "id": "gitflow.branches",
-          "name": "GitFlow",
-          "icon": "resources/icon.png"
+          "name": "GitFlow"
         }
       ]
     },
-    "viewsWelcome": [
-      {
-        "view": "gitflow.branches",
-        "contents": "%welcome.loading%",
-        "when": "!gitflow.state || gitflow.state == loading"
-      },
-      {
-        "view": "gitflow.branches",
-        "contents": "%welcome.noRepository%",
-        "when": "gitflow.state == noRepository"
-      },
-      {
-        "view": "gitflow.branches",
-        "contents": "%welcome.notInitialized%",
-        "when": "gitflow.state == notInitialized"
-      },
-      {
-        "view": "gitflow.branches",
-        "contents": "%welcome.error%",
-        "when": "gitflow.state == error"
-      }
-    ],
     "menus": {
       "view/title": [
         {
-          "command": "gitflow.start",
-          "when": "view == gitflow.branches && gitflow.state == ready",
-          "group": "navigation@1"
-        },
-        {
           "command": "gitflow.refresh",
           "when": "view == gitflow.branches",
-          "group": "navigation@2"
+          "group": "navigation@1"
         },
         {
           "command": "gitflow.startFeature",
@@ -166,41 +139,13 @@
           "when": "view == gitflow.branches",
           "group": "9_log"
         }
-      ],
-      "view/item/context": [
-        {
-          "command": "gitflow.publish",
-          "when": "view == gitflow.branches && viewItem == gitflow.branch",
-          "group": "inline@1"
-        },
-        {
-          "command": "gitflow.finish",
-          "when": "view == gitflow.branches && viewItem == gitflow.branch",
-          "group": "inline@2"
-        },
-        {
-          "command": "gitflow.publish",
-          "when": "view == gitflow.branches && viewItem == gitflow.branch",
-          "group": "1_flow@1"
-        },
-        {
-          "command": "gitflow.finish",
-          "when": "view == gitflow.branches && viewItem =~ /^gitflow\\.(branch|resume)$/",
-          "group": "1_flow@2"
-        }
-      ],
-      "commandPalette": [
-        {
-          "command": "gitflow.start",
-          "when": "false"
-        }
       ]
     }
   },
   "scripts": {
     "build:server": "node build-server.mjs",
     "compile": "tsc -p . --noEmit && node esbuild.mjs",
-    "compile-tests": "tsc -p . --outDir out",
+    "compile-tests": "node -e \"require('fs').rmSync('out', { recursive: true, force: true })\" && tsc -p . --outDir out",
     "build": "npm run build:server && npm run compile",
     "pretest": "npm run build && npm run compile-tests",
     "test": "vscode-test",

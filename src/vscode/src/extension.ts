@@ -3,8 +3,8 @@ import * as vscode from 'vscode';
 import { FlowCommands } from './flow';
 import { BranchType } from './protocol';
 import { GitFlowServer } from './server';
+import { GitFlowPanel } from './panel';
 import { VsCodeUi } from './ui';
-import { branchOf, GitFlowView } from './view';
 
 const t = vscode.l10n.t;
 
@@ -12,7 +12,7 @@ const t = vscode.l10n.t;
 export interface GitFlowApi {
   server: GitFlowServer;
   flow: FlowCommands;
-  view: GitFlowView;
+  panel: GitFlowPanel;
   findRepository(): Promise<string | undefined>;
 }
 
@@ -20,11 +20,10 @@ export function activate(context: vscode.ExtensionContext): GitFlowApi {
   const output = vscode.window.createOutputChannel('GitFlow', { log: true });
   const server = new GitFlowServer(context.asAbsolutePath(path.join('server', 'GitFlow.Server.dll')), output);
   const find = () => findRepository(server);
-  const view = new GitFlowView(server, find, output);
-  const flow = new FlowCommands(server, find, output, new VsCodeUi(), () => view.refresh(true));
-  const tree = vscode.window.createTreeView('gitflow.branches', { treeDataProvider: view });
-  view.attach(tree);
-  context.subscriptions.push(output, server, view, tree);
+  let panel: GitFlowPanel | undefined;
+  const flow = new FlowCommands(server, find, output, new VsCodeUi(), result => panel?.onResult(result));
+  panel = new GitFlowPanel(context.extensionUri, server, flow, find, output);
+  context.subscriptions.push(output, server, panel, vscode.window.registerWebviewViewProvider('gitflow.branches', panel));
 
   context.subscriptions.push(
     vscode.commands.registerCommand('gitflow.init', () => flow.init()),
@@ -32,14 +31,14 @@ export function activate(context: vscode.ExtensionContext): GitFlowApi {
     vscode.commands.registerCommand('gitflow.startFeature', (name?: unknown) => flow.start('feature', typeof name === 'string' ? name : undefined)),
     vscode.commands.registerCommand('gitflow.startRelease', (name?: unknown) => flow.start('release', typeof name === 'string' ? name : undefined)),
     vscode.commands.registerCommand('gitflow.startHotfix', (name?: unknown) => flow.start('hotfix', typeof name === 'string' ? name : undefined)),
-    vscode.commands.registerCommand('gitflow.finish', (branch?: unknown) => flow.finish(branchOf(branch))),
-    vscode.commands.registerCommand('gitflow.publish', (branch?: unknown) => flow.publish(branchOf(branch))),
-    vscode.commands.registerCommand('gitflow.refresh', () => view.refresh()),
+    vscode.commands.registerCommand('gitflow.finish', (branch?: unknown) => flow.finish(typeof branch === 'string' ? branch : undefined)),
+    vscode.commands.registerCommand('gitflow.publish', (branch?: unknown) => flow.publish(typeof branch === 'string' ? branch : undefined)),
+    vscode.commands.registerCommand('gitflow.refresh', () => panel?.refresher.refresh()),
     vscode.commands.registerCommand('gitflow.showOutput', () => output.show(true)),
     vscode.commands.registerCommand('gitflow.restartServer', async () => {
       try {
         await server.restart();
-        view.refresh();
+        panel?.refresher.refresh();
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         output.error(message);
@@ -48,8 +47,8 @@ export function activate(context: vscode.ExtensionContext): GitFlowApi {
     }),
   );
 
-  watchRepository(context, view);
-  return { server, flow, view, findRepository: find };
+  watchRepository(context, panel);
+  return { server, flow, panel, findRepository: find };
 }
 
 export function deactivate(): void {
@@ -77,8 +76,8 @@ interface GitApi {
  * Keeps the view up to date: changes seen by VS Code's git extension (branch, commits, index, merge),
  * saved files, another active editor (another repository), back to the window.
  */
-function watchRepository(context: vscode.ExtensionContext, view: GitFlowView): void {
-  const later = () => view.refresh(true);
+function watchRepository(context: vscode.ExtensionContext, panel: GitFlowPanel): void {
+  const later = () => panel.refresher.refresh(true);
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument(later),
     vscode.window.onDidChangeActiveTextEditor(later),

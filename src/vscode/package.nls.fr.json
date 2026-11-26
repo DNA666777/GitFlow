@@ -10,9 +10,5 @@
   "command.finish": "Terminer la branche actuelle...",
   "command.publish": "Pousser la branche actuelle",
   "command.start": "Démarrer une branche...",
-  "command.refresh": "Actualiser",
-  "welcome.loading": "Chargement de GitFlow…",
-  "welcome.noRepository": "Aucun dépôt Git dans le dossier ouvert.\n[Ouvrir un dossier](command:vscode.openFolder)",
-  "welcome.notInitialized": "GitFlow n'est pas initialisé dans ce dépôt : l'initialisation crée la branche develop et la configuration git-flow standard.\n[Initialiser GitFlow](command:gitflow.init)",
-  "welcome.error": "GitFlow n'a pas pu démarrer. Le détail est dans le journal.\n[Afficher le journal](command:gitflow.showOutput)\n[Redémarrer le serveur](command:gitflow.restartServer)"
+  "command.refresh": "Actualiser"
 }

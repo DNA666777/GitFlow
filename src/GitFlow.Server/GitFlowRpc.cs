@@ -175,6 +175,18 @@ public sealed class GitFlowRpc
     public Task<ResultDto> PublishAsync(string repository, string? branch, CancellationToken ct) =>
         RunAsync(async () => ResultDto.From(await _flow.PublishAsync(repository, branch, ct).ConfigureAwait(false)), ct);
 
+    // ---------- Commit ----------
+
+    /// <summary>Changes that a commit would contain now (staged files only when something is staged) and the generated message.</summary>
+    [JsonRpcMethod("getCommitPreview")]
+    public Task<CommitPreviewDto?> GetCommitPreviewAsync(string repository, CancellationToken ct) =>
+        ReadAsync(async () => await _commits.GetPreviewAsync(repository, ct).ConfigureAwait(false) is { } p ? CommitPreviewDto.From(p) : null, ct);
+
+    /// <summary>Commit with the user's message; refused on the production branch and while a merge is in progress.</summary>
+    [JsonRpcMethod("commit")]
+    public Task<ResultDto> CommitAsync(string repository, string message, CancellationToken ct) =>
+        RunAsync(async () => ResultDto.From(await _commits.CommitAsync(repository, message, ct).ConfigureAwait(false)), ct);
+
     // ---------- Pull requests ----------
 
     /// <param name="refresh">Read the states on the platform (network); otherwise only the tracked links.</param>

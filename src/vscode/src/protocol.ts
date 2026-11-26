@@ -127,3 +127,21 @@ export interface PreparePullRequestsResponse {
   drafts: PullRequestDraft[];
   error: Result | null;
 }
+
+export type ChangeKind = 'added' | 'modified' | 'deleted' | 'renamed' | 'conflicted';
+export type CommitMode = 'stagedOnly' | 'allChanges';
+
+export interface FileChange {
+  kind: ChangeKind;
+  path: string;
+  oldPath: string | null;
+}
+
+/** What a commit would contain now, with the message generated from git. */
+export interface CommitPreview {
+  mode: CommitMode;
+  changes: FileChange[];
+  suggestedMessage: string;
+  isBlocked: boolean;
+  blockedMessage: string;
+}

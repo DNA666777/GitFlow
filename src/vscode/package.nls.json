@@ -10,9 +10,5 @@
   "command.finish": "Finish Current Branch...",
   "command.publish": "Push Current Branch",
   "command.start": "Start a Branch...",
-  "command.refresh": "Refresh",
-  "welcome.loading": "Loading GitFlow…",
-  "welcome.noRepository": "No Git repository in the open folder.\n[Open Folder](command:vscode.openFolder)",
-  "welcome.notInitialized": "GitFlow is not initialized in this repository: it creates the develop branch and the standard git-flow configuration.\n[Initialize GitFlow](command:gitflow.init)",
-  "welcome.error": "GitFlow could not start. See the log for details.\n[Show Log](command:gitflow.showOutput)\n[Restart Server](command:gitflow.restartServer)"
+  "command.refresh": "Refresh"
 }

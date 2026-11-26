@@ -268,7 +268,8 @@ Info, lectures de rafraîchissement au niveau Trace — toujours journalisées, 
 si la vue est visible et regroupé (~1 s), fichiers de `.git` ignorés pour trouver le dépôt (fait ; niveau envoyé par le serveur
 dans la notification `log` : `trace` pour les lectures d'affichage, `info` pour les opérations),
 (4c) **interface identique à Visual Studio** : webview « GitFlow » (état, Commit, Démarrer une branche, Branches en cours,
-Pull requests) remplaçant la TreeView ; serveur : méthodes `getCommitPreview` / `commit` (CommitService du Core),
+Pull requests) remplaçant la TreeView ; serveur : méthodes `getCommitPreview` / `commit` (CommitService du Core) (fait ;
+`panel.ts` construit le modèle — données du serveur + textes traduits —, `media/panel.js` ne fait qu'afficher et renvoyer les clics),
 (5) paramètres, (6) mode Pull Request,
 (7) traduction, doc FR/EN, CI et publication sur le Marketplace VS Code, (8) plus tard : Open VSX.
 
