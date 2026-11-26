@@ -44,6 +44,9 @@ jobs:
       - name: Tests d'intégration (vrais dépôts git)
         run: dotnet test tests/GitFlow.Core.IntegrationTests -c Release --no-build -nologo --logger trx --results-directory TestResults
 
+      - name: Tests du serveur VS Code
+        run: dotnet test tests/GitFlow.Server.Tests -c Release --no-build -nologo --logger trx --results-directory TestResults
+
       - name: Résultats des tests
         if: failure()
         uses: actions/upload-artifact@v4

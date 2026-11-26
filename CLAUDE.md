@@ -241,8 +241,22 @@ tests/GitFlow.Server.Tests/  # NOUVEAU — chaque méthode JSON-RPC testée sur 
 - Tests : `GitFlow.Server.Tests` (xUnit, protocole JSON-RPC de bout en bout) + quelques tests d'intégration de l'extension VS Code
   (activation, commandes enregistrées) lancés par `@vscode/test-cli`. Le Core reste couvert par ses tests actuels.
 
+### Protocole de `GitFlow.Server` (étape 1, faite le 2026-11-26)
+- JSON-RPC 2.0 sur stdin/stdout, en-têtes `Content-Length` (cadrage de `vscode-jsonrpc`), JSON camelCase, enums en chaînes camelCase
+  (`RpcHost.JsonOptions`). stdout ne porte que le protocole ; diagnostics sur stderr ; fermer stdin arrête le serveur.
+- Méthodes (paramètres nommés) : `initialize(culture)`, `findRepository(path)`, `getState(repository)`, `getSettings(repository, scope)`,
+  `getLocalBranches`, `getSettingsWarnings(repository, proposed)`, `saveSettings(repository, settings, scope)`, `init(repository, settings)`,
+  `suggestVersion(repository, type)`, `countUnreleasedCommits`, `start(repository, type, name)`, `prepareFinish(repository, branch?)`,
+  `finish(repository, branch, tagMessage?, pushAfterFinish, deleteRemoteBranch)`, `preparePullRequests(repository, branch)`,
+  `finishWithPullRequests(repository, branch, tagMessage?, drafts)`, `publish(repository, branch?)`, `getPullRequests(repository, refresh)`,
+  `tagPullRequest(repository, branch)`, `completePullRequests(repository, branch)`. Notification serveur → client : `log(line)`.
+- Les échecs attendus reviennent en `ResultDto` (`success`, `error`, `message` déjà traduit, `warnings`, `conflictedFiles`, `pullRequests`),
+  jamais en erreur JSON-RPC. Les opérations s'exécutent une à la fois.
+- Logique partagée avec VS déplacée dans le Core : `FinishPlanner` (contexte du Finish) et `PullRequestService.GetGroupsAsync`
+  (actions Créer le tag / Finaliser). `FlowUi` de l'extension VS pourra s'appuyer dessus plus tard.
+
 ### Étapes (une fois validé)
-(1) `GitFlow.Server` + tests, (2) squelette de l'extension VS Code (activation, runtime, connexion, Output Channel),
+(1) `GitFlow.Server` + tests (fait), (2) squelette de l'extension VS Code (activation, runtime, connexion, Output Channel),
 (3) commandes Start/Finish/Push en merge local, (4) vue Source Control, (5) paramètres, (6) mode Pull Request,
 (7) traduction, doc FR/EN, CI et publication sur le Marketplace VS Code, (8) plus tard : Open VSX.
 
@@ -294,6 +308,7 @@ dotnet build GitFlowVS.sln -c Debug
 # Tests (intégration : plusieurs minutes, vrais dépôts git dans %TEMP%\gitflow-tests)
 dotnet test tests/GitFlow.Core.Tests
 dotnet test tests/GitFlow.Core.IntegrationTests
+dotnet test tests/GitFlow.Server.Tests          # serveur JSON-RPC de l'extension VS Code (vrais dépôts + vrai processus)
 
 # Test manuel — le F5 ne charge PAS l'extension pour l'instant (à investiguer).
 # Contournement : incrémenter <Version> dans GitFlow.VSExtension.csproj, rebuild, puis installer le .vsix

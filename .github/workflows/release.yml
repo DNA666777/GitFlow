@@ -64,6 +64,9 @@ jobs:
       - name: Tests d'intégration
         run: dotnet test tests/GitFlow.Core.IntegrationTests -c Release --no-build -nologo
 
+      - name: Tests du serveur VS Code
+        run: dotnet test tests/GitFlow.Server.Tests -c Release --no-build -nologo
+
       - name: Vérifier la version du paquet
         id: package
         shell: pwsh
