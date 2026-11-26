@@ -1,0 +1,12 @@
+src/**
+out/**
+node_modules/**
+.vscode-test/**
+.vscode-test.mjs
+esbuild.mjs
+tsconfig.json
+**/*.map
+**/*.pdb
+.gitignore
+.vscodeignore
+build-server.mjs

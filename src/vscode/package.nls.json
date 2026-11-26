@@ -1,0 +1,15 @@
+{
+  "description": "Standard Gitflow (feature, release, hotfix) without leaving VS Code: start, finish and push, local merge or Pull Request (GitHub, Azure DevOps), version tags. English and French.",
+  "command.showOutput": "Show Log",
+  "command.restartServer": "Restart Server",
+  "config.dotnetPath": "Path of the `dotnet` executable used to run GitFlow. Empty (default): the .NET 8 runtime is provided by the **.NET Install Tool** extension.",
+  "command.init": "Initialize GitFlow...",
+  "command.startFeature": "Start Feature...",
+  "command.startRelease": "Start Release...",
+  "command.startHotfix": "Start Hotfix...",
+  "command.finish": "Finish Current Branch...",
+  "command.publish": "Push Current Branch",
+  "command.start": "Start a Branch...",
+  "command.refresh": "Refresh",
+  "command.settings": "GitFlow Settings..."
+}

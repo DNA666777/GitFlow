@@ -1,6 +1,6 @@
 # Pull Request mode
 
-[Home](README.md) · [Guide](guide.md) · **Pull Request mode** · [Reference and troubleshooting](reference.md) · [Français](../pull-requests.md)
+[Home](README.md) · [Guide](guide.md) · **Pull Request mode** · [Reference and troubleshooting](reference.md) · [VS Code](vscode.md) · [Français](../pull-requests.md)
 
 Pull Request mode is a Finish option for repositories where `master` and `develop` are protected. Instead of merging locally, the extension pushes the branch and opens the pull requests. Review and merge stay in human hands.
 

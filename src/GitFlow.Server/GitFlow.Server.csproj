@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>GitFlow.Server</RootNamespace>
+    <AssemblyName>GitFlow.Server</AssemblyName>
+    <!-- Runs on the .NET 8 runtime provided by the VS Code ".NET Install Tool" (framework-dependent, any OS). -->
+    <RollForward>LatestMajor</RollForward>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <!-- Launched by "dotnet GitFlow.Server.dll" on every OS: no native launcher, only the languages of GitFlow. -->
+    <UseAppHost>false</UseAppHost>
+    <SatelliteResourceLanguages>en;fr</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GitFlow.Core\GitFlow.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="GitFlow.Server.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="StreamJsonRpc" Version="2.26.150" />
+  </ItemGroup>
+
+</Project>

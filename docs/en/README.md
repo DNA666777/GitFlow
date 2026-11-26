@@ -14,6 +14,7 @@ By default, branches are merged locally. If your branches are protected, you can
 | [User guide](guide.md) | Installation, GitFlow window, features, releases, hotfixes, commit, conflicts, settings |
 | [Pull Request mode](pull-requests.md) | Finishing through PRs on GitHub / Azure DevOps, tracking, tag after merge, completing the branch |
 | [Reference and troubleshooting](reference.md) | Rules, configuration keys, git commands, common problems |
+| [GitFlow for VS Code](vscode.md) | The same extension in Visual Studio Code: installation, panel, commands |
 
 > This tutorial is also available as a small website: open [`index.html`](index.html) in a browser.
 

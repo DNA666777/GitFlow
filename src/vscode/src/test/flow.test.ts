@@ -1,0 +1,263 @@
+import * as assert from 'node:assert';
+import { execFileSync } from 'node:child_process';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import * as vscode from 'vscode';
+import type { GitFlowApi } from '../extension';
+import type { PullRequestDraft, Settings } from '../protocol';
+import type { Option, PullRequestReview, Ui } from '../ui';
+
+/** Scripted answers instead of dialogs; records everything shown. */
+export class ScriptedUi implements Ui {
+  confirms: boolean[] = [];
+  inputs: ((prompt: string, value: string) => string | undefined)[] = [];
+  picks: ((options: Option[]) => string[] | undefined)[] = [];
+  modes: ((options: Option[]) => string | undefined)[] = [];
+  reviews: ((drafts: PullRequestDraft[]) => PullRequestDraft[] | undefined)[] = [];
+  readonly shown: { kind: 'info' | 'error' | 'confirm' | 'input'; text: string; detail?: string }[] = [];
+
+  async input(prompt: string, value: string): Promise<string | undefined> {
+    this.shown.push({ kind: 'input', text: prompt });
+    const answer = this.inputs.shift();
+    assert.ok(answer, `unexpected input: ${prompt}`);
+    return answer(prompt, value);
+  }
+
+  async confirm(message: string, detail: string): Promise<boolean> {
+    this.shown.push({ kind: 'confirm', text: message, detail });
+    const answer = this.confirms.shift();
+    assert.ok(answer !== undefined, `unexpected confirmation: ${message}`);
+    return answer;
+  }
+
+  async pickOne(_title: string, options: Option[]): Promise<string | undefined> {
+    const answer = this.modes.shift();
+    assert.ok(answer, 'unexpected choice: ' + options.map(o => o.id).join(', '));
+    return answer(options);
+  }
+
+  async reviewPullRequests(_texts: PullRequestReview, drafts: PullRequestDraft[]): Promise<PullRequestDraft[] | undefined> {
+    const answer = this.reviews.shift();
+    assert.ok(answer, 'unexpected review');
+    return answer(drafts);
+  }
+
+  async pickMany(_title: string, options: Option[]): Promise<string[] | undefined> {
+    const answer = this.picks.shift();
+    assert.ok(answer, 'unexpected options');
+    return answer(options);
+  }
+
+  async info(message: string, detail?: string): Promise<void> {
+    this.shown.push({ kind: 'info', text: message, detail });
+  }
+
+  async error(message: string, detail?: string): Promise<void> {
+    this.shown.push({ kind: 'error', text: message, detail });
+  }
+
+  progress<T>(_title: string, task: () => Promise<T>): Promise<T> {
+    return task();
+  }
+
+  last(): { kind: string; text: string; detail?: string } {
+    return this.shown[this.shown.length - 1];
+  }
+}
+
+async function setup(): Promise<{ gitflow: GitFlowApi; ui: ScriptedUi; workspace: string; git: (...args: string[]) => string }> {
+  const gitflow = await vscode.extensions.getExtension<GitFlowApi>('DNA666777.gitflow-vscode')!.activate();
+  const ui = new ScriptedUi();
+  gitflow.flow.ui = ui;
+  const workspace = vscode.workspace.workspaceFolders![0].uri.fsPath;
+  const git = (...args: string[]) => execFileSync('git', args, { cwd: workspace, encoding: 'utf8' }).trim();
+  return { gitflow, ui, workspace, git };
+}
+
+suite('GitFlow commands (local merge)', () => {
+  test('the settings screen of an uninitialized repository initializes it', async () => {
+    const { gitflow, ui, git } = await setup();
+
+    // Independent of the order of the suites: back to a repository that was never initialized.
+    git('switch', 'master');
+    for (const args of [['branch', '-D', 'develop'], ['config', '--local', '--remove-section', 'gitflow.branch'], ['config', '--local', '--remove-section', 'gitflow.prefix']]) {
+      try {
+        git(...args);
+      } catch {
+        // nothing to remove
+      }
+    }
+
+    const repository = (await gitflow.findRepository())!;
+    const settings = await gitflow.server.request<Settings>('getSettings', { repository, scope: 'local' });
+    const result = await gitflow.flow.saveSettings(settings, 'local');
+
+    assert.strictEqual(settings.naming.masterBranch, 'master', 'standard names proposed');
+    assert.ok(result?.success, result?.message);
+    assert.match(git('branch', '--list', 'develop'), /develop/);
+    assert.match(ui.last().text, /GitFlow is initialized/);
+  });
+
+  test('settings: renaming a prefix still used asks for confirmation', async () => {
+    const { gitflow, ui, git } = await setup();
+    git('branch', 'feature/old-prefix', 'develop');
+    try {
+      const repository = (await gitflow.findRepository())!;
+      const settings = await gitflow.server.request<Settings>('getSettings', { repository, scope: 'local' });
+      const renamed = { ...settings, naming: { ...settings.naming, featurePrefix: 'feat/' } };
+
+      ui.confirms = [false];
+      const cancelled = await gitflow.flow.saveSettings(renamed, 'local');
+      assert.strictEqual(cancelled, undefined);
+      assert.match(ui.last().detail ?? '', /feature\/old-prefix/);
+      assert.strictEqual(git('config', '--local', 'gitflow.prefix.feature'), 'feature/');
+
+      ui.confirms = [true];
+      const saved = await gitflow.flow.saveSettings(renamed, 'local');
+      assert.ok(saved?.success, saved?.message);
+      assert.strictEqual(git('config', '--local', 'gitflow.prefix.feature'), 'feat/');
+
+      assert.ok((await gitflow.flow.saveSettings(settings, 'local'))?.success, 'back to feature/');
+    } finally {
+      git('branch', '-D', 'feature/old-prefix');
+    }
+  });
+
+  test('settings: invalid names are refused with the reasons', async () => {
+    const { gitflow, ui } = await setup();
+    const repository = (await gitflow.findRepository())!;
+    const settings = await gitflow.server.request<Settings>('getSettings', { repository, scope: 'local' });
+
+    const errors = await gitflow.server.request<string[]>('validateNaming', { repository, naming: { ...settings.naming, developBranch: 'master', featurePrefix: '' } });
+    const result = await gitflow.flow.saveSettings({ ...settings, naming: { ...settings.naming, developBranch: 'master' } }, 'local');
+
+    assert.strictEqual(errors.length, 2);
+    assert.strictEqual(result?.success, false);
+    assert.strictEqual(ui.last().kind, 'error');
+  });
+
+  test('feature: start, commit, finish', async () => {
+    const { gitflow, ui, workspace, git } = await setup();
+    ui.inputs = [() => 'login'];
+
+    const started = await gitflow.flow.start('feature');
+    fs.writeFileSync(path.join(workspace, 'login.txt'), 'login\n');
+    git('add', 'login.txt');
+    git('commit', '-m', 'Add login');
+    ui.confirms = [true];
+    const finished = await gitflow.flow.finish();
+
+    assert.ok(started?.success, started?.message);
+    assert.strictEqual(started.branchName, 'feature/login');
+    assert.ok(finished?.success, finished?.message);
+    assert.strictEqual(finished.branchName, 'develop');
+    assert.match(ui.shown.find(s => s.kind === 'confirm')?.detail ?? '', /merge --no-ff into develop/);
+    assert.strictEqual(git('branch', '--list', 'feature/login'), '');
+  });
+
+  test('release: suggested version, tag message, tag created', async () => {
+    const { gitflow, ui, git } = await setup();
+    ui.inputs = [(_p, suggested) => suggested];
+
+    const started = await gitflow.flow.start('release');
+    ui.confirms = [true];
+    ui.inputs = [(_p, message) => message + ' (VS Code)'];
+    const finished = await gitflow.flow.finish();
+
+    assert.ok(started?.success, started?.message);
+    const version = started.branchName!.replace('release/', '');
+    assert.ok(finished?.success, finished?.message);
+    assert.strictEqual(finished.tagName, version);
+    assert.strictEqual(git('tag', '-n1', '--list', version).replace(/\s+/g, ' '), `${version} Release ${version} (VS Code)`);
+  });
+
+  test('cancelling the confirmation does nothing', async () => {
+    const { gitflow, ui, git } = await setup();
+    ui.inputs = [() => 'cancelled'];
+    await gitflow.flow.start('feature');
+    ui.confirms = [false];
+
+    const result = await gitflow.flow.finish();
+
+    assert.strictEqual(result, undefined);
+    assert.match(git('branch', '--list', 'feature/cancelled'), /feature\/cancelled/);
+    git('switch', 'develop');
+    git('branch', '-D', 'feature/cancelled');
+  });
+
+  test('finish outside a work branch shows the reason from the server', async () => {
+    const { gitflow, ui } = await setup();
+
+    const result = await gitflow.flow.finish();
+
+    assert.strictEqual(result, undefined);
+    assert.strictEqual(ui.last().kind, 'error');
+    assert.match(ui.last().text, /is not a feature, release or hotfix branch/);
+  });
+
+  test('push without origin fails with a message', async () => {
+    const { gitflow, ui } = await setup();
+
+    const result = await gitflow.flow.publish();
+
+    assert.strictEqual(result?.success, false);
+    assert.strictEqual(ui.last().kind, 'error');
+  });
+});
+
+suite('VS Code prompts', () => {
+  const within = <T>(promise: Promise<T>, ms: number) =>
+    Promise.race([promise.then(() => 'settled'), new Promise(resolve => setTimeout(() => resolve('pending'), ms))]);
+
+  test('a notification does not wait for the user to close it', async () => {
+    const { VsCodeUi } = await import('../ui');
+    const ui = new VsCodeUi();
+
+    assert.strictEqual(await within(ui.info('GitFlow test: info'), 2000), 'settled');
+    assert.strictEqual(await within(ui.error('GitFlow test: error'), 2000), 'settled');
+  });
+
+  test('a failed command releases the "one operation at a time" lock', async () => {
+    const { VsCodeUi } = await import('../ui');
+    const { gitflow, git } = await setup();
+    git('switch', 'develop');
+    gitflow.flow.ui = new VsCodeUi();
+
+    // Not a work branch: the error is a plain notification, left open.
+    assert.strictEqual(await within(gitflow.flow.finish(), 10000), 'settled');
+    const scripted = new ScriptedUi();
+    gitflow.flow.ui = scripted;
+    await gitflow.flow.finish();
+
+    assert.doesNotMatch(scripted.last().text, /already running/);
+    assert.match(scripted.last().text, /is not a feature, release or hotfix branch/);
+  });
+});
+
+suite('Translations', () => {
+  test('every text of the extension has a French translation', () => {
+    const root = vscode.extensions.getExtension('DNA666777.gitflow-vscode')!.extensionPath;
+    const french = JSON.parse(fs.readFileSync(path.join(root, 'l10n', 'bundle.l10n.fr.json'), 'utf8')) as Record<string, string>;
+    const sources = fs.readdirSync(path.join(root, 'src')).filter(f => f.endsWith('.ts'));
+    const missing: string[] = [];
+    for (const file of sources) {
+      const text = fs.readFileSync(path.join(root, 'src', file), 'utf8');
+      for (const match of text.matchAll(/\bt\('((?:[^'\\]|\\.)*)'|l10n\.t\('((?:[^'\\]|\\.)*)'/g)) {
+        const key = (match[1] ?? match[2]).replace(/\\'/g, "'");
+        if (!(key in french)) {
+          missing.push(`${file}: ${key}`);
+        }
+      }
+    }
+
+    assert.deepStrictEqual(missing, []);
+
+    for (const nls of ['package.nls.json', 'package.nls.fr.json']) {
+      assert.ok(fs.existsSync(path.join(root, nls)), nls);
+    }
+
+    const english = Object.keys(JSON.parse(fs.readFileSync(path.join(root, 'package.nls.json'), 'utf8')));
+    const frenchNls = Object.keys(JSON.parse(fs.readFileSync(path.join(root, 'package.nls.fr.json'), 'utf8')));
+    assert.deepStrictEqual(frenchNls.sort(), english.sort());
+  });
+});

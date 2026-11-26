@@ -494,6 +494,7 @@ internal sealed class GitFlowToolWindowViewModel : NotifyPropertyChangedObject, 
                 branch,
                 isCurrent: branch.FullName == state.CurrentBranch,
                 isMerged: state.MergedFlowBranches.Contains(branch.FullName),
+                hasNoCommit: state.FlowBranchesWithoutCommit.Contains(branch.FullName),
                 finish: new AsyncCommand((_, c, t) => RunAsync(c, (ui, repo, x) => ui.FinishAsync(repo, branch.FullName, showSuccess: false, x), t)),
                 publish: new AsyncCommand((_, c, t) => RunAsync(c, (ui, repo, x) => ui.PublishAsync(repo, branch.FullName, showSuccess: false, x), t)));
             (branch.Type switch
@@ -669,7 +670,7 @@ internal sealed class GitFlowToolWindowViewModel : NotifyPropertyChangedObject, 
 
 /// <summary>One work branch in the list.</summary>
 [DataContract]
-internal sealed class BranchItemViewModel(FlowBranch branch, bool isCurrent, bool isMerged, AsyncCommand finish, AsyncCommand publish)
+internal sealed class BranchItemViewModel(FlowBranch branch, bool isCurrent, bool isMerged, bool hasNoCommit, AsyncCommand finish, AsyncCommand publish)
 {
     [DataMember] public string Name { get; } = branch.Name;
 
@@ -683,6 +684,7 @@ internal sealed class BranchItemViewModel(FlowBranch branch, bool isCurrent, boo
     {
         isCurrent ? Strings.BadgeCurrent : null,
         isMerged ? Strings.BadgeMerged : null,
+        hasNoCommit ? Strings.BadgeNoCommit : null,
     }.OfType<string>());
 
     [DataMember] public AsyncCommand FinishCommand { get; } = finish;

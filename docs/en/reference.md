@@ -1,6 +1,6 @@
 # Reference and troubleshooting
 
-[Home](README.md) · [Guide](guide.md) · [Pull Request mode](pull-requests.md) · **Reference and troubleshooting** · [Français](../reference.md)
+[Home](README.md) · [Guide](guide.md) · [Pull Request mode](pull-requests.md) · **Reference and troubleshooting** · [VS Code](vscode.md) · [Français](../reference.md)
 
 The rules applied, the configuration keys and answers to common problems.
 

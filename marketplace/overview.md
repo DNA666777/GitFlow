@@ -4,6 +4,8 @@
 
 **English and French**: the extension follows the Visual Studio language.
 
+**Also for VS Code**: the same extension, same engine, for Visual Studio Code — [GitFlow for VS Code](https://marketplace.visualstudio.com/items?itemName=DNA666777.gitflow-vscode).
+
 📖 **Tutorial**: https://dna666777.github.io/GitFlow/en/ ([en français](https://dna666777.github.io/GitFlow/))
 
 ## Features

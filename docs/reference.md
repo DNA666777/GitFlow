@@ -1,6 +1,6 @@
 # Référence et dépannage
 
-[Accueil](README.md) · [Guide](guide.md) · [Mode Pull Request](pull-requests.md) · **Référence et dépannage** · [English](en/reference.md)
+[Accueil](README.md) · [Guide](guide.md) · [Mode Pull Request](pull-requests.md) · **Référence et dépannage** · [VS Code](vscode.md) · [English](en/reference.md)
 
 Les règles appliquées, les clés de configuration et les réponses aux problèmes courants.
 

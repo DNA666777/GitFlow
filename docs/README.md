@@ -14,6 +14,7 @@ Par défaut, les branches sont mergées en local. Si vos branches sont protégé
 | [Guide d'utilisation](guide.md) | Installation, fenêtre GitFlow, features, releases, hotfixes, commit, conflits, paramètres |
 | [Mode Pull Request](pull-requests.md) | Terminer par PR sur GitHub / Azure DevOps, suivi, tag après merge, finalisation |
 | [Référence et dépannage](reference.md) | Règles, clés de configuration, commandes git, problèmes courants |
+| [GitFlow pour VS Code](vscode.md) | La même extension dans Visual Studio Code : installation, panneau, commandes |
 
 > Ce tutoriel existe aussi sous forme de petit site web : ouvrez [`index.html`](index.html) dans un navigateur.
 

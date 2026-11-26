@@ -1,6 +1,6 @@
 # Guide d'utilisation
 
-[Accueil](README.md) · **Guide** · [Mode Pull Request](pull-requests.md) · [Référence et dépannage](reference.md) · [English](en/guide.md)
+[Accueil](README.md) · **Guide** · [Mode Pull Request](pull-requests.md) · [Référence et dépannage](reference.md) · [VS Code](vscode.md) · [English](en/guide.md)
 
 Installation, initialisation, puis le travail au quotidien : features, releases et hotfixes.
 
