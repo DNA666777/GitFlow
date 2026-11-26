@@ -124,5 +124,17 @@
   "Pull Request: origin is an Azure DevOps server (company URL)": "Pull Request : origin est un serveur Azure DevOps (URL d'entreprise)",
   "For URLs that are not recognised automatically, such as https://tfs.company.com/tfs/Collection/Project/_git/Repo. Without a git credential, your Windows account is used.": "Pour les URL non reconnues automatiquement, par exemple https://tfs.entreprise.com/tfs/Collection/Projet/_git/Repo. Sans identifiant git, votre compte Windows est utilisé.",
   "Reset to defaults": "Réinitialiser aux valeurs par défaut",
-  "Cancel": "Annuler"
+  "Cancel": "Annuler",
+  "Finish {0}: mode": "Terminer {0} : mode",
+  "Merge here with --no-ff, as usual.": "Merge ici en --no-ff, comme d'habitude.",
+  "Push the branch and open one pull request per target on {0}. Nothing is merged here.": "Pousse la branche et ouvre une pull request par cible sur {0}. Aucun merge en local.",
+  "Pull requests for {0}": "Pull requests de {0}",
+  "Messages generated from git. Review and edit them if needed before they are created on {0}.": "Messages générés à partir de git. Relisez-les et modifiez-les si besoin avant de créer les pull requests sur {0}.",
+  "Title": "Titre",
+  "Description": "Description",
+  "Create the pull requests": "Créer les pull requests",
+  "GitFlow: pull requests for {0}": "GitFlow : pull requests pour {0}",
+  "Tag \"{0}\" will be created once the PR into {1} is merged: GitFlow panel, Pull requests section.": "Le tag « {0} » sera créé quand la PR vers {1} sera mergée (panneau GitFlow, section Pull requests).",
+  "Pull request(s) created for \"{0}\":": "Pull request(s) créée(s) pour « {0} » :",
+  "Open in the browser": "Ouvrir dans le navigateur"
 }

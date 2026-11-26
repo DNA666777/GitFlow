@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { BranchType, ConfigScope, FinishContext, PrepareFinishResponse, RepoState, Result, Settings } from './protocol';
+import { BranchType, ConfigScope, FinishContext, PrepareFinishResponse, PreparePullRequestsResponse, RepoState, Result, Settings } from './protocol';
 import { GitFlowServer } from './server';
 import { Ui } from './ui';
 
@@ -113,6 +113,30 @@ export class FlowCommands {
         return undefined;
       }
 
+      // Local merge (default) or Pull Request, chosen at each Finish; pre-selected from the settings.
+      if (context.pullRequestAvailable) {
+        const platform = context.remote?.platform === 'gitHub' ? 'GitHub' : 'Azure DevOps';
+        const mode = await this.ui.pickOne(t('Finish {0}: mode', name), [
+          { id: 'local', label: t('Local merge'), detail: t('Merge here with --no-ff, as usual.'), picked: !context.defaults.usePullRequest },
+          { id: 'pullrequest', label: t('Pull Request'), detail: t('Push the branch and open one pull request per target on {0}. Nothing is merged here.', platform), picked: context.defaults.usePullRequest },
+        ]);
+        if (!mode) {
+          return undefined;
+        }
+
+        if (mode === 'pullrequest') {
+          let prTagMessage: string | undefined;
+          if (context.asksTagMessage) {
+            prTagMessage = await this.ui.input(t('Message of tag "{0}"', context.tagName ?? ''), context.defaultTagMessage);
+            if (prTagMessage === undefined) {
+              return undefined;
+            }
+          }
+
+          return this.finishWithPullRequests(repository, context, prTagMessage);
+        }
+      }
+
       let push = false;
       let deleteRemote = false;
       if (context.hasRemote) {
@@ -148,6 +172,57 @@ export class FlowCommands {
         : t('"{0}" is finished. Current branch: {1}.', name, result.branchName ?? ''));
       return result;
     });
+  }
+
+  /**
+   * Pull Request mode: history check (nothing pushed if the branch shares no commit with a target on origin),
+   * review of the generated messages, then push + one pull request per target. Nothing is merged here.
+   */
+  private async finishWithPullRequests(repository: string, context: FinishContext, tagMessage: string | undefined): Promise<Result | undefined> {
+    const name = context.branch.fullName;
+    const prepared = await this.server.request<PreparePullRequestsResponse>('preparePullRequests', { repository, branch: name });
+    if (prepared.error) {
+      await this.show(prepared.error, '');
+      return prepared.error;
+    }
+
+    const drafts = await this.ui.reviewPullRequests({
+      title: t('Pull requests for {0}', name),
+      intro: t('Messages generated from git. Review and edit them if needed before they are created on {0}.', context.remote?.webUrl ?? 'origin'),
+      titleLabel: t('Title'),
+      descriptionLabel: t('Description'),
+      create: t('Create the pull requests'),
+      cancel: t('Cancel'),
+    }, prepared.drafts);
+    if (!drafts) {
+      return undefined;
+    }
+
+    const result = await this.run(t('GitFlow: pull requests for {0}', name), () => this.server.request<Result>('finishWithPullRequests', {
+      repository,
+      branch: name,
+      tagMessage: tagMessage ?? null,
+      drafts,
+    }));
+    if (!result.success) {
+      await this.show(result, '');
+      return result;
+    }
+
+    const lines = result.pullRequests.map(pr => `• #${pr.id} → ${pr.target}: ${pr.webUrl ?? ''}`);
+    if (context.tagName) {
+      lines.push('', t('Tag "{0}" will be created once the PR into {1} is merged: GitFlow panel, Pull requests section.', context.tagName, context.targets[0]));
+    }
+
+    if (await this.ui.confirm(t('Pull request(s) created for "{0}":', name), lines.join('\n'), t('Open in the browser'))) {
+      for (const pr of result.pullRequests) {
+        if (pr.webUrl && /^https:\/\//i.test(pr.webUrl)) {
+          await vscode.env.openExternal(vscode.Uri.parse(pr.webUrl));
+        }
+      }
+    }
+
+    return result;
   }
 
   /**
@@ -212,6 +287,10 @@ export class FlowCommands {
         t('• merge --no-ff into {0}', context.targets[context.targets.length - 1]),
         t('• delete the local branch'),
       ];
+    if (!context.pullRequestAvailable && context.defaults.usePullRequest) {
+      lines.push('', context.pullRequestUnavailableMessage);
+    }
+
     if (context.isWithoutCommit) {
       lines.push('', t('This branch has no commit of its own yet: there is nothing to merge.'));
     } else if (context.isAlreadyMerged) {

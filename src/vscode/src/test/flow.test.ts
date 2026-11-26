@@ -4,14 +4,16 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import type { GitFlowApi } from '../extension';
-import type { Settings } from '../protocol';
-import type { Option, Ui } from '../ui';
+import type { PullRequestDraft, Settings } from '../protocol';
+import type { Option, PullRequestReview, Ui } from '../ui';
 
 /** Scripted answers instead of dialogs; records everything shown. */
-class ScriptedUi implements Ui {
+export class ScriptedUi implements Ui {
   confirms: boolean[] = [];
   inputs: ((prompt: string, value: string) => string | undefined)[] = [];
   picks: ((options: Option[]) => string[] | undefined)[] = [];
+  modes: ((options: Option[]) => string | undefined)[] = [];
+  reviews: ((drafts: PullRequestDraft[]) => PullRequestDraft[] | undefined)[] = [];
   readonly shown: { kind: 'info' | 'error' | 'confirm' | 'input'; text: string; detail?: string }[] = [];
 
   async input(prompt: string, value: string): Promise<string | undefined> {
@@ -26,6 +28,18 @@ class ScriptedUi implements Ui {
     const answer = this.confirms.shift();
     assert.ok(answer !== undefined, `unexpected confirmation: ${message}`);
     return answer;
+  }
+
+  async pickOne(_title: string, options: Option[]): Promise<string | undefined> {
+    const answer = this.modes.shift();
+    assert.ok(answer, 'unexpected choice: ' + options.map(o => o.id).join(', '));
+    return answer(options);
+  }
+
+  async reviewPullRequests(_texts: PullRequestReview, drafts: PullRequestDraft[]): Promise<PullRequestDraft[] | undefined> {
+    const answer = this.reviews.shift();
+    assert.ok(answer, 'unexpected review');
+    return answer(drafts);
   }
 
   async pickMany(_title: string, options: Option[]): Promise<string[] | undefined> {

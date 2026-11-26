@@ -10,7 +10,9 @@ import type { Ui } from '../ui';
 const silentUi: Ui = {
   input: async () => undefined,
   confirm: async () => false,
+  pickOne: async () => undefined,
   pickMany: async () => undefined,
+  reviewPullRequests: async () => undefined,
   info: async () => undefined,
   error: async () => undefined,
   progress: (_title, task) => task(),

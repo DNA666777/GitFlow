@@ -2,7 +2,7 @@
   "name": "gitflow-vscode",
   "displayName": "GitFlow",
   "description": "%description%",
-  "version": "1.8.4",
+  "version": "1.8.5",
   "publisher": "DNA666777",
   "license": "MIT",
   "icon": "resources/icon.png",

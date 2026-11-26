@@ -8,6 +8,9 @@ import { GitFlowServer } from './server';
 
 const t = vscode.l10n.t;
 
+/** Pull requests: state read on the platform at most this often (besides the Refresh PRs button). */
+export const PULL_REQUEST_REFRESH_MS = 60_000;
+
 /** Everything the webview displays: built here (data from the server, translated texts), only rendered there. */
 export interface PanelModel {
   kind: 'loading' | 'noRepository' | 'notInitialized' | 'ready' | 'error';
@@ -58,6 +61,7 @@ export class GitFlowPanel implements vscode.WebviewViewProvider, vscode.Disposab
   private status = '';
   private lastModel: PanelModel | undefined;
   private refreshPullRequests = false;
+  private pullRequestTimer: NodeJS.Timeout | undefined;
 
   constructor(
     private readonly extensionUri: vscode.Uri,
@@ -74,6 +78,11 @@ export class GitFlowPanel implements vscode.WebviewViewProvider, vscode.Disposab
 
   /** After each operation: its outcome on the status line, then a refresh. */
   onResult(result: Result): void {
+    // Pull requests just created or tagged: read their state on the platform at the next refresh.
+    if (result.pullRequests.length > 0 || result.tagName) {
+      this.refreshPullRequests = true;
+    }
+
     this.status = result.success
       ? (result.warnings.length > 0 ? t('Done, with warnings.') : t('Done.'))
       : result.message;
@@ -89,9 +98,20 @@ export class GitFlowPanel implements vscode.WebviewViewProvider, vscode.Disposab
     view.onDidDispose(() => (this.view = undefined));
     this.refresher.attach(view);
     this.refresher.refresh();
+
+    // Like Visual Studio: the state of the followed pull requests is read on the platform at most once a minute,
+    // only when some are followed (and only while the panel is visible: the refresher waits otherwise).
+    clearInterval(this.pullRequestTimer);
+    this.pullRequestTimer = setInterval(() => {
+      if ((this.lastModel?.pullRequests.length ?? 0) > 0) {
+        this.refreshPullRequests = true;
+        this.refresher.refresh(true);
+      }
+    }, PULL_REQUEST_REFRESH_MS);
   }
 
   dispose(): void {
+    clearInterval(this.pullRequestTimer);
     this.refresher.dispose();
   }
 

@@ -22,7 +22,7 @@ export function activate(context: vscode.ExtensionContext): GitFlowApi {
   const server = new GitFlowServer(context.asAbsolutePath(path.join('server', 'GitFlow.Server.dll')), output);
   const find = () => findRepository(server);
   let panel: GitFlowPanel | undefined;
-  const flow = new FlowCommands(server, find, output, new VsCodeUi(), result => panel?.onResult(result));
+  const flow = new FlowCommands(server, find, output, new VsCodeUi(context.extensionUri), result => panel?.onResult(result));
   panel = new GitFlowPanel(context.extensionUri, server, flow, find, output);
   const settings = new SettingsEditor(context.extensionUri, server, flow, find, () => panel?.refresher.refresh());
   context.subscriptions.push(output, server, panel, settings, vscode.window.registerWebviewViewProvider('gitflow.branches', panel));
