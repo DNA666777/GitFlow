@@ -1,6 +1,6 @@
 # Le mode Pull Request
 
-[Accueil](README.md) · [Guide](guide.md) · **Mode Pull Request** · [Référence et dépannage](reference.md) · [English](en/pull-requests.md)
+[Accueil](README.md) · [Guide](guide.md) · **Mode Pull Request** · [Référence et dépannage](reference.md) · [VS Code](vscode.md) · [English](en/pull-requests.md)
 
 Le mode Pull Request est une option du Finish, pour les dépôts où `master` et `develop` sont protégées. Au lieu de merger en local, l'extension pousse la branche et ouvre les pull requests. La revue et le merge restent faits par des humains.
 

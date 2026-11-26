@@ -1,5 +1,6 @@
 # Publication : un tag de version poussé (fin d'une release ou d'un hotfix GitFlow) produit une GitHub Release
-# avec le .vsix compilé en Release, à la version du tag, après les tests.
+# avec les deux paquets compilés à la version du tag, après les tests : l'extension Visual Studio
+# (GitFlow.VSExtension-<version>.vsix) et l'extension VS Code (gitflow-vscode-<version>.vsix).
 name: Release
 
 on:
@@ -67,6 +68,41 @@ jobs:
       - name: Tests du serveur VS Code
         run: dotnet test tests/GitFlow.Server.Tests -c Release --no-build -nologo
 
+      # Extension VS Code : même version que le tag, tests dans une vraie instance VS Code, puis paquet.
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: src/vscode/package-lock.json
+
+      - name: Extension VS Code (dépendances, version du tag)
+        working-directory: src/vscode
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          npm ci
+          npm version $env:VERSION --no-git-tag-version --allow-same-version
+          if ($LASTEXITCODE -ne 0) { throw "Version du paquet VS Code impossible à fixer" }
+
+      - name: Tests de l'extension VS Code
+        working-directory: src/vscode
+        run: npm test
+
+      - name: Paquet .vsix VS Code
+        id: vscode
+        working-directory: src/vscode
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          npm run package
+          $file = "gitflow-vscode-$env:VERSION.vsix"
+          if (-not (Test-Path $file)) { throw "Paquet VS Code $file absent (version du package.json ?)" }
+          Copy-Item $file "../../$file"
+          "file=$file" >> $env:GITHUB_OUTPUT
+
       - name: Vérifier la version du paquet
         id: package
         shell: pwsh
@@ -91,13 +127,14 @@ jobs:
           TAG: ${{ steps.version.outputs.tag }}
           VERSION: ${{ steps.version.outputs.version }}
           FILE: ${{ steps.package.outputs.file }}
+          VSCODE_FILE: ${{ steps.vscode.outputs.file }}
         run: |
           gh release view $env:TAG *> $null
           if ($LASTEXITCODE -eq 0) {
-            # Release déjà créée (relance) : on remplace seulement le paquet.
-            gh release upload $env:TAG $env:FILE --clobber
+            # Release déjà créée (relance) : on remplace seulement les paquets.
+            gh release upload $env:TAG $env:FILE $env:VSCODE_FILE --clobber
           } else {
-            gh release create $env:TAG $env:FILE --verify-tag --title "GitFlow pour Visual Studio $env:VERSION" --generate-notes
+            gh release create $env:TAG $env:FILE $env:VSCODE_FILE --verify-tag --title "GitFlow $env:VERSION (Visual Studio et VS Code)" --generate-notes
           }
           if ($LASTEXITCODE -ne 0) { throw "Échec de la publication de la release" }
 
@@ -106,6 +143,13 @@ jobs:
         with:
           name: ${{ steps.package.outputs.file }}
           path: ${{ steps.package.outputs.file }}
+          retention-days: 30
+
+      - name: Paquet .vsix VS Code (artefact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.vscode.outputs.file }}
+          path: ${{ steps.vscode.outputs.file }}
           retention-days: 30
 
       # Visual Studio Marketplace : uniquement si le secret VS_MARKETPLACE_PAT est configuré (sinon étape sautée).
@@ -148,3 +192,22 @@ jobs:
             $failed += $version
           }
           throw "Aucune version de VsixPublisher n'a pu s'authentifier ($($failed -join ', '))."
+
+      # Visual Studio Code Marketplace (même éditeur DNA666777, extension DNA666777.gitflow-vscode), avec le même jeton.
+      # vsce demande le scope « Marketplace > Manage » : vérifié d'abord, pour un message clair s'il manque.
+      # Après la publication Visual Studio : un échec ici ne la remet pas en cause.
+      - name: Publier sur le Marketplace VS Code
+        if: ${{ env.HAS_MARKETPLACE_PAT == 'true' }}
+        working-directory: src/vscode
+        shell: pwsh
+        env:
+          VSCE_PAT: ${{ secrets.VS_MARKETPLACE_PAT }}
+          FILE: ${{ steps.vscode.outputs.file }}
+        run: |
+          npx vsce verify-pat DNA666777
+          if ($LASTEXITCODE -ne 0) {
+            throw "Le jeton VS_MARKETPLACE_PAT ne permet pas de publier sur le Marketplace VS Code (scope « Marketplace > Manage » requis)."
+          }
+          # --skip-duplicate : une relance de la release ne refait pas une version déjà publiée.
+          npx vsce publish --packagePath $env:FILE --skip-duplicate
+          if ($LASTEXITCODE -ne 0) { throw "Échec de la publication sur le Marketplace VS Code" }

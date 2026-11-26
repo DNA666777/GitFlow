@@ -274,7 +274,8 @@ Pull requests) remplaçant la TreeView ; serveur : méthodes `getCommitPreview` 
 et Finish refusé avant les questions s'il y a des modifications non commitées, via `FinishPlanner` désormais utilisé aussi par VS),
 (6) mode Pull Request (fait ; choix Merge local / Pull Request à chaque Finish, relecture des messages dans un onglet,
 état des PR relu au plus une fois par minute ; test de bout en bout contre un faux Azure DevOps Server local — `pullrequest.test.ts`),
-(7) traduction, doc FR/EN, CI et publication sur le Marketplace VS Code, (8) plus tard : Open VSX.
+(7) traduction, doc FR/EN, CI et publication sur le Marketplace VS Code (fait ; page `docs/vscode.md` + site, README),
+(8) plus tard : Open VSX.
 
 ---
 
@@ -372,6 +373,12 @@ SDK .NET figé par `global.json` (10.0.x, `rollForward: latestFeature`) ; les pr
   `marketplace/publishManifest.json` (éditeur `DNA666777`, fiche `DNA666777.gitflow`, catégorie *source control*) et
   `marketplace/overview.md` (page de présentation). Le Marketplace refuse de republier une version déjà publiée.
   Alternative future : `-oidc` (trusted publishing) au lieu d'un jeton.
+- **Extension VS Code** (étape 7 de la phase 3) : `release.yml` fixe la version du tag dans `src/vscode/package.json`
+  (`npm version`, non commité), lance `npm test`, produit `gitflow-vscode-<version>.vsix`, l'attache à la GitHub Release
+  avec le paquet VS, puis — après la publication Visual Studio, si `VS_MARKETPLACE_PAT` existe — `vsce verify-pat DNA666777`
+  et `vsce publish --skip-duplicate` (même éditeur, fiche `DNA666777.gitflow-vscode`). vsce exige le scope
+  **Marketplace > Manage** sur le jeton (VsixPublisher se contente de *Publish*) : si `verify-pat` échoue, régénérer le jeton
+  avec ce scope. La `version` du `package.json` committée ne sert qu'aux installations locales.
 Note : `dotnet sln add` du SDK 11 échoue sur cette solution (« Solution folder 'src' already contains… ») —
 ajouter les projets en éditant `GitFlowVS.sln` à la main.
 
