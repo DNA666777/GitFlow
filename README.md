@@ -8,7 +8,7 @@ Extension for **Visual Studio** and **Visual Studio Code** to apply the **standa
 >
 > 📖 **Markdown tutorial**: [Home](docs/en/README.md) · [Guide](docs/en/guide.md) · [Pull Request mode](docs/en/pull-requests.md) · [Reference and troubleshooting](docs/en/reference.md) · [VS Code](docs/en/vscode.md)
 >
-> ⬇️ **Download**: Visual Studio — [Marketplace](https://marketplace.visualstudio.com/items?itemName=DNA666777.gitflow) · VS Code — [Marketplace](https://marketplace.visualstudio.com/items?itemName=DNA666777.gitflow-vscode) · both — [latest release](https://github.com/DNA666777/GitFlow/releases/latest) (`.vsix` files)
+> ⬇️ **Download**: Visual Studio — [Marketplace](https://marketplace.visualstudio.com/items?itemName=DNA666777.gitflow) · VS Code — [Marketplace](https://marketplace.visualstudio.com/items?itemName=DNA666777.gitflow-for-vscode) · both — [latest release](https://github.com/DNA666777/GitFlow/releases/latest) (`.vsix` files)
 
 ## Features
 

@@ -66,7 +66,7 @@ export class ScriptedUi implements Ui {
 }
 
 async function setup(): Promise<{ gitflow: GitFlowApi; ui: ScriptedUi; workspace: string; git: (...args: string[]) => string }> {
-  const gitflow = await vscode.extensions.getExtension<GitFlowApi>('DNA666777.gitflow-vscode')!.activate();
+  const gitflow = await vscode.extensions.getExtension<GitFlowApi>('DNA666777.gitflow-for-vscode')!.activate();
   const ui = new ScriptedUi();
   gitflow.flow.ui = ui;
   const workspace = vscode.workspace.workspaceFolders![0].uri.fsPath;
@@ -236,7 +236,7 @@ suite('VS Code prompts', () => {
 
 suite('Translations', () => {
   test('every text of the extension has a French translation', () => {
-    const root = vscode.extensions.getExtension('DNA666777.gitflow-vscode')!.extensionPath;
+    const root = vscode.extensions.getExtension('DNA666777.gitflow-for-vscode')!.extensionPath;
     const french = JSON.parse(fs.readFileSync(path.join(root, 'l10n', 'bundle.l10n.fr.json'), 'utf8')) as Record<string, string>;
     const sources = fs.readdirSync(path.join(root, 'src')).filter(f => f.endsWith('.ts'));
     const missing: string[] = [];
