@@ -61,7 +61,7 @@ async function startFakeAzureDevOps(): Promise<{ url: string; requests: { method
 
 suite('Finish by Pull Request (fake Azure DevOps Server)', () => {
   test('mode choice, review, push and pull request, then followed in the panel', async () => {
-    const gitflow = await vscode.extensions.getExtension<GitFlowApi>('DNA666777.gitflow-vscode')!.activate();
+    const gitflow = await vscode.extensions.getExtension<GitFlowApi>('DNA666777.gitflow-for-vscode')!.activate();
     const workspace = vscode.workspace.workspaceFolders![0].uri.fsPath;
     const git = (...args: string[]) => execFileSync('git', args, { cwd: workspace, encoding: 'utf8' }).trim();
     const repository = (await gitflow.findRepository())!;

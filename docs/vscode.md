@@ -19,10 +19,10 @@ La même extension GitFlow, dans **Visual Studio Code** (Windows, Linux, macOS).
 ## 1. Installation
 
 - **Depuis VS Code** : vue *Extensions* (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd>), cherchez **GitFlow** (éditeur DNA666777), *Install*.
-- **Depuis un fichier** : téléchargez `gitflow-vscode-<version>.vsix` sur la [page des releases](https://github.com/DNA666777/GitFlow/releases/latest), puis :
+- **Depuis un fichier** : téléchargez `gitflow-for-vscode-<version>.vsix` sur la [page des releases](https://github.com/DNA666777/GitFlow/releases/latest), puis :
 
   ```powershell
-  code --install-extension gitflow-vscode-<version>.vsix
+  code --install-extension gitflow-for-vscode-<version>.vsix
   ```
 
 Prérequis :

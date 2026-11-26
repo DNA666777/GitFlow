@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import type { GitFlowApi } from '../extension';
 import type { RepoState } from '../protocol';
 
-const EXTENSION_ID = 'DNA666777.gitflow-vscode';
+const EXTENSION_ID = 'DNA666777.gitflow-for-vscode';
 
 async function api(): Promise<GitFlowApi> {
   const extension = vscode.extensions.getExtension<GitFlowApi>(EXTENSION_ID);

@@ -85,6 +85,6 @@ jobs:
       - name: Paquet .vsix VS Code (artefact)
         uses: actions/upload-artifact@v4
         with:
-          name: gitflow-vscode-ci
+          name: gitflow-for-vscode-ci
           path: src/vscode/*.vsix
           retention-days: 7

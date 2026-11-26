@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-export const EXTENSION_ID = 'DNA666777.gitflow-vscode';
+export const EXTENSION_ID = 'DNA666777.gitflow-for-vscode';
 
 interface AcquireResult {
   dotnetPath: string;

@@ -1,6 +1,6 @@
 # Publication : un tag de version poussé (fin d'une release ou d'un hotfix GitFlow) produit une GitHub Release
 # avec les deux paquets compilés à la version du tag, après les tests : l'extension Visual Studio
-# (GitFlow.VSExtension-<version>.vsix) et l'extension VS Code (gitflow-vscode-<version>.vsix).
+# (GitFlow.VSExtension-<version>.vsix) et l'extension VS Code (gitflow-for-vscode-<version>.vsix).
 name: Release
 
 on:
@@ -98,7 +98,7 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           npm run package
-          $file = "gitflow-vscode-$env:VERSION.vsix"
+          $file = "gitflow-for-vscode-$env:VERSION.vsix"
           if (-not (Test-Path $file)) { throw "Paquet VS Code $file absent (version du package.json ?)" }
           Copy-Item $file "../../$file"
           "file=$file" >> $env:GITHUB_OUTPUT
@@ -193,7 +193,7 @@ jobs:
           }
           throw "Aucune version de VsixPublisher n'a pu s'authentifier ($($failed -join ', '))."
 
-      # Visual Studio Code Marketplace (même éditeur DNA666777, extension DNA666777.gitflow-vscode), avec le même jeton.
+      # Visual Studio Code Marketplace (même éditeur DNA666777, extension DNA666777.gitflow-for-vscode), avec le même jeton.
       # vsce demande le scope « Marketplace > Manage » : vérifié d'abord, pour un message clair s'il manque.
       # Après la publication Visual Studio : un échec ici ne la remet pas en cause.
       - name: Publier sur le Marketplace VS Code
