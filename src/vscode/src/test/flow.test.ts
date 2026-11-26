@@ -150,6 +150,35 @@ suite('GitFlow commands (local merge)', () => {
   });
 });
 
+suite('VS Code prompts', () => {
+  const within = <T>(promise: Promise<T>, ms: number) =>
+    Promise.race([promise.then(() => 'settled'), new Promise(resolve => setTimeout(() => resolve('pending'), ms))]);
+
+  test('a notification does not wait for the user to close it', async () => {
+    const { VsCodeUi } = await import('../ui');
+    const ui = new VsCodeUi();
+
+    assert.strictEqual(await within(ui.info('GitFlow test: info'), 2000), 'settled');
+    assert.strictEqual(await within(ui.error('GitFlow test: error'), 2000), 'settled');
+  });
+
+  test('a failed command releases the "one operation at a time" lock', async () => {
+    const { VsCodeUi } = await import('../ui');
+    const { gitflow, git } = await setup();
+    git('switch', 'develop');
+    gitflow.flow.ui = new VsCodeUi();
+
+    // Not a work branch: the error is a plain notification, left open.
+    assert.strictEqual(await within(gitflow.flow.finish(), 10000), 'settled');
+    const scripted = new ScriptedUi();
+    gitflow.flow.ui = scripted;
+    await gitflow.flow.finish();
+
+    assert.doesNotMatch(scripted.last().text, /already running/);
+    assert.match(scripted.last().text, /is not a feature, release or hotfix branch/);
+  });
+});
+
 suite('Translations', () => {
   test('every text of the extension has a French translation', () => {
     const root = vscode.extensions.getExtension('DNA666777.gitflow-vscode')!.extensionPath;

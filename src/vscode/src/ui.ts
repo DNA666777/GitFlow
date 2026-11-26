@@ -37,8 +37,11 @@ export class VsCodeUi implements Ui {
     return picked?.map(p => p.id);
   }
 
+  // Modal only when there is something to read (warnings, list of files); otherwise a notification.
+  // A notification's promise only settles when the user closes it: never await it, or the command
+  // (and the "one operation at a time" lock) would stay pending while it sits in the notification center.
+
   async info(message: string, detail?: string): Promise<void> {
-    // Modal only when there is something to read (warnings, list of files); otherwise a notification.
     if (detail) {
       await vscode.window.showInformationMessage(message, { modal: true, detail });
     } else {
@@ -47,7 +50,11 @@ export class VsCodeUi implements Ui {
   }
 
   async error(message: string, detail?: string): Promise<void> {
-    await vscode.window.showErrorMessage(message, { modal: !!detail, detail });
+    if (detail) {
+      await vscode.window.showErrorMessage(message, { modal: true, detail });
+    } else {
+      void vscode.window.showErrorMessage(message);
+    }
   }
 
   progress<T>(title: string, task: () => Promise<T>): Promise<T> {
