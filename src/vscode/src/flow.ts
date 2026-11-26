@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { BranchType, FinishContext, PrepareFinishResponse, RepoState, Result, Settings } from './protocol';
+import { BranchType, ConfigScope, FinishContext, PrepareFinishResponse, RepoState, Result, Settings } from './protocol';
 import { GitFlowServer } from './server';
 import { Ui } from './ui';
 
@@ -20,29 +20,32 @@ export class FlowCommands {
     private readonly onChanged: (result: Result) => void = () => undefined,
   ) {}
 
-  /** Creates develop if needed and writes the git-flow configuration (existing keys, global defaults or standard names). */
-  init(): Promise<Result | undefined> {
+  /**
+   * Saves the settings of the GitFlow Settings screen. On a repository that is not initialized yet, this is Init:
+   * creates develop if needed and writes the naming and the Finish defaults of this repository.
+   * Otherwise, in the scope of this repository, the consequences of a naming change are confirmed first.
+   * Returns undefined when cancelled; a failed result keeps the screen open.
+   */
+  saveSettings(settings: Settings, scope: ConfigScope): Promise<Result | undefined> {
     return this.exclusive(async repository => {
       const state = await this.state(repository);
-      if (state.isInitialized && state.naming) {
-        await this.ui.info(t('GitFlow is already initialized in this repository (production: {0}, development: {1}).', state.naming.masterBranch, state.naming.developBranch));
-        return undefined;
+      if (!state.isInitialized) {
+        const result = await this.run(t('GitFlow: initializing'), () => this.server.request<Result>('init', { repository, settings }));
+        await this.show(result, t('GitFlow is initialized. Development branch: {0}.', settings.naming.developBranch));
+        return result;
       }
 
-      const settings = await this.server.request<Settings>('getSettings', { repository, scope: 'local' });
-      const n = settings.naming;
-      const detail = [
-        t('Production: {0}', n.masterBranch),
-        t('Development: {0}', n.developBranch),
-        t('Prefixes: {0}, {1}, {2}', n.featurePrefix, n.releasePrefix, n.hotfixPrefix),
-        t('Tag prefix: {0}', n.versionTagPrefix || t('(empty)')),
-      ].join('\n');
-      if (!await this.ui.confirm(t('Initialize GitFlow in this repository?'), detail, t('Initialize'))) {
-        return undefined;
+      if (scope === 'local') {
+        const warnings = await this.server.request<string[]>('getSettingsWarnings', { repository, proposed: settings.naming });
+        if (warnings.length > 0 && !await this.ui.confirm(t('Save anyway?'), warnings.join('\n\n'), t('Save'))) {
+          return undefined;
+        }
       }
 
-      const result = await this.run(t('GitFlow: initializing'), () => this.server.request<Result>('init', { repository, settings }));
-      await this.show(result, t('GitFlow is initialized. Development branch: {0}.', n.developBranch));
+      const result = await this.run(t('GitFlow: saving settings'), () => this.server.request<Result>('saveSettings', { repository, settings, scope }));
+      await this.show(result, scope === 'global'
+        ? t('GitFlow settings saved for all your repositories. They are used as defaults when initializing new repositories.')
+        : t('GitFlow settings saved for this repository.'));
       return result;
     });
   }
@@ -209,7 +212,9 @@ export class FlowCommands {
         t('• merge --no-ff into {0}', context.targets[context.targets.length - 1]),
         t('• delete the local branch'),
       ];
-    if (context.isAlreadyMerged) {
+    if (context.isWithoutCommit) {
+      lines.push('', t('This branch has no commit of its own yet: there is nothing to merge.'));
+    } else if (context.isAlreadyMerged) {
       lines.push('', t('This branch is already merged into all its targets: the finish will create the tag if missing, then delete the branch.'));
     }
 

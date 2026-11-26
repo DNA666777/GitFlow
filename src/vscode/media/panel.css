@@ -84,3 +84,16 @@ button.small { padding: 1px 8px; }
 .pr-group { margin-top: 6px; }
 .pr-group .source { font-weight: 600; }
 .status-line { margin-top: 12px; }
+
+/* GitFlow Settings screen */
+body.settings { max-width: 640px; padding: 8px 20px 20px; }
+body.settings h1 { font-size: 1.4em; font-weight: 600; margin: 8px 0 12px; }
+.field { display: grid; grid-template-columns: 130px 1fr; align-items: center; gap: 8px; margin: 4px 0; }
+.field input { width: 100%; }
+.check { display: flex; align-items: flex-start; gap: 6px; margin: 6px 0; }
+.check input { margin-top: 2px; }
+.radios { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin: 4px 0 8px; }
+.radio { display: flex; align-items: center; gap: 4px; }
+.hint { font-size: 0.92em; font-style: italic; margin: 2px 0 6px 138px; }
+.hint.indent { margin-left: 24px; }
+.actions.spread { justify-content: space-between; margin-top: 16px; }

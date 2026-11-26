@@ -270,7 +270,9 @@ dans la notification `log` : `trace` pour les lectures d'affichage, `info` pour 
 (4c) **interface identique à Visual Studio** : webview « GitFlow » (état, Commit, Démarrer une branche, Branches en cours,
 Pull requests) remplaçant la TreeView ; serveur : méthodes `getCommitPreview` / `commit` (CommitService du Core) (fait ;
 `panel.ts` construit le modèle — données du serveur + textes traduits —, `media/panel.js` ne fait qu'afficher et renvoyer les clics),
-(5) paramètres, (6) mode Pull Request,
+(5) paramètres (fait ; écran « GitFlow Settings » en onglet, qui sert aussi d'Init comme dans VS ; badge « no commit yet »
+et Finish refusé avant les questions s'il y a des modifications non commitées, via `FinishPlanner` désormais utilisé aussi par VS),
+(6) mode Pull Request,
 (7) traduction, doc FR/EN, CI et publication sur le Marketplace VS Code, (8) plus tard : Open VSX.
 
 ---

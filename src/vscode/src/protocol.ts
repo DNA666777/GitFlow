@@ -55,6 +55,7 @@ export interface RepoState {
   behind: number | null;
   flowBranches: Branch[];
   mergedFlowBranches: string[];
+  flowBranchesWithoutCommit: string[];
   releaseReminder: string | null;
 }
 
@@ -103,6 +104,7 @@ export interface FinishContext {
   defaultTagMessage: string;
   isResume: boolean;
   isAlreadyMerged: boolean;
+  isWithoutCommit: boolean;
   asksTagMessage: boolean;
   hasRemote: boolean;
   defaults: FinishDefaults;

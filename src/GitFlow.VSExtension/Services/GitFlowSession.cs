@@ -18,6 +18,7 @@ internal sealed class GitFlowSession : IDisposable
         Flow = new FlowService(runner, pullRequestStrategy: new PullRequestStrategy(PullRequests));
         Commits = new CommitService(runner);
         Settings = new GitFlowSettingsService(runner);
+        Planner = new FinishPlanner(Flow, Settings, PullRequests);
     }
 
     /// <summary>One HttpClient for the extension lifetime (GitHub / Azure DevOps REST APIs).</summary>
@@ -32,6 +33,9 @@ internal sealed class GitFlowSession : IDisposable
     public PullRequestService PullRequests { get; }
 
     public GitFlowSettingsService Settings { get; }
+
+    /// <summary>Prepares a Finish (shared with VS Code through the Core).</summary>
+    public FinishPlanner Planner { get; }
 
     public GitFlowOutput Output { get; }
 

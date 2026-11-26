@@ -10,5 +10,6 @@
   "command.finish": "Terminer la branche actuelle...",
   "command.publish": "Pousser la branche actuelle",
   "command.start": "Démarrer une branche...",
-  "command.refresh": "Actualiser"
+  "command.refresh": "Actualiser",
+  "command.settings": "Paramètres GitFlow..."
 }

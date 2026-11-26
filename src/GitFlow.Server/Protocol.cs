@@ -54,6 +54,7 @@ public sealed record StateDto(
     int? Behind,
     IReadOnlyList<BranchDto> FlowBranches,
     IReadOnlyList<string> MergedFlowBranches,
+    IReadOnlyList<string> FlowBranchesWithoutCommit,
     string? ReleaseReminder)
 {
     public static StateDto From(RepoState s) => new(
@@ -71,6 +72,7 @@ public sealed record StateDto(
         s.Behind,
         s.FlowBranches.Select(b => BranchDto.From(b)!).ToArray(),
         s.MergedFlowBranches.ToArray(),
+        s.FlowBranchesWithoutCommit.ToArray(),
         s.ShowReleaseReminder ? FlowMessages.ReleaseReminder : null);
 }
 
@@ -123,6 +125,7 @@ public sealed record FinishContextDto(
     string DefaultTagMessage,
     bool IsResume,
     bool IsAlreadyMerged,
+    bool IsWithoutCommit,
     bool AsksTagMessage,
     bool HasRemote,
     FinishDefaultsDto Defaults,
@@ -137,6 +140,7 @@ public sealed record FinishContextDto(
         c.DefaultTagMessage,
         c.IsResume,
         c.IsAlreadyMerged,
+        c.IsWithoutCommit,
         c.AsksTagMessage,
         c.HasRemote,
         FinishDefaultsDto.From(c.Defaults),

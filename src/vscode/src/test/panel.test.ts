@@ -90,6 +90,42 @@ suite('GitFlow panel (same sections as the Visual Studio window)', () => {
     }
   });
 
+  test('a feature just started shows "no commit yet", not "already merged"', async () => {
+    const { gitflow, git } = await setup();
+    git('branch', 'feature/just-started', 'develop');
+    try {
+      const model = await gitflow.panel.buildModel();
+      const branch = model.groups[0].branches.find(b => b.name === 'just-started')!;
+
+      assert.strictEqual(branch.badge, 'no commit yet');
+    } finally {
+      git('branch', '-D', 'feature/just-started');
+    }
+  });
+
+  test('without work branch, only the sentence is shown (no empty groups)', async () => {
+    const { gitflow } = await setup();
+
+    const model = await gitflow.panel.buildModel();
+
+    assert.ok(model.groups.every(g => g.branches.length === 0));
+    assert.strictEqual(model.labels.noBranches, 'No branch in progress.');
+  });
+
+  test('"GitFlow Settings" opens the settings screen in an editor tab', async () => {
+    await setup();
+
+    await vscode.commands.executeCommand('gitflow.settings');
+    let tab: vscode.Tab | undefined;
+    for (let i = 0; i < 50 && !tab; i++) {
+      tab = vscode.window.tabGroups.all.flatMap(g => g.tabs).find(x => x.label === 'GitFlow Settings');
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    assert.ok(tab, 'settings tab opened');
+    await vscode.window.tabGroups.close(tab);
+  });
+
   test('the panel opens in the Source Control view and receives its model', async () => {
     const { gitflow } = await setup();
 

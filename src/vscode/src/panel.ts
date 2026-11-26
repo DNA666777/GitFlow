@@ -42,7 +42,7 @@ export interface PanelModel {
 
 /** Messages from the webview (a click or a submitted field); the panel calls the flow commands. */
 type PanelMessage =
-  | { type: 'refresh' | 'init' | 'refreshPullRequests' | 'showLog' }
+  | { type: 'refresh' | 'init' | 'settings' | 'refreshPullRequests' | 'showLog' }
   | { type: 'start'; branchType: BranchType; name: string }
   | { type: 'finish' | 'publish' | 'tag' | 'complete'; branch: string }
   | { type: 'commit'; message: string }
@@ -169,6 +169,7 @@ export class GitFlowPanel implements vscode.WebviewViewProvider, vscode.Disposab
             badge: [
               state.currentBranch === b.fullName ? t('current') : null,
               state.mergedFlowBranches.includes(b.fullName) ? t('already merged') : null,
+              state.flowBranchesWithoutCommit.includes(b.fullName) ? t('no commit yet') : null,
             ].filter(Boolean).join('  ·  '),
           })),
         })),
@@ -211,7 +212,8 @@ export class GitFlowPanel implements vscode.WebviewViewProvider, vscode.Disposab
         this.output.show(true);
         return;
       case 'init':
-        await this.flow.init();
+      case 'settings':
+        await vscode.commands.executeCommand('gitflow.settings');
         return;
       case 'start':
         if ((await this.flow.start(message.branchType, message.name.trim() || undefined))?.success) {
@@ -274,7 +276,7 @@ function typeLabel(type: BranchType | undefined): string {
 /** Fixed texts of the panel, translated here (the webview has no access to the translations). */
 function panelLabels(): Record<string, string> {
   return {
-    refresh: t('Refresh'),
+    settings: t('Settings'),
     showLog: t('Log'),
     noRepository: t('No Git repository found for the open folder or file.'),
     notInitialized: t('GitFlow is not initialized in this repository.'),

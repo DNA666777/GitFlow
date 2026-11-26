@@ -2,7 +2,7 @@
   "name": "gitflow-vscode",
   "displayName": "GitFlow",
   "description": "%description%",
-  "version": "1.8.3",
+  "version": "1.8.4",
   "publisher": "DNA666777",
   "license": "MIT",
   "icon": "resources/icon.png",
@@ -76,6 +76,12 @@
         "icon": "$(cloud-upload)"
       },
       {
+        "command": "gitflow.settings",
+        "title": "%command.settings%",
+        "category": "GitFlow",
+        "icon": "$(gear)"
+      },
+      {
         "command": "gitflow.showOutput",
         "title": "%command.showOutput%",
         "category": "GitFlow"
@@ -118,6 +124,11 @@
           "command": "gitflow.refresh",
           "when": "view == gitflow.branches",
           "group": "navigation@1"
+        },
+        {
+          "command": "gitflow.settings",
+          "when": "view == gitflow.branches && gitflow.state == ready",
+          "group": "navigation@2"
         },
         {
           "command": "gitflow.startFeature",

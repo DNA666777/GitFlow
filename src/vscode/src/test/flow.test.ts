@@ -4,6 +4,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import type { GitFlowApi } from '../extension';
+import type { Settings } from '../protocol';
 import type { Option, Ui } from '../ui';
 
 /** Scripted answers instead of dialogs; records everything shown. */
@@ -60,7 +61,7 @@ async function setup(): Promise<{ gitflow: GitFlowApi; ui: ScriptedUi; workspace
 }
 
 suite('GitFlow commands (local merge)', () => {
-  test('init creates develop after confirmation', async () => {
+  test('the settings screen of an uninitialized repository initializes it', async () => {
     const { gitflow, ui, git } = await setup();
 
     // Independent of the order of the suites: back to a repository that was never initialized.
@@ -73,23 +74,52 @@ suite('GitFlow commands (local merge)', () => {
       }
     }
 
-    ui.confirms = [true];
+    const repository = (await gitflow.findRepository())!;
+    const settings = await gitflow.server.request<Settings>('getSettings', { repository, scope: 'local' });
+    const result = await gitflow.flow.saveSettings(settings, 'local');
 
-    const result = await gitflow.flow.init();
-
+    assert.strictEqual(settings.naming.masterBranch, 'master', 'standard names proposed');
     assert.ok(result?.success, result?.message);
-    assert.match(ui.shown[0].detail ?? '', /Production: master/);
     assert.match(git('branch', '--list', 'develop'), /develop/);
-    assert.strictEqual(ui.last().kind, 'info');
+    assert.match(ui.last().text, /GitFlow is initialized/);
   });
 
-  test('init on an initialized repository only says so', async () => {
+  test('settings: renaming a prefix still used asks for confirmation', async () => {
+    const { gitflow, ui, git } = await setup();
+    git('branch', 'feature/old-prefix', 'develop');
+    try {
+      const repository = (await gitflow.findRepository())!;
+      const settings = await gitflow.server.request<Settings>('getSettings', { repository, scope: 'local' });
+      const renamed = { ...settings, naming: { ...settings.naming, featurePrefix: 'feat/' } };
+
+      ui.confirms = [false];
+      const cancelled = await gitflow.flow.saveSettings(renamed, 'local');
+      assert.strictEqual(cancelled, undefined);
+      assert.match(ui.last().detail ?? '', /feature\/old-prefix/);
+      assert.strictEqual(git('config', '--local', 'gitflow.prefix.feature'), 'feature/');
+
+      ui.confirms = [true];
+      const saved = await gitflow.flow.saveSettings(renamed, 'local');
+      assert.ok(saved?.success, saved?.message);
+      assert.strictEqual(git('config', '--local', 'gitflow.prefix.feature'), 'feat/');
+
+      assert.ok((await gitflow.flow.saveSettings(settings, 'local'))?.success, 'back to feature/');
+    } finally {
+      git('branch', '-D', 'feature/old-prefix');
+    }
+  });
+
+  test('settings: invalid names are refused with the reasons', async () => {
     const { gitflow, ui } = await setup();
+    const repository = (await gitflow.findRepository())!;
+    const settings = await gitflow.server.request<Settings>('getSettings', { repository, scope: 'local' });
 
-    const result = await gitflow.flow.init();
+    const errors = await gitflow.server.request<string[]>('validateNaming', { repository, naming: { ...settings.naming, developBranch: 'master', featurePrefix: '' } });
+    const result = await gitflow.flow.saveSettings({ ...settings, naming: { ...settings.naming, developBranch: 'master' } }, 'local');
 
-    assert.strictEqual(result, undefined);
-    assert.match(ui.last().text, /already initialized/);
+    assert.strictEqual(errors.length, 2);
+    assert.strictEqual(result?.success, false);
+    assert.strictEqual(ui.last().kind, 'error');
   });
 
   test('feature: start, commit, finish', async () => {

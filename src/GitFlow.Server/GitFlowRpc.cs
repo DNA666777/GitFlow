@@ -73,6 +73,15 @@ public sealed class GitFlowRpc
             return warnings.Select(FlowMessages.Describe).ToArray();
         }, ct);
 
+    /// <summary>
+    /// Live validation of the naming (translated messages, empty when valid): empty or duplicate prefix,
+    /// same production and development branches, names refused by git.
+    /// </summary>
+    [JsonRpcMethod("validateNaming")]
+    public Task<IReadOnlyList<string>> ValidateNamingAsync(string repository, NamingDto naming, CancellationToken ct) =>
+        ReadAsync<IReadOnlyList<string>>(async () =>
+            (await _flow.ConfigStore.ValidateAsync(repository, naming.ToConfig(), ct).ConfigureAwait(false)).Select(FlowMessages.Describe).ToArray(), ct);
+
     [JsonRpcMethod("saveSettings")]
     public Task<ResultDto> SaveSettingsAsync(string repository, SettingsDto settings, ConfigScope scope, CancellationToken ct) =>
         RunAsync(async () => ResultDto.From(await _settings.SaveAsync(repository, settings.ToSettings(), scope, ct).ConfigureAwait(false)), ct);

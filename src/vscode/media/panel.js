@@ -24,7 +24,8 @@
     const L = model.labels;
     let html = '<div class="header"><span class="repo" title="' + esc(model.repositoryName) + '">' + esc(model.repositoryName || 'GitFlow') + '</span>'
       + '<button class="secondary small" data-action="showLog">' + esc(L.showLog) + '</button>'
-      + '<button class="secondary small" data-action="refresh">' + esc(L.refresh) + '</button></div>';
+      + (model.kind === 'ready' ? '<button class="secondary small" data-action="settings">' + esc(L.settings) + '</button>' : '')
+      + '</div>';
 
     if (model.kind === 'noRepository') {
       html += '<p>' + esc(L.noRepository) + '</p>';
@@ -137,7 +138,8 @@
       html += '<div class="muted">' + esc(L.noBranches) + '</div>';
     }
 
-    for (const g of m.groups) {
+    // Like Visual Studio, the three groups; when no branch at all is in progress, the sentence above is enough.
+    for (const g of m.groups.some(x => x.branches.length > 0) ? m.groups : []) {
       html += '<div class="group muted">' + esc(g.label) + '</div>'
         + g.branches.map(b => '<div class="row"><div class="names"><div class="ellipsis" title="' + esc(b.fullName) + '">' + esc(b.name) + '</div>'
           + (b.badge ? '<div class="badge">' + esc(b.badge) + '</div>' : '') + '</div>'

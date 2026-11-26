@@ -4,6 +4,7 @@ import { FlowCommands } from './flow';
 import { BranchType } from './protocol';
 import { GitFlowServer } from './server';
 import { GitFlowPanel } from './panel';
+import { SettingsEditor } from './settings';
 import { VsCodeUi } from './ui';
 
 const t = vscode.l10n.t;
@@ -23,10 +24,13 @@ export function activate(context: vscode.ExtensionContext): GitFlowApi {
   let panel: GitFlowPanel | undefined;
   const flow = new FlowCommands(server, find, output, new VsCodeUi(), result => panel?.onResult(result));
   panel = new GitFlowPanel(context.extensionUri, server, flow, find, output);
-  context.subscriptions.push(output, server, panel, vscode.window.registerWebviewViewProvider('gitflow.branches', panel));
+  const settings = new SettingsEditor(context.extensionUri, server, flow, find, () => panel?.refresher.refresh());
+  context.subscriptions.push(output, server, panel, settings, vscode.window.registerWebviewViewProvider('gitflow.branches', panel));
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('gitflow.init', () => flow.init()),
+    // Init and Settings share the same screen, like in Visual Studio (Init when the repository is not initialized).
+    vscode.commands.registerCommand('gitflow.init', () => settings.open()),
+    vscode.commands.registerCommand('gitflow.settings', () => settings.open()),
     vscode.commands.registerCommand('gitflow.start', () => pickAndStart(flow)),
     vscode.commands.registerCommand('gitflow.startFeature', (name?: unknown) => flow.start('feature', typeof name === 'string' ? name : undefined)),
     vscode.commands.registerCommand('gitflow.startRelease', (name?: unknown) => flow.start('release', typeof name === 'string' ? name : undefined)),

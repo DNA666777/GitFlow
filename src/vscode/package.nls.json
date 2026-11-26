@@ -10,5 +10,6 @@
   "command.finish": "Finish Current Branch...",
   "command.publish": "Push Current Branch",
   "command.start": "Start a Branch...",
-  "command.refresh": "Refresh"
+  "command.refresh": "Refresh",
+  "command.settings": "GitFlow Settings..."
 }

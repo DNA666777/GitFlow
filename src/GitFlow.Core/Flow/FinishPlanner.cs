@@ -22,6 +22,7 @@ public enum PullRequestUnavailableReason
 /// <param name="TagName">Tag of a release/hotfix, null for a feature.</param>
 /// <param name="IsResume">The Finish of this branch stopped on a conflict and resumes.</param>
 /// <param name="IsAlreadyMerged">Already merged into all its targets by hand: the Finish only tags and deletes.</param>
+/// <param name="IsWithoutCommit">No commit of its own yet (just started): there is nothing to merge.</param>
 /// <param name="AsksTagMessage">A tag message is asked (release/hotfix not resumed and not already merged).</param>
 /// <param name="PullRequestUnavailableMessage">Translated reason, empty when the Pull Request mode is available.</param>
 public sealed record FinishContext(
@@ -31,6 +32,7 @@ public sealed record FinishContext(
     string DefaultTagMessage,
     bool IsResume,
     bool IsAlreadyMerged,
+    bool IsWithoutCommit,
     bool AsksTagMessage,
     bool HasRemote,
     FinishDefaults Defaults,
@@ -45,7 +47,10 @@ public sealed record FinishContext(
 public sealed class FinishPlanner(FlowService flow, GitFlowSettingsService settings, PullRequestService pullRequests)
 {
     /// <param name="branchName">Branch to finish; null: the branch of a stopped merge, otherwise the current branch.</param>
-    /// <returns>The context, or a failed result (not initialised, not a work branch).</returns>
+    /// <returns>
+    /// The context, or a failed result (not initialised, not a work branch, uncommitted changes): refused before any
+    /// question is asked, rather than after the options of the Finish.
+    /// </returns>
     public async Task<(FinishContext? Context, FlowResult? Error)> PrepareAsync(string repositoryPath, string? branchName, CancellationToken ct = default)
     {
         var state = await flow.GetStateAsync(repositoryPath, ct).ConfigureAwait(false);
@@ -61,6 +66,11 @@ public sealed class FinishPlanner(FlowService flow, GitFlowSettingsService setti
         }
 
         var resume = state.PendingFinish?.FullName == branch.FullName;
+        if (state.IsDirty && !resume)
+        {
+            return (null, FlowResult.Fail(FlowError.DirtyWorkingTree));
+        }
+
         var alreadyMerged = state.MergedFlowBranches.Contains(branch.FullName);
         var targets = await flow.GetMergeTargetsAsync(repositoryPath, config, branch, ct).ConfigureAwait(false);
         var defaults = await settings.ReadFinishDefaultsAsync(repositoryPath, ConfigScope.Local, ct).ConfigureAwait(false);
@@ -84,6 +94,7 @@ public sealed class FinishPlanner(FlowService flow, GitFlowSettingsService setti
             FlowService.GetDefaultTagMessage(branch.Type, branch.Name),
             resume,
             alreadyMerged,
+            state.FlowBranchesWithoutCommit.Contains(branch.FullName),
             AsksTagMessage: versioned && !resume && !alreadyMerged,
             state.HasRemote,
             defaults with
