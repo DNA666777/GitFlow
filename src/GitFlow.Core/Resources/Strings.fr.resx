@@ -93,4 +93,5 @@
   <data name="Pr_Tickets" xml:space="preserve"><value>Tickets</value></data>
 
   <data name="Info_ReleaseReminder" xml:space="preserve"><value>Release en cours : uniquement des corrections, de la doc et les tâches de release.</value></data>
+  <data name="Error_NoCommonHistory" xml:space="preserve"><value>La branche n'a aucun commit en commun avec « origin/{0} » (historiques sans lien, par exemple un dépôt créé sur le serveur avec un README). Une pull request ne pourrait pas être mergée. Réunissez une fois les deux historiques de {0} : git switch {0}, git merge origin/{0} --allow-unrelated-histories (résolvez les conflits éventuels, souvent sur le README), git push. Puis relancez Terminer.</value></data>
 </root>
