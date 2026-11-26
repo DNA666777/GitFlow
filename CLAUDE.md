@@ -197,7 +197,8 @@ Flow en mode PR :
 
 Objectif : le même GitFlow dans **Visual Studio Code** (et ses forks : VSCodium, Cursor…), avec exactement le même comportement
 que dans Visual Studio. Décision du 2026-11-26 : **même dépôt**, `GitFlow.Core` réutilisé tel quel (pas de réécriture en TypeScript).
-Identifiant de l'extension VS Code : **`DNA666777.gitflow-for-vscode`** (nom affiché « GitFlow ») — `DNA666777.gitflow` est déjà pris par
+Identifiant de l'extension VS Code : **`DNA666777.gitflow-for-vscode`** (nom affiché « GitFlow for VS Code » : « GitFlow » est
+pris, les noms affichés aussi doivent être uniques sur le Marketplace — refusé à la 1.9.1) — `DNA666777.gitflow` est déjà pris par
 l'extension Visual Studio, et `gitflow-vscode` par un autre éditeur (le nom doit être unique sur tout le Marketplace VS Code :
 refusé à la release 1.9.0, d'où le hotfix 1.9.1). **Ne jamais le changer** une fois publié.
 
