@@ -5,7 +5,8 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 
-const root = fs.mkdtempSync(path.join(os.tmpdir(), 'gitflow-vscode-tests-'));
+// Long path (Windows CI gives the temp folder as an 8.3 short name, e.g. RUNNER~1, while git answers with the long one).
+const root = fs.mkdtempSync(path.join(fs.realpathSync.native(os.tmpdir()), 'gitflow-vscode-tests-'));
 const workspace = path.join(root, 'repo');
 fs.mkdirSync(workspace);
 const git = (...args) => execFileSync('git', args, { cwd: workspace, stdio: 'ignore' });

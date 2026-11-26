@@ -36,7 +36,7 @@ suite('GitFlow extension', () => {
     const repository = await gitflow.findRepository();
     const workspace = vscode.workspace.workspaceFolders![0].uri.fsPath;
     // Windows: VS Code writes the drive letter in lower case (c:\), git in upper case (C:\).
-    const same = (p: string) => (process.platform === 'win32' ? fs.realpathSync(p).toLowerCase() : fs.realpathSync(p));
+    const same = (p: string) => (process.platform === 'win32' ? fs.realpathSync.native(p).toLowerCase() : fs.realpathSync.native(p));
     assert.strictEqual(same(repository!), same(workspace));
 
     // Independent of the order of the suites (the command tests initialize this repository).
