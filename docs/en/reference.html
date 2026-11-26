@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reference and troubleshooting — GitFlow for Visual Studio</title>
+  <link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="alternate" hreflang="fr" href="../reference.html">
+</head>
+<body>
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="index.html"><img class="brand-mark" src="../assets/logo.svg" alt="">GitFlow for Visual Studio</a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="guide.html">Guide</a>
+        <a href="pull-requests.html">Pull Requests</a>
+        <a href="reference.html" aria-current="page">Reference</a>
+        <a href="../reference.html" lang="fr" hreflang="fr">Français</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <nav class="toc" aria-label="Contents">
+      <strong>Contents</strong>
+      <ol>
+        <li><a href="#model">The model in short</a></li>
+        <li><a href="#safety">Safety rules</a></li>
+        <li><a href="#keys">Configuration keys</a></li>
+        <li><a href="#commands">Git commands run</a></li>
+        <li><a href="#troubleshooting">Troubleshooting</a></li>
+        <li><a href="#compat">Compatibility</a></li>
+      </ol>
+    </nav>
+
+    <article>
+      <h1>Reference and troubleshooting</h1>
+      <p class="intro">The rules applied, the configuration keys and answers to common problems.</p>
+
+      <h2 id="model">The model in short</h2>
+      <p>The extension strictly follows the <a href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow">Atlassian Gitflow Workflow</a>, with no variant. One difference: the production branch is called <code>master</code> by default (configurable).</p>
+      <table>
+        <thead><tr><th>Type</th><th>Prefix</th><th>Starts from</th><th>Finishes into</th><th>Tag</th><th>Suggested version</th></tr></thead>
+        <tbody>
+          <tr><td>Feature</td><td><span class="branch feature">feature/</span></td><td>develop</td><td>develop</td><td>no</td><td>—</td></tr>
+          <tr><td>Release</td><td><span class="branch release">release/</span></td><td>develop</td><td>master <strong>then</strong> develop</td><td>yes</td><td>minor + 1 (<code>1.4.1</code> → <code>1.5.0</code>)</td></tr>
+          <tr><td>Hotfix</td><td><span class="branch hotfix">hotfix/</span></td><td>master</td><td>master <strong>then</strong> develop (or the release in progress)</td><td>yes</td><td>patch + 1 (<code>1.5.0</code> → <code>1.5.1</code>)</td></tr>
+        </tbody>
+      </table>
+      <ul>
+        <li>No other branch type (no <code>bugfix/</code>, <code>support/</code>…).</li>
+        <li>Merges with <code>--no-ff</code>, no squash or rebase. Annotated tags <code>{prefix}{version}</code>, message <code>Release x.y.z</code> / <code>Hotfix x.y.z</code>, editable.</li>
+        <li>Only one release and one hotfix in progress at a time.</li>
+      </ul>
+
+      <h2 id="safety">Safety rules</h2>
+      <table>
+        <tbody>
+          <tr><td>Uncommitted changes</td><td>Start and Finish refused. The extension never stashes automatically: commit or run <code>git stash</code> yourself. Untracked files don't block.</td></tr>
+          <tr><td>Checks before acting</td><td>Base branch exists, name valid for git (<code>git check-ref-format</code>), target branch doesn't exist, tag doesn't exist.</td></tr>
+          <tr><td>Merge conflict</td><td>Immediate stop, nothing deleted, can resume after resolution.</td></tr>
+          <tr><td>Forbidden commands</td><td>Never <code>push --force</code>, <code>reset --hard</code>, <code>branch -D</code>. An unmerged branch is never deleted.</td></tr>
+          <tr><td>Commits</td><td>Refused on the production branch and during a merge.</td></tr>
+          <tr><td>Pull Requests</td><td>Created and tracked, never approved or merged by the extension. The tag is only created on a merge commit verified on <code>origin/master</code>.</td></tr>
+          <tr><td>Credentials</td><td>Asked from git each time, never stored or written to the logs.</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="keys">Configuration keys</h2>
+      <p>Stored in the repository git config (<code>--local</code>) or the user git config (<code>--global</code>, defaults for new repositories). The local value wins.</p>
+      <h3>Naming (standard git-flow keys)</h3>
+      <table>
+        <thead><tr><th>Key</th><th>Default</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>gitflow.branch.master</code></td><td><code>master</code></td><td>Production branch</td></tr>
+          <tr><td><code>gitflow.branch.develop</code></td><td><code>develop</code></td><td>Integration branch</td></tr>
+          <tr><td><code>gitflow.prefix.feature</code></td><td><code>feature/</code></td><td>Feature prefix</td></tr>
+          <tr><td><code>gitflow.prefix.release</code></td><td><code>release/</code></td><td>Release prefix</td></tr>
+          <tr><td><code>gitflow.prefix.hotfix</code></td><td><code>hotfix/</code></td><td>Hotfix prefix</td></tr>
+          <tr><td><code>gitflow.prefix.versiontag</code></td><td><em>(empty)</em></td><td>Version tag prefix (<code>v</code> → <code>v1.4.0</code>)</td></tr>
+        </tbody>
+      </table>
+      <h3>Extension options</h3>
+      <table>
+        <thead><tr><th>Key</th><th>Default</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>gitflowvs.finish.mode</code></td><td><code>local</code></td><td>Mode pre-selected at Finish: <code>local</code> or <code>pullrequest</code></td></tr>
+          <tr><td><code>gitflowvs.finish.push</code></td><td><code>false</code></td><td>Pre-checks "Push" at local Finish</td></tr>
+          <tr><td><code>gitflowvs.finish.deleteremote</code></td><td><code>false</code></td><td>Pre-checks "Also delete the branch on origin"</td></tr>
+          <tr><td><code>gitflowvs.pr.prune</code></td><td><code>false</code></td><td><em>Complete branch</em> uses <code>git fetch --prune</code></td></tr>
+          <tr><td><code>gitflowvs.pr.ticketpattern</code></td><td>ABC-123 and #42</td><td>Regular expression for ticket references in PRs</td></tr>
+          <tr><td><code>gitflowvs.pr.platform</code></td><td><code>auto</code></td><td><code>azuredevops</code>: origin is a company Azure DevOps server (URL not recognised automatically)</td></tr>
+        </tbody>
+      </table>
+      <p>Tracked PRs are stored in the local config under <code>gitflowvs-pr.&lt;branch&gt;.link</code>, and removed when the branch is completed.</p>
+
+      <h2 id="commands">Git commands run</h2>
+      <p>All commands go through the <code>git</code> of Git for Windows: your hooks, GPG signatures, LFS and credentials apply just like in a terminal. They are visible in <span class="menu-path">View &gt; Output</span>, <strong>GitFlow</strong> channel:</p>
+<pre><code>=== GitFlow: finishing feature/login ===
+[10:42:03] git switch develop  → 0 (81 ms)
+[10:42:03] git merge --no-ff -m "Merge branch 'feature/login' into develop" feature/login  → 0 (153 ms)
+[10:42:03] git branch -d feature/login  → 0 (54 ms)
+OK</code></pre>
+
+      <h2 id="troubleshooting">Troubleshooting</h2>
+      <h3>The GitFlow menu doesn't appear</h3>
+      <p>Check <span class="menu-path">Extensions &gt; Manage Extensions &gt; Installed</span>. If the extension is not there, reinstall the <code>.vsix</code> <strong>with Visual Studio closed</strong>: if it is open, the Visual Studio Installer closes without installing anything.</p>
+      <h3>A click does nothing</h3>
+      <p>Look at the <strong>GitFlow</strong> channel of the Output window, then at the extension log: <code>%TEMP%\servicehub\logs\*GitFlow.VSExtension*.log</code>.</p>
+      <h3>"No Git repository found"</h3>
+      <p>The extension looks for the repository from the open solution, then the selected item, then the active document. Open a solution located in a Git repository.</p>
+      <h3>"Some changes are not committed"</h3>
+      <p>Commit (Commit section) or run <code>git stash</code>, then try again. Untracked files don't count.</p>
+      <h3>My changed files don't appear in Commit</h3>
+      <p>Save them (<kbd>Ctrl</kbd>+<kbd>S</kbd>): git only sees files written to disk.</p>
+      <h3>The suggested release version already has a tag</h3>
+      <p>The next version is computed from the highest version tag on master. Type another version: an existing tag is refused.</p>
+      <h3>"Pull Request mode unavailable"</h3>
+      <p>The <code>origin</code> remote is neither GitHub nor Azure DevOps (a local folder, GitLab, Bitbucket…): use local merge. Check the URL with <code>git remote -v</code>. For a company Azure DevOps server, check the matching option in the settings (<a href="pull-requests.html#server">details</a>).</p>
+      <h3>"The platform rejected the request"</h3>
+      <p>The message from GitHub or Azure DevOps is shown as is: insufficient rights, PR already exists, missing target branch… After fixing it, run <em>Finish…</em> again: an already open PR is reused.</p>
+      <h3>Complete refuses: branch not contained in develop</h3>
+      <p>The PR was merged with <em>squash</em> or <em>rebase</em>: the branch commits are not in develop. Nothing is deleted. If the content was delivered, delete the branch yourself: <code>git branch -D feature/x</code>.</p>
+
+      <h2 id="compat">Compatibility</h2>
+      <table>
+        <tbody>
+          <tr><td>Visual Studio</td><td>2022 version 17.14 or later, 2026 (18.x). Community, Professional, Enterprise editions.</td></tr>
+          <tr><td>Git</td><td>Git for Windows 2.28 or later (installed with Visual Studio)</td></tr>
+          <tr><td>Platforms (PR mode)</td><td>GitHub (github.com), Azure DevOps (dev.azure.com, *.visualstudio.com), Azure DevOps Server / TFS 2018 or later (declared in the settings)</td></tr>
+          <tr><td>Languages</td><td>English (default) and French, following the Visual Studio language. Generated messages (commit, PR) use the same language.</td></tr>
+          <tr><td>Configuration</td><td>Compatible with the <code>gitflow.*</code> keys of git-flow / git-flow-avh</td></tr>
+        </tbody>
+      </table>
+
+      <div class="next-prev">
+        <a class="btn" href="pull-requests.html">← Pull Request mode</a>
+        <a class="btn primary" href="index.html">Home</a>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="inner">
+      <span>GitFlow for Visual Studio — model: <a href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow">Atlassian Gitflow Workflow</a></span>
+      <a href="index.html">Home</a>
+    </div>
+  </footer>
+</body>
+</html>

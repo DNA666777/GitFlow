@@ -23,6 +23,7 @@ internal sealed class SettingsDialogViewModel : NotifyPropertyChangedObject
     private bool _deleteRemoteBranch;
     private bool _usePullRequest;
     private bool _pruneOnComplete;
+    private bool _azureDevOpsServer;
     private bool _isGlobalScope;
     private string _validationText = string.Empty;
 
@@ -119,12 +120,20 @@ internal sealed class SettingsDialogViewModel : NotifyPropertyChangedObject
         }
     }
 
-    /// <summary>"Clore la branche" (PR mode) uses git fetch --prune.</summary>
+    /// <summary>"Complete branch" (PR mode) uses git fetch --prune.</summary>
     [DataMember]
     public bool PruneOnComplete
     {
         get => _pruneOnComplete;
         set => SetProperty(ref _pruneOnComplete, value);
+    }
+
+    /// <summary>origin is declared as an Azure DevOps server (company URL not recognised automatically).</summary>
+    [DataMember]
+    public bool AzureDevOpsServer
+    {
+        get => _azureDevOpsServer;
+        set => SetProperty(ref _azureDevOpsServer, value);
     }
 
     [DataMember]
@@ -175,7 +184,7 @@ internal sealed class SettingsDialogViewModel : NotifyPropertyChangedObject
 
     public GitFlowSettings ToSettings() => new(
         new GitFlowConfig(MasterBranch.Trim(), DevelopBranch.Trim(), FeaturePrefix.Trim(), ReleasePrefix.Trim(), HotfixPrefix.Trim(), VersionTagPrefix.Trim()),
-        new FinishDefaults(PushAfterFinish, DeleteRemoteBranch, UsePullRequest, PruneOnComplete));
+        new FinishDefaults(PushAfterFinish, DeleteRemoteBranch, UsePullRequest, PruneOnComplete, AzureDevOpsServer));
 
     private void Apply(GitFlowSettings settings)
     {
@@ -194,6 +203,7 @@ internal sealed class SettingsDialogViewModel : NotifyPropertyChangedObject
         DeleteRemoteBranch = settings.Finish.DeleteRemoteBranch;
         UsePullRequest = settings.Finish.UsePullRequest;
         PruneOnComplete = settings.Finish.PruneOnComplete;
+        AzureDevOpsServer = settings.Finish.AzureDevOpsServer;
         Validate();
     }
 
@@ -241,6 +251,8 @@ internal sealed class SettingsLabels
     [DataMember] public string ModeLocal => Strings.FinishModeLocal;
     [DataMember] public string ModePullRequest => Strings.FinishModePullRequest;
     [DataMember] public string Prune => Strings.SettingsPruneOnComplete;
+    [DataMember] public string AzureDevOpsServer => Strings.SettingsAzureDevOpsServer;
+    [DataMember] public string AzureDevOpsServerHint => Strings.SettingsAzureDevOpsServerHint;
 }
 
 internal sealed class SettingsDialogControl(SettingsDialogViewModel dataContext) : RemoteUserControl(dataContext);

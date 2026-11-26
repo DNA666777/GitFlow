@@ -8,9 +8,9 @@
   <data name="Title" xml:space="preserve"><value>GitFlow</value></data>
   <data name="OutputPaneTitle" xml:space="preserve"><value>GitFlow</value></data>
   <data name="OperationInProgress" xml:space="preserve"><value>Une opération GitFlow est déjà en cours. Attendez qu'elle se termine.</value></data>
-  <data name="NoRepository" xml:space="preserve"><value>Aucun dépôt Git trouvé pour la solution ou le fichier ouvert. Ouvrez une solution placée dans un dépôt Git.</value></data>
+  <data name="NoRepository" xml:space="preserve"><value>Aucun dépôt Git trouvé pour la solution ou le fichier ouvert.</value></data>
   <data name="UnexpectedError" xml:space="preserve"><value>Erreur inattendue : {0}
-Le détail est dans la fenêtre Sortie « GitFlow ».</value></data>
+Le détail est dans la fenêtre Sortie, canal GitFlow.</value></data>
   <data name="WarningsHeader" xml:space="preserve"><value>Attention :</value></data>
   <data name="ConflictedFiles" xml:space="preserve"><value>Fichiers en conflit :</value></data>
 
@@ -25,10 +25,10 @@ Le détail est dans la fenêtre Sortie « GitFlow ».</value></data>
   <data name="StartAskFeature" xml:space="preserve"><value>Nom de la feature (branche {0}&lt;nom&gt;, créée depuis {1}) :</value></data>
   <data name="StartAskRelease" xml:space="preserve"><value>Version de la release (branche {0}&lt;version&gt;, créée depuis {1}) :</value></data>
   <data name="StartAskHotfix" xml:space="preserve"><value>Version du hotfix (branche {0}&lt;version&gt;, créée depuis {1}) :</value></data>
-  <data name="StartReleaseNothingNew" xml:space="preserve"><value>{0} ne contient aucun nouveau commit depuis la dernière release : tout est déjà dans {1}.
+  <data name="StartReleaseNothingNew" xml:space="preserve"><value>Aucun nouveau commit sur {0} depuis la dernière release : tout est déjà dans {1}.
 
-La release serait identique à la version précédente. Démarrer quand même ?</value></data>
-  <data name="StartSuccess" xml:space="preserve"><value>Branche « {0} » créée depuis « {1} » et extraite.</value></data>
+La release serait identique à la précédente. Démarrer quand même ?</value></data>
+  <data name="StartSuccess" xml:space="preserve"><value>Branche « {0} » créée depuis « {1} » (checkout fait).</value></data>
 
   <data name="FinishConfirmFeature" xml:space="preserve"><value>Terminer « {0} » ?
 
@@ -42,19 +42,19 @@ La release serait identique à la version précédente. Démarrer quand même ?<
 • suppression de la branche locale</value></data>
   <data name="FinishConfirmResume" xml:space="preserve"><value>Le finish de « {0} » s'est arrêté sur un conflit.
 
-Si les conflits sont résolus et les fichiers ajoutés (git add), le finish va reprendre là où il s'était arrêté. Continuer ?</value></data>
+Si les conflits sont résolus et les fichiers ajoutés (git add), le finish reprend là où il s'est arrêté. Continuer ?</value></data>
   <data name="FinishAskTagMessage" xml:space="preserve"><value>Message du tag « {0} » :</value></data>
-  <data name="FinishSuccess" xml:space="preserve"><value>« {0} » est terminée. Branche courante : {1}.</value></data>
-  <data name="FinishSuccessTagged" xml:space="preserve"><value>« {0} » est terminée et taggée « {2} ». Branche courante : {1}.</value></data>
+  <data name="FinishSuccess" xml:space="preserve"><value>« {0} » est terminée. Branche actuelle : {1}.</value></data>
+  <data name="FinishSuccessTagged" xml:space="preserve"><value>« {0} » est terminée et taggée « {2} ». Branche actuelle : {1}.</value></data>
 
   <data name="PublishSuccess" xml:space="preserve"><value>« {0} » est poussée sur origin.</value></data>
 
   <!-- Finish options dialog -->
   <data name="FinishDialogTitle" xml:space="preserve"><value>Terminer {0}</value></data>
-  <data name="FinishAlreadyMerged" xml:space="preserve"><value>Cette branche est déjà mergée dans toutes ses cibles : le finish posera le tag s'il manque, puis supprimera la branche.</value></data>
-  <data name="FinishPushOption" xml:space="preserve"><value>Pousser les branches mergées (et le tag) vers origin à la fin</value></data>
+  <data name="FinishAlreadyMerged" xml:space="preserve"><value>Cette branche est déjà mergée dans toutes ses cibles : le finish crée le tag s'il manque, puis supprime la branche.</value></data>
+  <data name="FinishPushOption" xml:space="preserve"><value>Faire le push des branches (et du tag) vers origin à la fin</value></data>
   <data name="FinishDeleteRemoteOption" xml:space="preserve"><value>Supprimer aussi la branche sur origin</value></data>
-  <data name="FinishNoRemote" xml:space="preserve"><value>Pas de remote « origin » : les options distantes sont indisponibles.</value></data>
+  <data name="FinishNoRemote" xml:space="preserve"><value>Pas de remote « origin » : ces options sont indisponibles.</value></data>
 
   <!-- Tool window -->
   <data name="ToolWindowTitle" xml:space="preserve"><value>GitFlow</value></data>
@@ -67,8 +67,8 @@ Si les conflits sont résolus et les fichiers ajoutés (git add), le finish va r
   <data name="LabelBranch" xml:space="preserve"><value>Branche</value></data>
   <data name="LabelType" xml:space="preserve"><value>Type</value></data>
   <data name="LabelState" xml:space="preserve"><value>État</value></data>
-  <data name="LabelSync" xml:space="preserve"><value>Distant</value></data>
-  <data name="NoRepositoryHint" xml:space="preserve"><value>Aucun dépôt Git : ouvrez une solution placée dans un dépôt Git.</value></data>
+  <data name="LabelSync" xml:space="preserve"><value>Remote</value></data>
+  <data name="NoRepositoryHint" xml:space="preserve"><value>Aucun dépôt Git : ouvrez une solution qui se trouve dans un dépôt Git.</value></data>
   <data name="NotInitializedHint" xml:space="preserve"><value>GitFlow n'est pas initialisé dans ce dépôt.</value></data>
   <data name="SectionStart" xml:space="preserve"><value>Démarrer une branche</value></data>
   <data name="SectionBranches" xml:space="preserve"><value>Branches en cours</value></data>
@@ -79,22 +79,22 @@ Si les conflits sont résolus et les fichiers ajoutés (git add), le finish va r
   <data name="TypeFeature" xml:space="preserve"><value>Feature</value></data>
   <data name="TypeRelease" xml:space="preserve"><value>Release</value></data>
   <data name="TypeHotfix" xml:space="preserve"><value>Hotfix</value></data>
-  <data name="TypeOther" xml:space="preserve"><value>— (pas une branche de travail)</value></data>
-  <data name="DetachedHead" xml:space="preserve"><value>(HEAD détachée)</value></data>
-  <data name="StateClean" xml:space="preserve"><value>Propre</value></data>
+  <data name="TypeOther" xml:space="preserve"><value>— (pas une branche feature, release ou hotfix)</value></data>
+  <data name="DetachedHead" xml:space="preserve"><value>(HEAD détaché)</value></data>
+  <data name="StateClean" xml:space="preserve"><value>Aucune modification</value></data>
   <data name="StateDirty" xml:space="preserve"><value>Modifications non commitées</value></data>
   <data name="StateMerging" xml:space="preserve"><value>Merge en cours</value></data>
-  <data name="SyncFormat" xml:space="preserve"><value>{0} commit(s) à pousser, {1} à récupérer</value></data>
-  <data name="SyncNoUpstream" xml:space="preserve"><value>Branche pas encore poussée</value></data>
+  <data name="SyncFormat" xml:space="preserve"><value>{0} commit(s) en avance, {1} en retard</value></data>
+  <data name="SyncNoUpstream" xml:space="preserve"><value>Pas encore poussée</value></data>
   <data name="SyncNoRemote" xml:space="preserve"><value>Pas de remote origin</value></data>
-  <data name="PendingFinish" xml:space="preserve"><value>Le finish de « {0} » s'est arrêté sur un conflit. Résolvez les conflits, ajoutez les fichiers (git add), puis reprenez.</value></data>
-  <data name="BadgeCurrent" xml:space="preserve"><value>courante</value></data>
+  <data name="PendingFinish" xml:space="preserve"><value>Le finish de « {0} » s'est arrêté sur un conflit. Résolvez les conflits, faites git add, puis reprenez.</value></data>
+  <data name="BadgeCurrent" xml:space="preserve"><value>actuelle</value></data>
   <data name="BadgeMerged" xml:space="preserve"><value>déjà mergée</value></data>
   <data name="SectionCommit" xml:space="preserve"><value>Commit</value></data>
   <data name="ChangesHeader" xml:space="preserve"><value>Modifications ({0})</value></data>
   <data name="NoChanges" xml:space="preserve"><value>Aucune modification.</value></data>
-  <data name="CommitModeStaged" xml:space="preserve"><value>Seuls les fichiers indexés seront commités.</value></data>
-  <data name="CommitModeAll" xml:space="preserve"><value>Toutes les modifications seront commitées (nouveaux fichiers compris).</value></data>
+  <data name="CommitModeStaged" xml:space="preserve"><value>Seuls les fichiers stagés seront commités.</value></data>
+  <data name="CommitModeAll" xml:space="preserve"><value>Toutes les modifications seront commitées, nouveaux fichiers compris.</value></data>
   <data name="ButtonCommit" xml:space="preserve"><value>Commiter</value></data>
   <data name="ButtonRegenerate" xml:space="preserve"><value>Régénérer le message</value></data>
   <data name="ProgressCommit" xml:space="preserve"><value>GitFlow : commit</value></data>
@@ -116,44 +116,46 @@ Si les conflits sont résolus et les fichiers ajoutés (git add), le finish va r
   <data name="SettingsDevelop" xml:space="preserve"><value>Développement</value></data>
   <data name="SettingsPrefixes" xml:space="preserve"><value>Préfixes</value></data>
   <data name="SettingsTagPrefix" xml:space="preserve"><value>Préfixe de tag</value></data>
-  <data name="SettingsTagPrefixHint" xml:space="preserve"><value>Vide par défaut (tags 1.4.0), ou « v » (tags v1.4.0).</value></data>
+  <data name="SettingsTagPrefixHint" xml:space="preserve"><value>Vide par défaut (tags 1.4.0) ou « v » (tags v1.4.0).</value></data>
   <data name="SettingsRenameNote" xml:space="preserve"><value>Changer un préfixe ne renomme pas les branches existantes.</value></data>
   <data name="SettingsFinishDefaults" xml:space="preserve"><value>Options par défaut du Finish</value></data>
   <data name="SettingsReset" xml:space="preserve"><value>Réinitialiser aux valeurs par défaut</value></data>
   <data name="SettingsConfirmWarnings" xml:space="preserve"><value>Enregistrer quand même ?</value></data>
   <data name="SettingsSavedLocal" xml:space="preserve"><value>Paramètres GitFlow enregistrés pour ce dépôt.</value></data>
-  <data name="SettingsSavedGlobal" xml:space="preserve"><value>Paramètres GitFlow enregistrés pour tous vos dépôts. Ils servent de valeurs par défaut à l'initialisation des nouveaux dépôts.</value></data>
+  <data name="SettingsSavedGlobal" xml:space="preserve"><value>Paramètres GitFlow enregistrés pour tous vos dépôts. Ils serviront de valeurs par défaut pour les nouveaux dépôts.</value></data>
   <!-- Pull Request mode (optional) -->
   <data name="FinishMode" xml:space="preserve"><value>Mode</value></data>
   <data name="FinishModeLocal" xml:space="preserve"><value>Merge local</value></data>
   <data name="FinishModePullRequest" xml:space="preserve"><value>Pull Request</value></data>
-  <data name="FinishPullRequestNote" xml:space="preserve"><value>La branche sera poussée et une pull request sera créée pour chaque cible. Vous relirez les messages à l'étape suivante. Rien n'est mergé localement.</value></data>
+  <data name="FinishPullRequestNote" xml:space="preserve"><value>La branche sera poussée et une pull request sera créée pour chaque cible. Vous pourrez relire les messages à l'étape suivante. Aucun merge en local.</value></data>
   <data name="FinishPullRequestNotNow" xml:space="preserve"><value>Mode Pull Request indisponible : un merge local est en cours ou déjà fait pour cette branche.</value></data>
   <data name="PullRequestDraftsTitle" xml:space="preserve"><value>Pull requests de {0}</value></data>
-  <data name="PullRequestDraftsIntro" xml:space="preserve"><value>Messages générés depuis git. Relisez-les et modifiez-les si besoin avant la création sur {0}.</value></data>
+  <data name="PullRequestDraftsIntro" xml:space="preserve"><value>Messages générés à partir de git. Relisez-les et modifiez-les si besoin avant de créer les pull requests sur {0}.</value></data>
   <data name="PullRequestTitleLabel" xml:space="preserve"><value>Titre</value></data>
   <data name="PullRequestDescriptionLabel" xml:space="preserve"><value>Description</value></data>
   <data name="ProgressPullRequests" xml:space="preserve"><value>GitFlow : pull requests pour {0}</value></data>
-  <data name="PullRequestsCreated" xml:space="preserve"><value>Pull request(s) prête(s) pour « {0} » :</value></data>
-  <data name="PullRequestsTagLater" xml:space="preserve"><value>Le tag « {0} » sera posé quand la PR vers {1} sera mergée : fenêtre GitFlow, section Pull requests.</value></data>
+  <data name="PullRequestsCreated" xml:space="preserve"><value>Pull request(s) créée(s) pour « {0} » :</value></data>
+  <data name="PullRequestsTagLater" xml:space="preserve"><value>Le tag « {0} » sera créé quand la PR vers {1} sera mergée (fenêtre GitFlow, section Pull requests).</value></data>
   <data name="PullRequestsOpenAsk" xml:space="preserve"><value>Ouvrir dans le navigateur ?</value></data>
   <data name="ProgressTag" xml:space="preserve"><value>GitFlow : tag de {0}</value></data>
-  <data name="TagDone" xml:space="preserve"><value>Tag « {0} » posé sur le commit de merge et poussé vers origin.</value></data>
-  <data name="ProgressComplete" xml:space="preserve"><value>GitFlow : clôture de {0}</value></data>
-  <data name="CompleteDone" xml:space="preserve"><value>« {0} » est terminée : ses pull requests sont mergées et la branche locale est supprimée.</value></data>
+  <data name="TagDone" xml:space="preserve"><value>Tag « {0} » créé sur le commit de merge et poussé sur origin.</value></data>
+  <data name="ProgressComplete" xml:space="preserve"><value>GitFlow : finalisation de {0}</value></data>
+  <data name="CompleteDone" xml:space="preserve"><value>« {0} » est finalisée : ses pull requests sont mergées et la branche locale est supprimée.</value></data>
   <data name="SectionPullRequests" xml:space="preserve"><value>Pull requests</value></data>
   <data name="NoPullRequests" xml:space="preserve"><value>Aucune pull request suivie.</value></data>
   <data name="ButtonRefreshPullRequests" xml:space="preserve"><value>Actualiser les PR</value></data>
   <data name="ButtonOpen" xml:space="preserve"><value>Ouvrir</value></data>
-  <data name="ButtonTag" xml:space="preserve"><value>Poser le tag {0}</value></data>
-  <data name="ButtonComplete" xml:space="preserve"><value>Clore la branche</value></data>
+  <data name="ButtonTag" xml:space="preserve"><value>Créer le tag {0}</value></data>
+  <data name="ButtonComplete" xml:space="preserve"><value>Finaliser la branche</value></data>
   <data name="PrStateOpen" xml:space="preserve"><value>ouverte</value></data>
   <data name="PrStateMerged" xml:space="preserve"><value>mergée</value></data>
   <data name="PrStateClosed" xml:space="preserve"><value>fermée sans merge</value></data>
   <data name="PrStateUnknown" xml:space="preserve"><value>état non vérifié</value></data>
-  <data name="SettingsPruneOnComplete" xml:space="preserve"><value>Pull Request : « Clore la branche » nettoie les références des branches supprimées sur le serveur (git fetch --prune)</value></data>
+  <data name="SettingsPruneOnComplete" xml:space="preserve"><value>Pull Request : « Finaliser la branche » fait un git fetch --prune (supprime les références des branches effacées sur le serveur)</value></data>
   <data name="SettingsFinishMode" xml:space="preserve"><value>Mode de Finish par défaut</value></data>
-  <data name="StatusWorking" xml:space="preserve"><value>Opération en cours…</value></data>
+  <data name="StatusWorking" xml:space="preserve"><value>En cours…</value></data>
   <data name="StatusSucceeded" xml:space="preserve"><value>Terminé.</value></data>
   <data name="StatusSucceededWithWarnings" xml:space="preserve"><value>Terminé, avec des avertissements.</value></data>
+  <data name="SettingsAzureDevOpsServer" xml:space="preserve"><value>Pull Request : origin est un serveur Azure DevOps (URL d'entreprise)</value></data>
+  <data name="SettingsAzureDevOpsServerHint" xml:space="preserve"><value>Pour les URL non reconnues automatiquement, par exemple https://tfs.entreprise.com/tfs/Collection/Projet/_git/Repo. Sans identifiant git, votre compte Windows est utilisé.</value></data>
 </root>

@@ -54,7 +54,7 @@ If the conflicts are resolved and the files staged (git add), the finish will re
   <!-- Finish options dialog -->
   <data name="FinishDialogTitle" xml:space="preserve"><value>Finish {0}</value></data>
   <data name="FinishAlreadyMerged" xml:space="preserve"><value>This branch is already merged into all its targets: the finish will create the tag if missing, then delete the branch.</value></data>
-  <data name="FinishPushOption" xml:space="preserve"><value>Push the merged branches (and the tag) to origin at the end</value></data>
+  <data name="FinishPushOption" xml:space="preserve"><value>Push the branches (and the tag) to origin at the end</value></data>
   <data name="FinishDeleteRemoteOption" xml:space="preserve"><value>Also delete the branch on origin</value></data>
   <data name="FinishNoRemote" xml:space="preserve"><value>No "origin" remote: the remote options are unavailable.</value></data>
 
@@ -81,12 +81,12 @@ If the conflicts are resolved and the files staged (git add), the finish will re
   <data name="TypeFeature" xml:space="preserve"><value>Feature</value></data>
   <data name="TypeRelease" xml:space="preserve"><value>Release</value></data>
   <data name="TypeHotfix" xml:space="preserve"><value>Hotfix</value></data>
-  <data name="TypeOther" xml:space="preserve"><value>— (not a work branch)</value></data>
+  <data name="TypeOther" xml:space="preserve"><value>— (not a feature, release or hotfix branch)</value></data>
   <data name="DetachedHead" xml:space="preserve"><value>(detached HEAD)</value></data>
   <data name="StateClean" xml:space="preserve"><value>Clean</value></data>
   <data name="StateDirty" xml:space="preserve"><value>Uncommitted changes</value></data>
   <data name="StateMerging" xml:space="preserve"><value>Merge in progress</value></data>
-  <data name="SyncFormat" xml:space="preserve"><value>{0} commit(s) to push, {1} to pull</value></data>
+  <data name="SyncFormat" xml:space="preserve"><value>{0} commit(s) ahead, {1} behind</value></data>
   <data name="SyncNoUpstream" xml:space="preserve"><value>Branch not pushed yet</value></data>
   <data name="SyncNoRemote" xml:space="preserve"><value>No origin remote</value></data>
   <data name="PendingFinish" xml:space="preserve"><value>Finishing "{0}" stopped on a conflict. Resolve the conflicts, stage the files (git add), then resume.</value></data>
@@ -136,26 +136,28 @@ If the conflicts are resolved and the files staged (git add), the finish will re
   <data name="PullRequestTitleLabel" xml:space="preserve"><value>Title</value></data>
   <data name="PullRequestDescriptionLabel" xml:space="preserve"><value>Description</value></data>
   <data name="ProgressPullRequests" xml:space="preserve"><value>GitFlow: pull requests for {0}</value></data>
-  <data name="PullRequestsCreated" xml:space="preserve"><value>Pull request(s) ready for "{0}":</value></data>
+  <data name="PullRequestsCreated" xml:space="preserve"><value>Pull request(s) created for "{0}":</value></data>
   <data name="PullRequestsTagLater" xml:space="preserve"><value>Tag "{0}" will be created once the PR into {1} is merged: GitFlow window, Pull requests section.</value></data>
   <data name="PullRequestsOpenAsk" xml:space="preserve"><value>Open in the browser?</value></data>
   <data name="ProgressTag" xml:space="preserve"><value>GitFlow: tagging {0}</value></data>
   <data name="TagDone" xml:space="preserve"><value>Tag "{0}" created on the merge commit and pushed to origin.</value></data>
-  <data name="ProgressComplete" xml:space="preserve"><value>GitFlow: closing {0}</value></data>
-  <data name="CompleteDone" xml:space="preserve"><value>"{0}" is finished: its pull requests are merged and the local branch is deleted.</value></data>
+  <data name="ProgressComplete" xml:space="preserve"><value>GitFlow: completing {0}</value></data>
+  <data name="CompleteDone" xml:space="preserve"><value>"{0}" is complete: its pull requests are merged and the local branch is deleted.</value></data>
   <data name="SectionPullRequests" xml:space="preserve"><value>Pull requests</value></data>
   <data name="NoPullRequests" xml:space="preserve"><value>No pull request followed.</value></data>
   <data name="ButtonRefreshPullRequests" xml:space="preserve"><value>Refresh PRs</value></data>
   <data name="ButtonOpen" xml:space="preserve"><value>Open</value></data>
   <data name="ButtonTag" xml:space="preserve"><value>Create tag {0}</value></data>
-  <data name="ButtonComplete" xml:space="preserve"><value>Close branch</value></data>
+  <data name="ButtonComplete" xml:space="preserve"><value>Complete branch</value></data>
   <data name="PrStateOpen" xml:space="preserve"><value>open</value></data>
   <data name="PrStateMerged" xml:space="preserve"><value>merged</value></data>
   <data name="PrStateClosed" xml:space="preserve"><value>closed without merge</value></data>
   <data name="PrStateUnknown" xml:space="preserve"><value>state not checked</value></data>
-  <data name="SettingsPruneOnComplete" xml:space="preserve"><value>Pull Request: "Close branch" cleans up references to branches deleted on the server (git fetch --prune)</value></data>
+  <data name="SettingsPruneOnComplete" xml:space="preserve"><value>Pull Request: "Complete branch" runs git fetch --prune (removes references to branches deleted on the server)</value></data>
   <data name="SettingsFinishMode" xml:space="preserve"><value>Default Finish mode</value></data>
   <data name="StatusWorking" xml:space="preserve"><value>Working…</value></data>
   <data name="StatusSucceeded" xml:space="preserve"><value>Done.</value></data>
   <data name="StatusSucceededWithWarnings" xml:space="preserve"><value>Done, with warnings.</value></data>
+  <data name="SettingsAzureDevOpsServer" xml:space="preserve"><value>Pull Request: origin is an Azure DevOps server (company URL)</value></data>
+  <data name="SettingsAzureDevOpsServerHint" xml:space="preserve"><value>For URLs that are not recognised automatically, such as https://tfs.company.com/tfs/Collection/Project/_git/Repo. Without a git credential, your Windows account is used.</value></data>
 </root>

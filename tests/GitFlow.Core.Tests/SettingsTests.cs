@@ -60,6 +60,7 @@ public class SettingsTests
             "config --local gitflowvs.finish.deleteremote false",
             "config --local gitflowvs.finish.mode local",
             "config --local gitflowvs.pr.prune false",
+            "config --local gitflowvs.pr.platform auto",
         ]);
     }
 
@@ -73,7 +74,7 @@ public class SettingsTests
 
         result.IsSuccess.ShouldBeTrue();
         git.MutatingCalls.ShouldAllBe(c => c.StartsWith("config --global ", StringComparison.Ordinal));
-        git.MutatingCalls.Count.ShouldBe(10);
+        git.MutatingCalls.Count.ShouldBe(11);
     }
 
     [Fact]
@@ -84,6 +85,16 @@ public class SettingsTests
 
         (await new GitFlowSettingsService(off).ReadFinishDefaultsAsync(Repo, ConfigScope.Local)).PruneOnComplete.ShouldBeFalse();
         (await new GitFlowSettingsService(on).ReadFinishDefaultsAsync(Repo, ConfigScope.Local)).PruneOnComplete.ShouldBeTrue("global value applies to this repo");
+    }
+
+    [Fact]
+    public async Task Azure_devops_server_declaration_is_optional_and_off_by_default()
+    {
+        var off = WithVsKeys(FakeGitRunner.Initialized());
+        var on = WithVsKeys(FakeGitRunner.Initialized(), local: "gitflowvs.pr.platform\nAzureDevOps\0");
+
+        (await new GitFlowSettingsService(off).ReadFinishDefaultsAsync(Repo, ConfigScope.Local)).AzureDevOpsServer.ShouldBeFalse();
+        (await new GitFlowSettingsService(on).ReadFinishDefaultsAsync(Repo, ConfigScope.Local)).AzureDevOpsServer.ShouldBeTrue();
     }
 
     [Fact]
@@ -143,7 +154,7 @@ public class SettingsTests
         warning.Kind.ShouldBe(SettingsWarningKind.OrphanedBranches);
         warning.Prefix.ShouldBe("feature/");
         warning.Items.ShouldBe(["feature/a", "feature/b"]);
-        FlowMessages.Describe(warnings[0]).ShouldStartWith("2 branche(s) utilisent l'ancien préfixe « feature/ » : feature/a, feature/b.");
+        FlowMessages.Describe(warnings[0]).ShouldStartWith("2 branche(s) utilisent encore l'ancien préfixe « feature/ » : feature/a, feature/b.");
         git.MutatingCalls.ShouldBeEmpty();
     }
 

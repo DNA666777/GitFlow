@@ -181,6 +181,38 @@ public class PullRequestProviderTests
         ex.Message.ShouldStartWith("TF401179");
     }
 
+    private static readonly RemoteRepository Server =
+        RemoteRepository.TryParse("https://tfs.contoso.com/tfs/Collection/Proj/_git/Repo", azureDevOpsServer: true)!;
+
+    [Fact]
+    public async Task Azure_devops_server_uses_api_4_1_and_windows_credentials_without_a_secret()
+    {
+        var http = new FakeHttpHandler();
+        var windows = new FakeHttpHandler().Respond(HttpStatusCode.Created, AzureActivePr);
+
+        var pr = await new AzureDevOpsPullRequestProvider(new HttpClient(http), new HttpClient(windows))
+            .CreateAsync(Server, HostCredential.WindowsIntegrated, Draft, default);
+
+        pr.WebUrl.ShouldBe(new Uri("https://tfs.contoso.com/tfs/Collection/Proj/_git/Repo/pullrequest/7"));
+        http.Requests.ShouldBeEmpty();
+        var (request, _) = windows.Requests.ShouldHaveSingleItem();
+        request.RequestUri.ShouldBe(new Uri("https://tfs.contoso.com/tfs/Collection/Proj/_apis/git/repositories/Repo/pullrequests?api-version=4.1"));
+        request.Headers.Authorization.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task Azure_devops_server_with_a_pat_uses_basic_auth()
+    {
+        var http = new FakeHttpHandler().Respond(HttpStatusCode.OK, """{"value":[]}""");
+        var windows = new FakeHttpHandler();
+
+        await new AzureDevOpsPullRequestProvider(new HttpClient(http), new HttpClient(windows)).FindAsync(Server, Pat, "feature/x", "develop", default);
+
+        windows.Requests.ShouldBeEmpty();
+        http.Requests[0].Request.Headers.Authorization!.Scheme.ShouldBe("Basic");
+        http.Requests[0].Request.RequestUri!.Query.ShouldEndWith("&api-version=4.1");
+    }
+
     [Fact]
     public void Legacy_visualstudio_com_api_base()
     {

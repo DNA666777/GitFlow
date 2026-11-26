@@ -1,6 +1,6 @@
 # Référence et dépannage
 
-[Accueil](README.md) · [Guide](guide.md) · [Mode Pull Request](pull-requests.md) · **Référence et dépannage**
+[Accueil](README.md) · [Guide](guide.md) · [Mode Pull Request](pull-requests.md) · **Référence et dépannage** · [English](en/reference.md)
 
 Les règles appliquées, les clés de configuration et les réponses aux problèmes courants.
 
@@ -34,12 +34,12 @@ L'extension applique strictement le [Gitflow Workflow d'Atlassian](https://www.a
 
 | | |
 |---|---|
-| Arbre de travail sale | Start et Finish sont refusés. L'extension ne fait jamais de *stash* automatique : commitez ou mettez de côté vous-même. Les fichiers non suivis ne bloquent pas. |
+| Modifications non commitées | Start et Finish sont refusés. L'extension ne fait jamais de stash automatique : faites un commit ou un `git stash` vous-même. Les fichiers non suivis ne bloquent pas. |
 | Vérifications avant d'agir | Branche de base existante, nom valide pour git (`git check-ref-format`), branche cible inexistante, tag inexistant. |
 | Conflit de merge | Arrêt immédiat, rien n'est supprimé, reprise possible après résolution. |
 | Commandes interdites | Jamais de `push --force`, `reset --hard` ni `branch -D`. Une branche non mergée n'est jamais supprimée. |
 | Commits | Refusés sur la branche de production et pendant un merge. |
-| Pull Requests | Créées et suivies, jamais approuvées ni mergées par l'extension. Le tag n'est posé que sur un commit de merge vérifié sur `origin/master`. |
+| Pull Requests | Créées et suivies, jamais approuvées ni mergées par l'extension. Le tag n'est créé que sur un commit de merge vérifié sur `origin/master`. |
 | Identifiants | Demandés à git à chaque fois, jamais stockés ni écrits dans les logs. |
 
 ## Clés de configuration
@@ -64,10 +64,11 @@ Elles sont stockées dans la git config du dépôt (`--local`) ou de l'utilisate
 | `gitflowvs.finish.mode` | `local` | Mode pré-sélectionné au Finish : `local` ou `pullrequest` |
 | `gitflowvs.finish.push` | `false` | Pré-coche « Pousser » au Finish local |
 | `gitflowvs.finish.deleteremote` | `false` | Pré-coche « Supprimer aussi la branche sur origin » |
-| `gitflowvs.pr.prune` | `false` | *Clore la branche* utilise `git fetch --prune` |
+| `gitflowvs.pr.prune` | `false` | *Finaliser la branche* utilise `git fetch --prune` |
 | `gitflowvs.pr.ticketpattern` | ABC-123 et #42 | Expression régulière des références de tickets dans les PR |
+| `gitflowvs.pr.platform` | `auto` | `azuredevops` : origin est un serveur Azure DevOps d'entreprise (URL non reconnue automatiquement) |
 
-Les PR suivies sont mémorisées dans la config locale, sous `gitflowvs-pr.<branche>.link`. Elles sont effacées à la clôture.
+Les PR suivies sont mémorisées dans la config locale, sous `gitflowvs-pr.<branche>.link`. Elles sont effacées quand la branche est finalisée.
 
 Exemple pour passer un dépôt en préfixe de tag `v` :
 
@@ -103,7 +104,7 @@ L'extension cherche le dépôt dans cet ordre : la solution ouverte, puis l'él�
 
 ### « Des modifications ne sont pas commitées »
 
-Commitez (section Commit), ou mettez de côté avec `git stash`, puis réessayez. Les fichiers non suivis ne comptent pas.
+Faites un commit (section Commit) ou un `git stash`, puis réessayez. Les fichiers non suivis ne comptent pas.
 
 ### Mes fichiers modifiés n'apparaissent pas dans Commit
 
@@ -115,13 +116,13 @@ La version suivante est calculée depuis le plus grand tag de version présent s
 
 ### « Mode Pull Request indisponible »
 
-Le remote `origin` n'est ni GitHub ni Azure DevOps (un dossier local, GitLab, Bitbucket…) : utilisez le merge local. Vérifiez l'URL avec `git remote -v`.
+Le remote `origin` n'est ni GitHub ni Azure DevOps (un dossier local, GitLab, Bitbucket…) : utilisez le merge local. Vérifiez l'URL avec `git remote -v`. Pour un serveur Azure DevOps d'entreprise, cochez l'option correspondante dans les paramètres ([détails](pull-requests.md#serveur-azure-devops-dentreprise)).
 
 ### « La plateforme a refusé la demande »
 
 Le message de GitHub ou d'Azure DevOps est affiché tel quel : droits insuffisants, PR déjà existante, branche cible absente… Après correction, relancez *Terminer…* : une PR déjà ouverte est réutilisée.
 
-### Clore refuse : branche non contenue dans develop
+### Finaliser refuse : branche non contenue dans develop
 
 La PR a été mergée par *squash* ou *rebase* : les commits de la branche ne sont pas dans develop, donc rien n'est supprimé. Si le contenu est bien livré, supprimez la branche vous-même : `git branch -D feature/x`.
 
@@ -131,7 +132,7 @@ La PR a été mergée par *squash* ou *rebase* : les commits de la branche ne so
 |---|---|
 | Visual Studio | 2022 version 17.14 ou plus, 2026 (18.x). Éditions Community, Professional, Enterprise. |
 | Git | Git for Windows 2.28 ou plus (installé avec Visual Studio) |
-| Plateformes (mode PR) | GitHub (github.com), Azure DevOps (dev.azure.com, *.visualstudio.com) |
+| Plateformes (mode PR) | GitHub (github.com), Azure DevOps (dev.azure.com, *.visualstudio.com), Azure DevOps Server / TFS 2018 ou plus (à déclarer dans les paramètres) |
 | Langues | Anglais (par défaut) et français, selon la langue de Visual Studio. Les messages générés (commit, PR) suivent la même langue. |
 | Configuration | Compatible avec les clés `gitflow.*` de git-flow / git-flow-avh |
 

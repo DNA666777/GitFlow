@@ -113,7 +113,7 @@ Uniquement les trois types du modèle standard — **aucun autre type** (pas de 
 
 Contexte : sur certains repos, `master` et `develop` sont protégées côté serveur → aucun merge direct n'est possible, tout passe par PR.
 **Le mode PR est une OPTION, pas le mode par défaut** (décision utilisateur du 2026-11-24) : le Finish local reste le défaut.
-- Option « Clore la branche » avec `git fetch --prune` (nettoie les `origin/*` des branches supprimées sur le serveur) :
+- Option « Finaliser la branche » (/ « Complete branch ») avec `git fetch --prune` (nettoie les `origin/*` des branches supprimées sur le serveur) :
   clé `gitflowvs.pr.prune`, booléen, **désactivée par défaut** ; ne touche jamais aux branches locales.
 - Paramètres : « Mode de Finish par défaut » = *Merge local* (défaut) ou *Pull Request*, clé `gitflowvs.finish.mode` = `local` | `pullrequest`
   (même portée locale/globale que les autres options).
@@ -132,7 +132,7 @@ Flow en mode PR :
 | hotfix  | push + PR `hotfix/x` → master **et** PR `hotfix/x` → develop (ou → release en cours) | tag sur le commit de merge de master |
 
 - Le tag ne peut être posé qu'une fois la PR vers master mergée : la tool window affiche les PR ouvertes du flow,
-  détecte quand celle vers master est mergée et propose « Poser le tag `{prefix}{version}` et pousser ».
+  détecte quand celle vers master est mergée et propose « Créer le tag `{prefix}{version}` » (créé puis poussé).
 - Suppression de la branche locale seulement quand **toutes** ses PR sont mergées.
 - Ne jamais approuver ni merger une PR à la place de l'utilisateur : l'extension crée et suit, la revue reste humaine.
 
@@ -151,6 +151,11 @@ Flow en mode PR :
 **Plateformes cibles (décision du 2026-11-24) : GitHub et Azure DevOps (Azure Repos)** — deux implémentations de `IPullRequestProvider`.
 - Détection d'après l'URL du remote `origin` : `github.com` → GitHub ; `dev.azure.com/{org}/{projet}/_git/{repo}` ou `{org}.visualstudio.com/…` → Azure DevOps.
   Remote non reconnu → mode PR indisponible, le Finish local reste utilisable.
+- **Azure DevOps Server d'entreprise (décision du 2026-11-26)** : URL non reconnaissables automatiquement → l'utilisateur coche
+  « origin est un serveur Azure DevOps » dans les paramètres (clé `gitflowvs.pr.platform` = `auto` | `azuredevops`, même portée que les autres options).
+  Toute URL `…/_git/{repo}` est alors acceptée : API appelée sur la partie avant `_git/` (en https si le remote est en ssh), `api-version=4.1` (TFS 2018+).
+  Authentification : identifiants git s'il y en a (PAT, Basic), sinon session Windows (NTLM/Kerberos, `HttpClient` dédié `UseDefaultCredentials`),
+  comme git lui-même sur ces serveurs.
 - API REST de chaque plateforme (GitHub REST API ; Azure DevOps `…/_apis/git/repositories/{repo}/pullrequests`).
 - **Authentification : via le Git Credential Manager** (`git credential fill` / `git credential approve|reject`, appelés par `IGitRunner`),
   c.-à-d. les identifiants que git utilise déjà pour push/fetch. **Pas de `gh` ni d'`az`**, aucun token stocké par l'extension
@@ -200,6 +205,10 @@ Flow en mode PR :
 - Tests qui changent `FlowMessages.Culture` (statique) : dans la collection xUnit `MessagesCulture.Collection` ; les tests d'intégration
   fixent `fr-FR` (assertions en français, indépendantes de la langue de la machine).
 - Libellé « Publish » de l'interface : **Pousser** / **Push** (décision du 2026-11-25) ; l'opération Publish du modèle reste `git push -u origin <branche>`.
+- Vocabulaire français (décision du 2026-11-25) : garder le jargon git en anglais (commit, merge, push, fetch, stash, tag, stagé, remote, checkout),
+  pas de traductions littérales (« arbre sale », « poser le tag », « clore », « distant », « récupérer ») ni de formules marketing.
+- Documentation : anglais dans `docs/en/` (Markdown + site HTML) et `README.md`, français dans `docs/` et `README.fr.md`.
+  Toute modification de la doc se fait dans les deux langues.
 - `async`/`await` partout pour l'I/O, `CancellationToken` propagé.
 - `IGitRunner` est la seule porte vers git : `Task<GitResult> RunAsync(string workingDir, IReadOnlyList<string> args, CancellationToken ct)`.
   Toujours passer les arguments en liste (pas de concaténation de chaînes → pas d'injection via un nom de branche).

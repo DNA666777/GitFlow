@@ -11,8 +11,8 @@
   <data name="Error_NotInitialized" xml:space="preserve"><value>GitFlow n'est pas initialisé dans ce dépôt. Lancez Init.</value></data>
   <data name="Error_NoCommits" xml:space="preserve"><value>Le dépôt ne contient aucun commit. Faites un premier commit, puis relancez Init.</value></data>
   <data name="Error_InvalidConfig" xml:space="preserve"><value>Paramètres GitFlow invalides : {0}</value></data>
-  <data name="Error_DirtyWorkingTree" xml:space="preserve"><value>Des modifications ne sont pas commitées. Commitez-les ou mettez-les de côté (stash), puis réessayez.</value></data>
-  <data name="Error_MergeInProgress" xml:space="preserve"><value>Un merge est déjà en cours. Terminez-le ou annulez-le (git merge --abort) avant de continuer.</value></data>
+  <data name="Error_DirtyWorkingTree" xml:space="preserve"><value>Des modifications ne sont pas commitées. Faites un commit ou un stash, puis réessayez.</value></data>
+  <data name="Error_MergeInProgress" xml:space="preserve"><value>Un merge est déjà en cours. Terminez-le ou annulez-le (git merge --abort), puis réessayez.</value></data>
   <data name="Error_InvalidBranchName" xml:space="preserve"><value>Nom de branche invalide : « {0} ».</value></data>
   <data name="Error_BranchAlreadyExists" xml:space="preserve"><value>La branche « {0} » existe déjà.</value></data>
   <data name="Error_BranchNotFound" xml:space="preserve"><value>La branche « {0} » est introuvable.</value></data>
@@ -21,15 +21,15 @@
   <data name="Error_TagAlreadyExists" xml:space="preserve"><value>Le tag « {0} » existe déjà. Choisissez une autre version.</value></data>
   <data name="Error_ReleaseAlreadyInProgress" xml:space="preserve"><value>Une release est déjà en cours (« {0} »). Terminez-la avant d'en démarrer une autre.</value></data>
   <data name="Error_HotfixAlreadyInProgress" xml:space="preserve"><value>Un hotfix est déjà en cours (« {0} »). Terminez-le avant d'en démarrer un autre.</value></data>
-  <data name="Error_BranchDivergedFromRemote" xml:space="preserve"><value>La branche « {0} » a divergé de origin. Synchronisez-la (pull) puis réessayez.</value></data>
+  <data name="Error_BranchDivergedFromRemote" xml:space="preserve"><value>La branche « {0} » a divergé de origin. Faites un pull, puis réessayez.</value></data>
   <data name="Error_NoRemote" xml:space="preserve"><value>Aucun remote « origin » n'est configuré pour ce dépôt.</value></data>
-  <data name="Error_MergeConflict" xml:space="preserve"><value>Conflits lors du merge de « {0} » dans « {1} » ({2} fichier(s)). Résolvez-les, ajoutez les fichiers (git add) puis relancez Finish — ou annulez avec git merge --abort.</value></data>
+  <data name="Error_MergeConflict" xml:space="preserve"><value>Conflits pendant le merge de « {0} » dans « {1} » ({2} fichier(s)). Résolvez-les, faites git add, puis relancez Terminer. Pour annuler : git merge --abort.</value></data>
   <data name="Error_GitCommandFailed" xml:space="preserve"><value>La commande git a échoué : {0}</value></data>
 
   <!-- Warnings: key "Warning_{FlowWarningKind}", {0} = FlowWarning.Detail -->
-  <data name="Warning_PushFailed" xml:space="preserve"><value>Le push vers origin a échoué. Les merges locaux sont faits : poussez manuellement.</value></data>
-  <data name="Warning_RemoteBranchKeptBecausePushFailed" xml:space="preserve"><value>La branche distante « {0} » est conservée car le push a échoué.</value></data>
-  <data name="Warning_RemoteBranchDeleteFailed" xml:space="preserve"><value>Impossible de supprimer la branche distante « {0} ».</value></data>
+  <data name="Warning_PushFailed" xml:space="preserve"><value>Le push vers origin a échoué. Les merges locaux sont faits : faites le push vous-même.</value></data>
+  <data name="Warning_RemoteBranchKeptBecausePushFailed" xml:space="preserve"><value>La branche « {0} » est conservée sur origin car le push a échoué.</value></data>
+  <data name="Warning_RemoteBranchDeleteFailed" xml:space="preserve"><value>Impossible de supprimer la branche « {0} » sur origin.</value></data>
   <data name="Warning_LocalBranchDeleteFailed" xml:space="preserve"><value>La branche locale « {0} » n'a pas été supprimée.</value></data>
 
   <!-- Configuration validation: key "Config_{ConfigValidationErrorKind}", {0} = value -->
@@ -45,16 +45,16 @@
   <!-- Commit (errors) -->
   <data name="Error_NothingToCommit" xml:space="preserve"><value>Aucune modification à commiter.</value></data>
   <data name="Error_EmptyCommitMessage" xml:space="preserve"><value>Le message de commit est vide.</value></data>
-  <data name="Error_CommitOnMasterRefused" xml:space="preserve"><value>On ne commite jamais directement sur « {0} ». Démarrez une feature (ou un hotfix pour la production).</value></data>
-  <data name="Error_DetachedHead" xml:space="preserve"><value>HEAD est détachée : basculez sur une branche avant de commiter.</value></data>
+  <data name="Error_CommitOnMasterRefused" xml:space="preserve"><value>Pas de commit direct sur « {0} » : démarrez une feature (ou un hotfix pour la production).</value></data>
+  <data name="Error_DetachedHead" xml:space="preserve"><value>Vous êtes en HEAD détaché : faites un checkout d'une branche avant de commiter.</value></data>
 
   <!-- Pull Request mode (errors) -->
-  <data name="Error_PullRequestNotSupported" xml:space="preserve"><value>Mode Pull Request indisponible : le remote « origin » n'est ni GitHub ni Azure DevOps. Utilisez le merge local.</value></data>
+  <data name="Error_PullRequestNotSupported" xml:space="preserve"><value>Mode Pull Request indisponible : le remote « origin » n'est pas reconnu comme GitHub ou Azure DevOps. Pour un serveur Azure DevOps d'entreprise, cochez « origin est un serveur Azure DevOps » dans les paramètres GitFlow. Sinon, utilisez le merge local.</value></data>
   <data name="Error_NoCredentials" xml:space="preserve"><value>Aucun identifiant git pour « {0} ». Faites un push ou un fetch une fois (le Git Credential Manager vous connectera), puis réessayez.</value></data>
   <data name="Error_PullRequestApiFailed" xml:space="preserve"><value>La plateforme a refusé la demande : {0}</value></data>
   <data name="Error_PullRequestNotMerged" xml:space="preserve"><value>La pull request vers « {0} » n'est pas encore mergée.</value></data>
-  <data name="Error_MergeCommitNotFound" xml:space="preserve"><value>Commit de merge introuvable sur origin/{0} : le tag n'a pas été posé. Vérifiez la pull request puis réessayez.</value></data>
-  <data name="Error_BranchNotMergedOnRemote" xml:space="preserve"><value>La branche n'est pas contenue dans « {0} » (merge par squash ou rebase ?). Elle n'a pas été supprimée : supprimez-la vous-même si vous êtes sûr.</value></data>
+  <data name="Error_MergeCommitNotFound" xml:space="preserve"><value>Commit de merge introuvable sur origin/{0} : le tag n'a pas été créé. Vérifiez la pull request, puis réessayez.</value></data>
+  <data name="Error_BranchNotMergedOnRemote" xml:space="preserve"><value>La branche n'est pas contenue dans « {0} » (merge en squash ou en rebase ?). Elle n'a pas été supprimée : supprimez-la vous-même si le contenu est bien livré.</value></data>
 
   <!-- Generated commit message (content of the commit) -->
   <data name="Commit_Subject_One_Added" xml:space="preserve"><value>Ajoute {0}</value></data>
@@ -79,8 +79,8 @@
   <data name="Commit_Refs" xml:space="preserve"><value>Réf. : {0}</value></data>
 
   <!-- Settings warnings: key "SettingsWarning_{SettingsWarningKind}", {0} = previous prefix, {1} = count, {2} = list -->
-  <data name="SettingsWarning_OrphanedBranches" xml:space="preserve"><value>{1} branche(s) utilisent l'ancien préfixe « {0} » : {2}. Elles ne sont pas renommées et ne seront plus reconnues par GitFlow.</value></data>
-  <data name="SettingsWarning_OldTagPrefix" xml:space="preserve"><value>{1} tag(s) de version utilisent l'ancien préfixe de tag « {0} » : {2}. Ils ne serviront plus à proposer les prochaines versions.</value></data>
+  <data name="SettingsWarning_OrphanedBranches" xml:space="preserve"><value>{1} branche(s) utilisent encore l'ancien préfixe « {0} » : {2}. Elles ne sont pas renommées et GitFlow ne les reconnaîtra plus.</value></data>
+  <data name="SettingsWarning_OldTagPrefix" xml:space="preserve"><value>{1} tag(s) de version utilisent l'ancien préfixe « {0} » : {2}. Ils ne seront plus pris en compte pour proposer la version suivante.</value></data>
 
   <!-- Generated Pull Request description (Markdown) -->
   <data name="Pr_Header" xml:space="preserve"><value>**{0}** `{1}` → `{2}`</value></data>
@@ -89,8 +89,8 @@
   <data name="Pr_Files" xml:space="preserve"><value>Fichiers</value></data>
   <data name="Pr_Stats" xml:space="preserve"><value>{0} fichier(s) modifié(s), {1} ligne(s) ajoutée(s), {2} ligne(s) supprimée(s)</value></data>
   <data name="Pr_Version" xml:space="preserve"><value>Version</value></data>
-  <data name="Pr_VersionText" xml:space="preserve"><value>Version **{0}** : le tag `{1}` sera posé sur la branche de production une fois cette PR mergée.</value></data>
+  <data name="Pr_VersionText" xml:space="preserve"><value>Version **{0}** : le tag `{1}` sera créé sur la branche de production après le merge de cette PR.</value></data>
   <data name="Pr_Tickets" xml:space="preserve"><value>Tickets</value></data>
 
-  <data name="Info_ReleaseReminder" xml:space="preserve"><value>Release en cours : corrections, docs et tâches de release uniquement.</value></data>
+  <data name="Info_ReleaseReminder" xml:space="preserve"><value>Release en cours : uniquement des corrections, de la doc et les tâches de release.</value></data>
 </root>

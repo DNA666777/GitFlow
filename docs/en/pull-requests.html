@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pull Request mode — GitFlow for Visual Studio</title>
+  <link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/style.css">
+  <link rel="alternate" hreflang="fr" href="../pull-requests.html">
+</head>
+<body>
+  <header class="site-header">
+    <div class="inner">
+      <a class="brand" href="index.html"><img class="brand-mark" src="../assets/logo.svg" alt="">GitFlow for Visual Studio</a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="guide.html">Guide</a>
+        <a href="pull-requests.html" aria-current="page">Pull Requests</a>
+        <a href="reference.html">Reference</a>
+        <a href="../pull-requests.html" lang="fr" hreflang="fr">Français</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <nav class="toc" aria-label="Contents">
+      <strong>Contents</strong>
+      <ol>
+        <li><a href="#when">When to use it</a></li>
+        <li><a href="#requirements">Requirements</a></li>
+        <li><a href="#feature">A feature through a PR</a></li>
+        <li><a href="#message">The generated message</a></li>
+        <li><a href="#tracking">Tracking PRs</a></li>
+        <li><a href="#release">Release and hotfix: the tag</a></li>
+        <li><a href="#complete">Complete branch</a></li>
+        <li><a href="#platforms">GitHub and Azure DevOps</a></li>
+      </ol>
+    </nav>
+
+    <article>
+      <h1>Pull Request mode</h1>
+      <p class="intro">A Finish option for repositories where <code>master</code> and <code>develop</code> are protected: instead of merging locally, the extension pushes the branch and opens the pull requests. Review and merge stay in human hands.</p>
+
+      <h2 id="when">When to use it</h2>
+      <table>
+        <thead><tr><th></th><th>Local merge (default)</th><th>Pull Request (option)</th></tr></thead>
+        <tbody>
+          <tr><td>Branches protected on the server</td><td>Push refused</td><td>✅ Designed for it</td></tr>
+          <tr><td>Code review</td><td>—</td><td>✅ On the platform</td></tr>
+          <tr><td>Speed</td><td>✅ Immediate</td><td>After the PR is approved</td></tr>
+          <tr><td>Remote required</td><td>No (or any remote)</td><td>GitHub or Azure DevOps</td></tr>
+        </tbody>
+      </table>
+      <p>You choose <strong>at each Finish</strong> in the <em>Finish</em> dialog. To pre-select <em>Pull Request</em> on a repository, set "Default Finish mode" in the <a href="guide.html#settings">settings</a>.</p>
+
+      <h2 id="requirements">Requirements</h2>
+      <ul>
+        <li>The <code>origin</code> remote points to <strong>GitHub</strong> (<code>github.com</code>) or <strong>Azure DevOps</strong> (<code>dev.azure.com</code> or <code>*.visualstudio.com</code>), over https or ssh.</li>
+        <li><strong>Git already knows your credentials</strong>: if you have already pushed or fetched over https on this server (from Visual Studio or a terminal), that is the case. The extension asks git for them (<code>git credential fill</code>, in practice the Git Credential Manager). It stores none, and they never appear in the logs.</li>
+        <li><strong>No extra tool</strong>: no <code>gh</code>, no <code>az</code>.</li>
+      </ul>
+      <div class="callout warn">
+        <strong>"No git credentials for dev.azure.com"</strong>
+        <p>Sign in once by running <code>git ls-remote &lt;repository url&gt;</code> in a terminal: the Git Credential Manager sign-in window opens. Then try again.</p>
+      </div>
+
+      <h2 id="feature">A feature through a PR</h2>
+      <ol class="steps">
+        <li>Start and develop the feature as usual (<a href="guide.html#feature">guide</a>).</li>
+        <li><em>Finish…</em>: choose <strong>Pull Request</strong>. The push and delete-on-origin options disappear: they are not used in PR mode.</li>
+        <li>The next screen shows the <strong>generated title and description</strong> for each PR, editable.</li>
+        <li>OK: the extension pushes the branch, then creates the PR <span class="branch feature">feature/x</span> → <span class="branch develop">develop</span>. If one is already open, it is reused and your new commits go into it. Nothing is merged locally.</li>
+        <li>Get it reviewed and <strong>merge the PR on the platform</strong> (preferably without fast-forward, see <a href="#complete">squash</a>).</li>
+        <li>In the GitFlow window: <em>Refresh PRs</em>, then <em>Complete branch</em>.</li>
+      </ol>
+
+      <h2 id="message">The generated message</h2>
+      <p>Built from git only (deterministic, no AI). The title follows the convention <code>Feature: name</code> / <code>Release 1.5.0</code> / <code>Hotfix 1.5.1</code>. The description:</p>
+<pre><code>**Feature** `feature/ABC-12-login` → `develop`
+
+### Commits (2)
+- Add the login page
+- Fix the button style (#42)
+
+### Files
+5 file(s) changed, 120 line(s) added, 8 line(s) deleted
+
+### Tickets
+ABC-12, #42</code></pre>
+      <p>For a release or a hotfix, a <em>Version</em> section reminds you of the tag that will be created after the merge.</p>
+      <h3>Customizing</h3>
+      <ul>
+        <li><strong>Your template</strong>: <code>.gitflow/pull_request_template.md</code> in the repository, with the variables <code>{type}</code> <code>{source}</code> <code>{target}</code> <code>{commits}</code> <code>{stats}</code> <code>{version}</code> <code>{tickets}</code>.</li>
+        <li><strong>The platform template</strong> (<code>.github/pull_request_template.md</code>, <code>.azuredevops/pull_request_template.md</code>…) is used as a base: the generated description is added below it.</li>
+        <li><strong>Ticket pattern</strong>: the <code>gitflowvs.pr.ticketpattern</code> key (regular expression). Default <code>ABC-123</code> and <code>#42</code>.</li>
+      </ul>
+
+      <h2 id="tracking">Tracking PRs</h2>
+      <div class="mock-row">
+        <div class="vs-window" aria-label="Preview of the Pull requests section">
+          <div class="vs-title"><span>GitFlow</span><span>▾ ✕</span></div>
+          <div class="vs-body">
+            <div class="vs-row"><span class="vs-section grow" style="margin:0">Pull requests</span><span class="vs-btn">Refresh PRs</span></div>
+            <div style="margin-top:6px"><b>release/1.5.0</b></div>
+            <div class="vs-row" style="padding-left:8px"><span>#12 → master</span><span class="vs-italic grow">merged</span><span class="vs-btn">Open</span></div>
+            <div class="vs-row" style="padding-left:8px"><span>#13 → develop</span><span class="vs-italic grow">open</span><span class="vs-btn">Open</span></div>
+            <div class="vs-row"><span class="grow"></span><span class="vs-btn">Create tag 1.5.0</span></div>
+          </div>
+        </div>
+        <div class="mock-text">
+          <p>A <em>Pull requests</em> section appears in the window as soon as a PR is tracked: one row per PR, with its state (<em>open</em>, <em>merged</em>, <em>closed without merge</em>) and an <em>Open</em> button for the browser.</p>
+          <p>The state is read from the platform <strong>at most once a minute</strong> while the window is visible, or immediately with <em>Refresh PRs</em>.</p>
+          <p>The extension <strong>never approves or merges</strong> a PR.</p>
+        </div>
+      </div>
+
+      <h2 id="release">Release and hotfix: the tag</h2>
+      <p>A release opens <strong>two PRs</strong>: to <span class="branch master">master</span> and to <span class="branch develop">develop</span>. So does a hotfix, to master then to develop (or to the release in progress).</p>
+      <p>The tag can only be created <strong>once the PR to master is merged</strong>, on its merge commit:</p>
+      <ol class="steps">
+        <li>Merge the PR to master on the platform.</li>
+        <li><em>Refresh PRs</em>: the <em>Create tag 1.5.0</em> button appears.</li>
+        <li>The extension fetches master, checks that the merge commit is on <code>origin/master</code>, creates the annotated tag (with the message entered at Finish) and pushes it.</li>
+      </ol>
+      <p><em>Complete branch</em> also creates the tag if it is missing, when both PRs are already merged.</p>
+
+      <h2 id="complete">Complete branch</h2>
+      <p>When <strong>all</strong> the PRs of a branch are merged, <em>Complete branch</em>:</p>
+      <ol>
+        <li>creates the tag if it is a release or a hotfix and the tag is missing;</li>
+        <li>runs <code>git fetch</code> (or <code>git fetch --prune</code> if the option is checked in the settings);</li>
+        <li>updates your local <code>develop</code> / <code>master</code>, fast-forward only;</li>
+        <li>deletes the local branch with <code>git branch -d</code> and forgets its PRs;</li>
+        <li>leaves you on develop (or on the release in progress).</li>
+      </ol>
+      <div class="callout warn">
+        <strong>"Squash" or "rebase" merge</strong>
+        <p>In that case, the commits of your branch are not in develop: the extension detects it and <strong>does not delete</strong> the branch. Delete it yourself if you are sure. To avoid this, choose a regular merge (<em>Merge</em> / <em>Merge (no fast-forward)</em>).</p>
+      </div>
+      <div class="callout ok">
+        <strong>Branches on the server</strong>
+        <p>Complete does not delete the branch on the server: check <em>Delete branch after merging</em> (Azure) or enable <em>Automatically delete head branches</em> (GitHub). With the <em>git fetch --prune</em> option, the matching <code>origin/…</code> references then disappear from your machine on their own.</p>
+      </div>
+
+      <h2 id="platforms">GitHub and Azure DevOps</h2>
+      <table>
+        <thead><tr><th></th><th>GitHub</th><th>Azure DevOps</th></tr></thead>
+        <tbody>
+          <tr><td>Remote URL</td><td><code>https://github.com/org/repo.git</code><br><code>git@github.com:org/repo.git</code></td><td><code>https://dev.azure.com/org/project/_git/repo</code><br><code>git@ssh.dev.azure.com:v3/org/project/repo</code><br><code>https://org.visualstudio.com/project/_git/repo</code></td></tr>
+          <tr><td>Credentials</td><td>git's credentials for <code>github.com</code></td><td>git's credentials for <code>dev.azure.com</code> (Microsoft account or personal access token)</td></tr>
+          <tr><td>Protected branches</td><td>Branch protection rules</td><td>Branch policies</td></tr>
+          <tr><td>Delete the branch after merge</td><td><em>Delete branch</em> on the PR, or repository setting</td><td><em>Delete … after merging</em> checkbox on Complete</td></tr>
+        </tbody>
+      </table>
+      <p>With an <code>ssh</code> remote, the extension still asks the Git Credential Manager for https credentials to call the API: sign in once over https if needed.</p>
+      <h3 id="server">Company Azure DevOps server</h3>
+      <p>The URLs of an Azure DevOps server installed in a company (Azure DevOps Server, formerly TFS) cannot be recognised automatically, for example <code>https://tfs.company.com/tfs/Collection/Project/_git/Repo</code>. In that case, check <strong>"Pull Request: origin is an Azure DevOps server"</strong> in the <a href="guide.html#settings">settings</a>.</p>
+      <ul>
+        <li>The URL must contain <code>/_git/</code>: the API is called on the part before it (collection and project).</li>
+        <li>Authentication: the credentials git knows for this server (personal access token) if there are any, otherwise your Windows session, like git itself inside a company network.</li>
+        <li>REST API 4.1: works from TFS 2018 on.</li>
+        <li>With an ssh remote, the API is called over https on the same server.</li>
+      </ul>
+
+      <div class="next-prev">
+        <a class="btn" href="guide.html">← Guide</a>
+        <a class="btn primary" href="reference.html">Reference and troubleshooting →</a>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="inner">
+      <span>GitFlow for Visual Studio — model: <a href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow">Atlassian Gitflow Workflow</a></span>
+      <a href="reference.html#troubleshooting">Having a problem?</a>
+    </div>
+  </footer>
+</body>
+</html>
